@@ -151,8 +151,8 @@ the same pages. SEO lives in `index.html` and `public/` (Open Graph image
 - `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` live in the Vercel project,
   set by Thibault.
 - Legal notice (`#/legal`) and privacy policy
-  (`#/privacy`) in `src/pages/Legal.svelte`: the publisher is a
-  private individual, non-professional, as long as the app earns nothing;
+  (`#/privacy`) in `src/pages/Legal.svelte`: the publisher is
+  Thibault's EI, like every app (socle `entreprise/identite.md`, rule of 24/11);
   public contact `hello@7ibo.dev` (`src/lib/site.ts`). A change in what is read or sent updates
   the privacy policy in the same PR.
 - After each deploy, the site is checked at 390 and 1280 px.
