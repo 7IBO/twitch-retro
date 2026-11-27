@@ -1,4 +1,4 @@
-# Rétro Twitch
+# Twitch Retro
 
 An all-time Twitch retrospective built from the data export Twitch sends
 you (the `request-*.zip` file), in French and English. Live at

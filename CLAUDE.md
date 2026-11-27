@@ -1,4 +1,4 @@
-# Rétro Twitch
+# Twitch Retro
 
 An all-time Twitch retrospective built from the data export a user requests
 from Twitch (Settings, Security and Privacy, "Download your data"). The zip is
@@ -135,7 +135,7 @@ the same pages. SEO lives in `index.html` and `public/` (Open Graph image
 ## Git and pull requests
 
 - Commit identity: `Thibault <71017357+7IBO@users.noreply.github.com>`.
-- One branch per Linear issue (project "Rétro Twitch", team THI), named by
+- One branch per Linear issue (project "Twitch Retro", team THI), named by
   its `gitBranchName`. Conventional Commits in English.
 - PR in draft from the first push, template in
   `.github/pull_request_template.md`, reviewers in `.claude/agents/`, marked

@@ -240,7 +240,7 @@ export async function drawCard(canvas: HTMLCanvasElement, d: CardData, format: '
   ctx.stroke();
   ctx.fillStyle = C.muted;
   ctx.font = `400 22px ${SANS}`;
-  ctx.fillText(t('Rétro Twitch · from my Twitch data export'), P, footY);
+  ctx.fillText(t('Twitch Retro · from my Twitch data export'), P, footY);
   ctx.fillStyle = C.text;
   ctx.textAlign = 'right';
   ctx.fillText(SITE.host, W - P, footY);

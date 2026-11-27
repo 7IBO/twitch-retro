@@ -24,7 +24,7 @@
 
 <div class="landing">
   <header class="landing-top">
-    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Rétro Twitch</div>
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Twitch Retro</div>
     <LangSwitch />
   </header>
 

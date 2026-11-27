@@ -1,6 +1,6 @@
 {
-  "name": "Rétro Twitch",
-  "short_name": "Rétro Twitch",
+  "name": "Twitch Retro",
+  "short_name": "Twitch Retro",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#141415",

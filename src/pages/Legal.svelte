@@ -12,7 +12,7 @@
 
 <div class="landing">
   <header class="landing-top">
-    <a class="brand" href="#/"><span class="brand-mark" aria-hidden="true"></span>Rétro Twitch</a>
+    <a class="brand" href="#/"><span class="brand-mark" aria-hidden="true"></span>Twitch Retro</a>
     <LangSwitch />
   </header>
 

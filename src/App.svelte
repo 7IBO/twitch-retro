@@ -57,13 +57,13 @@
 {#if r.page === 'legal' || r.page === 'privacy'}
   <Legal kind={r.page} />
 {:else if !app.data && app.booting}
-  <div class="boot" aria-live="polite"><span class="brand"><span class="brand-mark" aria-hidden="true"></span>Rétro Twitch</span><span class="progress" aria-hidden="true"><span></span></span><span class="sr-only">{t('Opening your export')}</span></div>
+  <div class="boot" aria-live="polite"><span class="brand"><span class="brand-mark" aria-hidden="true"></span>Twitch Retro</span><span class="progress" aria-hidden="true"><span></span></span><span class="sr-only">{t('Opening your export')}</span></div>
 {:else if !app.data}
   <Landing />
 {:else}
   <div class="shell">
     <aside class="sidebar">
-      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Rétro Twitch</div>
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Twitch Retro</div>
       <Search pages={NAV.map((x) => ({ path: x.path, label: t(x.label) }))} />
       <nav class="nav" aria-label="Sections" use:slide>
         {#each NAV as item (item.path)}
