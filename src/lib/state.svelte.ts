@@ -19,6 +19,12 @@ export type Route =
   | { page: 'channel' }
   | { page: 'share'; target?: { kind: 'streamer' | 'category'; key: string } };
 
+/** Top of the page now, and again once the new page has rendered (it can be taller). */
+function toTop() {
+  scrollTo({ top: 0, behavior: 'instant' });
+  requestAnimationFrame(() => scrollTo({ top: 0, behavior: 'instant' }));
+}
+
 /** Year filter carried in the URL: #/streamers?y=2023 */
 function yearFromHash(hash: string): number | null {
   const m = /[?&]y=(\d{4})/.exec(hash);
@@ -112,7 +118,13 @@ class AppState {
       // Links inside the site have no ?y=: keep the current year and write it back in the URL.
       if (y !== null) this.year = y;
       else if (this.year !== null) this.writeYear();
-      if (prev.page !== this.route.page || JSON.stringify(prev) !== JSON.stringify(this.route)) scrollTo(0, 0);
+      if (JSON.stringify(prev) !== JSON.stringify(this.route)) toTop();
+    });
+    // Any click on a link of the site goes back to the top, even to the page already shown.
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    addEventListener('click', (e: MouseEvent) => {
+      const a = (e.target as HTMLElement).closest?.('a[href^="#/"]');
+      if (a && !e.defaultPrevented && e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey) toTop();
     });
     void readExport().then((saved) => {
       if (saved && !this.data && !this.loading) {
@@ -125,6 +137,7 @@ class AppState {
   setYear(y: number | null) {
     this.year = y;
     this.writeYear();
+    toTop(); // the page is rebuilt for the new year: start from its top
   }
 
   private writeYear() {

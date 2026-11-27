@@ -49,6 +49,7 @@
   function go(h: Hit) {
     open = false;
     location.hash = h.href;
+    scrollTo({ top: 0, behavior: 'instant' });
   }
   function key(e: KeyboardEvent) {
     if (e.key === 'ArrowDown') {
