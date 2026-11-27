@@ -92,6 +92,9 @@ export interface RetroData {
   broadcast: { day: number; min: number; game: number }[];
   ownVods: OwnVod[];
   watchedVods: WatchedVod[];
+  /** Clips played: utc ms and channel. */
+  clipTs: Float64Array;
+  clipCh: Int32Array;
   timings: { unzip: number; parse: number };
 }
 

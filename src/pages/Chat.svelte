@@ -47,41 +47,11 @@
   const maxW = $derived(a.words[0]?.n ?? 1);
 
   // Badges and replies come from the chat tags Twitch kept (recent messages only).
-  const tagged = $derived(msgs.filter((m) => m.badges || m.replyTo || m.emotes));
-  const badges = $derived.by(() => {
-    const sets = new Map<string, { key: string; n: number; first: number; last: number }>();
-    const subs = new Map<number, { key: string; months: number; last: number }>();
-    for (const m of msgs) {
-      for (const b of m.badges ?? []) {
-        const set = b.split('/')[0];
-        if (set === 'subscriber') {
-          const e = subs.get(m.ch);
-          if (!e || m.ts > e.last) subs.set(m.ch, { key: b, months: Math.max(e?.months ?? 0, m.subMonths ?? 0), last: m.ts });
-          else e.months = Math.max(e.months, m.subMonths ?? 0);
-          continue;
-        }
-        const e = sets.get(set);
-        if (!e) sets.set(set, { key: b, n: 1, first: m.ts, last: m.ts });
-        else {
-          e.n++;
-          if (m.ts > e.last) (e.last = m.ts), (e.key = b);
-        }
-      }
-    }
-    return {
-      global: [...sets.values()].sort((x, y) => y.n - x.n),
-      subs: [...subs.entries()].map(([ch, v]) => ({ ch, ...v })).sort((x, y) => y.months - x.months),
-    };
-  });
   const replies = $derived.by(() => {
     const r = new Map<string, number>();
     for (const m of msgs) if (m.replyTo) r.set(m.replyTo, (r.get(m.replyTo) ?? 0) + 1);
     return [...r.entries()].sort((x, y) => y[1] - x[1]);
   });
-  const badgeInfo = (key: string, ch = -1) => {
-    const id = ch >= 0 ? app.data!.channels[ch]?.id : undefined;
-    return (id ? app.enrich?.channelBadges?.[id]?.[key] : undefined) ?? app.enrich?.badges?.[key];
-  };
 </script>
 
 <header class="page-head">
@@ -169,49 +139,19 @@
     </section>
   {/if}
 
-  {#if tagged.length}
-    <div class="split">
-      <section class="panel">
-        <header class="panel-head"><h2>Tes badges</h2><span class="hint">vus dans tes messages depuis 2023</span></header>
-        {#if badges.global.length}
-          <ul class="badges">
-            {#each badges.global as b (b.key)}
-              {@const info = badgeInfo(b.key)}
-              <li>
-                {#if info}<img src={info.url} alt="" width="36" height="36" loading="lazy" referrerpolicy="no-referrer" />{:else}<span class="badge-empty"></span>{/if}
-                <span class="rank-main"><span class="rank-name">{info?.title ?? b.key.split('/')[0]}</span><span class="rank-meta">{day(localDay(b.first))} → {day(localDay(b.last))}</span></span>
-                <span class="rank-val">{n(b.n)}</span>
-              </li>
-            {/each}
-          </ul>
-        {/if}
-        {#if badges.subs.length}
-          <h3 class="sub-h">Badges d'abonné</h3>
-          <ul class="badges">
-            {#each badges.subs.slice(0, 12) as b (b.ch)}
-              {@const info = badgeInfo(b.key, b.ch)}
-              <li>
-                {#if info}<img src={info.url} alt="" width="36" height="36" loading="lazy" referrerpolicy="no-referrer" />{:else}<span class="badge-empty"></span>{/if}
-                <a class="rank-name" href={app.chHref(b.ch)}>{app.chName(b.ch)}</a>
-                <span class="rank-val">{b.months ? plural(b.months, 'mois', 'mois') : '—'}</span>
-              </li>
-            {/each}
-          </ul>
-        {/if}
-      </section>
-      <section class="panel">
-        <header class="panel-head"><h2>Tu réponds le plus à</h2></header>
-        {#if replies.length}
-          <ol class="rank">
-            {#each replies.slice(0, 12) as [login, c], i (login)}
-              <li><span class="rank-n">{i + 1}</span><span class="rank-name mention">@{login}</span><Meter value={c} max={replies[0][1]} /><span class="rank-val">{n(c)}</span></li>
-            {/each}
-          </ol>
-        {:else}
-          <Empty text="Aucune réponse enregistrée sur cette période." />
-        {/if}
-      </section>
-    </div>
+  {#if replies.length}
+  <section class="panel">
+    <header class="panel-head"><h2>Tu réponds le plus à</h2></header>
+    {#if replies.length}
+      <ol class="rank">
+        {#each replies.slice(0, 12) as [login, c], i (login)}
+          <li><span class="rank-n">{i + 1}</span><span class="rank-name mention">@{login}</span><Meter value={c} max={replies[0][1]} /><span class="rank-val">{n(c)}</span></li>
+        {/each}
+      </ol>
+    {:else}
+      <Empty text="Aucune réponse enregistrée sur cette période." />
+    {/if}
+  </section>
   {/if}
 
   <div class="split">

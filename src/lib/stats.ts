@@ -64,6 +64,7 @@ export interface Stats {
   subChannels: { ch: number; months: number }[];
   bits: { total: number; channels: { ch: number; n: number }[] };
   ads: { count: number; channels: { ch: number; n: number }[] };
+  clips: { count: number; channels: { ch: number; n: number }[] };
   watchedVods: WatchedVod[];
 }
 
@@ -250,6 +251,14 @@ export function compute(d: RetroData, year: number | null): Stats {
     if (d.adCh[i] >= 0) inc(adCh, d.adCh[i]);
   }
 
+  const clipCh = new Map<number, number>();
+  let clipCount = 0;
+  for (let i = 0; i < d.clipTs.length; i++) {
+    if (!inTs(d.clipTs[i])) continue;
+    clipCount++;
+    inc(clipCh, d.clipCh[i]);
+  }
+
   return {
     year,
     totalMin,
@@ -284,6 +293,7 @@ export function compute(d: RetroData, year: number | null): Stats {
     subChannels: sortMap(subCh).map(([ch, months]) => ({ ch, months })),
     bits: { total: bitsTotal, channels: sortMap(bitsCh).map(([ch, n]) => ({ ch, n })) },
     ads: { count: adCount, channels: sortMap(adCh).map(([ch, n]) => ({ ch, n })) },
+    clips: { count: clipCount, channels: sortMap(clipCh).map(([ch, n]) => ({ ch, n })) },
     watchedVods: year === null ? d.watchedVods : d.watchedVods.filter((v) => inDay(v.day)),
   };
 }

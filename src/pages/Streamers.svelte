@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { slide } from '../lib/slide';
-  import { h, n, day, dur } from '../lib/format';
+  import { h, n, day, dur, plural } from '../lib/format';
   import Avatar from '../components/Avatar.svelte';
   import Meter from '../components/Meter.svelte';
   import Empty from '../components/Empty.svelte';
@@ -77,7 +77,7 @@
 {#if s.watchedVods.length && !q}
   <section class="panel flush">
     <header class="panel-head pad">
-      <h2>Rediffusions les plus regardées</h2>
+      <h2>Rediffusions</h2>
       <div class="seg" role="group" aria-label="Filtrer les rediffusions" use:slide>
         <button class:on={!vodOnline} onclick={() => ((vodOnline = false), (vodLimit = 15))}>Toutes ({n(s.watchedVods.length)})</button>
         <button class:on={vodOnline} onclick={() => ((vodOnline = true), (vodLimit = 15))}>Encore en ligne ({n(onlineCount)})</button>
@@ -99,7 +99,7 @@
               <span class="rank-meta">vue le {day(v.day)} · {app.enrich ? 'expirée ou supprimée sur Twitch, le lien mène à la fiche de la chaîne' : 'titre inconnu'}</span>
             {/if}
           </span>
-          <span class="rank-val">{dur(v.min)}</span>
+          <span class="rank-val">{v.min ? dur(v.min) : 'ouverte'}</span>
         </li>
       {/each}
     </ol>
@@ -107,4 +107,21 @@
   {#if vodRows.length > vodLimit}
     <button class="btn" onclick={() => (vodLimit += 50)}>Afficher plus de rediffusions</button>
   {/if}
+{/if}
+
+{#if s.clips.count && !q}
+  <section class="panel">
+    <header class="panel-head"><h2>Clips regardés</h2><span class="hint">{plural(s.clips.count, 'clip lancé', 'clips lancés')}</span></header>
+    <ol class="rank">
+      {#each s.clips.channels.slice(0, 8) as c, i (c.ch)}
+        <li>
+          <span class="rank-n">{i + 1}</span>
+          <Avatar ch={c.ch} size={28} />
+          <a class="rank-name" href={app.chHref(c.ch)}>{app.chName(c.ch)}</a>
+          <Meter value={c.n} max={s.clips.channels[0].n} />
+          <span class="rank-val">{n(c.n)}</span>
+        </li>
+      {/each}
+    </ol>
+  </section>
 {/if}

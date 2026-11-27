@@ -14,6 +14,7 @@ export type Route =
   | { page: 'category'; key: string }
   | { page: 'calendar' }
   | { page: 'chat' }
+  | { page: 'badges' }
   | { page: 'follows' }
   | { page: 'support' }
   | { page: 'channel' }
@@ -48,6 +49,8 @@ function parseRoute(hash: string): Route {
       return { page: 'calendar' };
     case 'chat':
       return { page: 'chat' };
+    case 'badges':
+      return { page: 'badges' };
     case 'follows':
       return { page: 'follows' };
     case 'soutien':
@@ -247,7 +250,7 @@ class AppState {
       const r = await fetch('/api/enrich', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channels: [...ids], games, emoteChannels, vods: d.watchedVods.slice(0, 500).map((v) => v.id), badges: true, badgeChannels }),
+        body: JSON.stringify({ channels: [...ids], games, emoteChannels, vods: d.watchedVods.slice(0, 1000).map((v) => v.id), badges: true, badgeChannels }),
       });
       if (!r.ok) throw new Error(String(r.status));
       if (this.data !== d) return;

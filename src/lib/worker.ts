@@ -323,15 +323,27 @@ function build(zipBytes: Uint8Array): RetroData {
     m.set(login, (m.get(login) ?? 0) + 1);
     myCase.set(k, m);
   };
-  readCsv(text('site_history/video_play.csv'), ['time', 'time_utc', 'channel', 'channel_id', 'game', 'login'], (r) => {
+  // Replays and clips started: many short ones never reach minute_watched.
+  const playedVods = new Map<string, { ch: number; day: number }>();
+  const clipTs: number[] = [];
+  const clipCh: number[] = [];
+  readCsv(text('site_history/video_play.csv'), ['time', 'time_utc', 'channel', 'channel_id', 'game', 'login', 'content_mode', 'vod_id', 'live'], (r) => {
     seeCase(r[5]);
     const t = ts(r[1], r[0]);
     if (r[4]) games.teach(r[4]);
     const ch = reg.observe(r[3], r[2], t);
-    if (!Number.isNaN(t) && ch >= 0) {
-      playTs.push(t);
-      playCh.push(ch);
+    if (Number.isNaN(t) || ch < 0) return;
+    if (r[6] === 'clip') {
+      clipTs.push(t);
+      clipCh.push(ch);
+      return;
     }
+    if (r[8] === 'f' && (r[6] === 'vod' || r[6] === 'vodcast') && r[7]) {
+      const id = r[7].replace(/^v/, '');
+      if (!playedVods.has(id)) playedVods.set(id, { ch, day: Math.floor(t / DAY) });
+    }
+    playTs.push(t);
+    playCh.push(ch);
   });
 
   // --- minutes watched
@@ -523,7 +535,13 @@ function build(zipBytes: Uint8Array): RetroData {
     adCh: Int32Array.from(adCh),
     broadcast: [...bAgg.values()].sort((a, b) => a.day - b.day),
     ownVods: ownVods.sort((a, b) => b.ts - a.ts),
-    watchedVods: [...vods.values()].sort((a, b) => b.min - a.min),
+    watchedVods: [
+      ...[...vods.values()].sort((a, b) => b.min - a.min),
+      // Started but under a minute counted: still a replay you opened.
+      ...[...playedVods].filter(([id]) => !vods.has(id)).map(([id, v]) => ({ id, ch: v.ch, min: 0, day: v.day })).sort((a, b) => b.day - a.day),
+    ],
+    clipTs: Float64Array.from(clipTs),
+    clipCh: Int32Array.from(clipCh),
     timings: { unzip: Math.round(t1 - t0), parse: Math.round(t2 - t1) },
   };
 }
