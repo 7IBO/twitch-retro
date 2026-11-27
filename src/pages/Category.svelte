@@ -22,6 +22,7 @@
     <div>
       <h1>{app.gameName(game)}</h1>
       <p class="lead">{dur(det.min)}{app.year !== null ? ` en ${app.year}` : ''}, chez {plural(det.channels.length, 'streamer', 'streamers')}</p>
+      <a class="btn small profile-share" href="#/partager/categories/{app.slug(app.data!.games[game].name)}">Créer sa carte à partager</a>
     </div>
   </header>
 
@@ -38,7 +39,7 @@
           <li>
             <span class="rank-n">{i + 1}</span>
             <Avatar ch={c.ch} size={32} />
-            <a class="rank-name" href="#/streamers/{c.ch}">{app.chName(c.ch)}</a>
+            <a class="rank-name" href={app.chHref(c.ch)}>{app.chName(c.ch)}</a>
             <Meter value={c.min} max={det.channels[0].min} />
             <span class="rank-val">{dur(c.min)}</span>
           </li>

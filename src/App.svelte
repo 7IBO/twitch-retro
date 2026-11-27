@@ -75,15 +75,15 @@
         <div class="page" in:fly={{ y: 8, duration: still ? 0 : 320, easing: quintOut }}>
         {#if r.page === 'overview'}<Overview />
         {:else if r.page === 'streamers'}<Streamers />
-        {:else if r.page === 'streamer'}<Streamer ch={r.ch} />
+        {:else if r.page === 'streamer'}<Streamer ch={app.resolveCh(r.key)} />
         {:else if r.page === 'categories'}<Categories />
-        {:else if r.page === 'category'}<Category game={r.game} />
+        {:else if r.page === 'category'}<Category game={app.resolveGame(r.key)} />
         {:else if r.page === 'calendar'}<Calendar />
         {:else if r.page === 'chat'}<Chat />
         {:else if r.page === 'follows'}<Follows />
         {:else if r.page === 'support'}<Support />
         {:else if r.page === 'channel'}<Channel />
-        {:else if r.page === 'share'}<Share />
+        {:else if r.page === 'share'}<Share target={r.target} />
         {/if}
         </div>
         {/key}

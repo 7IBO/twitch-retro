@@ -63,7 +63,7 @@
           <li>
             <span class="rank-n">{i + 1}</span>
             <Avatar ch={c.ch} size={32} />
-            <a class="rank-name" href="#/streamers/{c.ch}">{app.chName(c.ch)}</a>
+            <a class="rank-name" href={app.chHref(c.ch)}>{app.chName(c.ch)}</a>
             <Meter value={c.min} max={s.channels[0].min} />
             <span class="rank-val">{dur(c.min)}</span>
           </li>
@@ -74,7 +74,7 @@
       <header class="panel-head"><h2>Catégories</h2><a class="more" href="#/categories">Tout voir</a></header>
       <div class="covers four">
         {#each s.games.slice(0, 8) as g, i (g.game)}
-          <a class="cover" href="#/categories/{g.game}">
+          <a class="cover" href={app.gameHref(g.game)}>
             <BoxArt game={g.game} w={144} h={192} />
             <span class="cover-name">{i + 1}. {app.gameName(g.game)}</span>
             <span class="cover-meta">{dur(g.min)}</span>

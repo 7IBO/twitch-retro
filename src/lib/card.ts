@@ -1,13 +1,21 @@
 /** Draws the shareable card on a canvas. Everything happens in the browser. */
 
+export interface CardItem {
+  name: string;
+  value: string;
+  img?: string;
+  shape: 'circle' | 'cover' | 'none';
+}
+
 export interface CardData {
   title: string; // "Ma rétro Twitch"
   period: string; // "2016 – 2026" or "2023"
-  login: string;
-  hours: string;
+  hero?: { name: string; img?: string; shape: 'circle' | 'cover'; caption: string };
+  big: string; // "34 080"
+  unit: string; // "heures"
+  subline: string;
   facts: { value: string; label: string }[];
-  streamers: { name: string; hours: string; avatar?: string }[];
-  games: { name: string; hours: string; art?: string }[];
+  lists: { title: string; items: CardItem[] }[];
   emote?: { name: string; url: string; count: string };
 }
 
@@ -21,11 +29,18 @@ const C = {
   muted: '#85858b',
   accent: '#a970ff',
 };
+/** French number spaces (U+202F) are missing from some canvas fonts. */
+const sp = (s: string) => s.replace(/[  ]/g, ' ');
 const SANS = '"Inter Variable", Inter, system-ui, sans-serif';
 const MONO = '"JetBrains Mono", ui-monospace, monospace';
 
-function loadImg(src?: string): Promise<HTMLImageElement | null> {
-  if (!src) return Promise.resolve(null);
+/** Loads an image the canvas may export: directly, or through our relay when the CDN has no CORS. */
+async function loadImg(src?: string): Promise<HTMLImageElement | null> {
+  if (!src) return null;
+  return (await loadDirect(src)) ?? (await loadDirect('/api/img?u=' + encodeURIComponent(src)));
+}
+
+function loadDirect(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -36,37 +51,60 @@ function loadImg(src?: string): Promise<HTMLImageElement | null> {
   });
 }
 
-function rrect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  ctx.beginPath();
-  ctx.roundRect(x, y, w, h, r);
-}
-
-function fit(ctx: CanvasRenderingContext2D, text: string, max: number) {
+function fit(ctx: CanvasRenderingContext2D, raw: string, max: number) {
+  const text = sp(raw);
   if (ctx.measureText(text).width <= max) return text;
   let t = text;
   while (t.length > 1 && ctx.measureText(t + '…').width > max) t = t.slice(0, -1);
   return t + '…';
 }
 
+function drawImage(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement | null,
+  shape: 'circle' | 'cover',
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  fallback: string,
+) {
+  ctx.save();
+  ctx.beginPath();
+  if (shape === 'circle') ctx.arc(x + w / 2, y + h / 2, w / 2, 0, Math.PI * 2);
+  else ctx.roundRect(x, y, w, h, Math.max(4, w / 12));
+  ctx.clip();
+  if (img) ctx.drawImage(img, x, y, w, h);
+  else {
+    ctx.fillStyle = C.raised;
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = C.text2;
+    ctx.font = `500 ${Math.round(w * 0.42)}px ${SANS}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(fallback.slice(0, 1).toUpperCase(), x + w / 2, y + h / 2);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+  }
+  ctx.restore();
+}
+
 export async function drawCard(canvas: HTMLCanvasElement, d: CardData, format: 'post' | 'story') {
   const W = 1080, H = format === 'post' ? 1350 : 1920;
+  const story = format === 'story';
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext('2d')!;
-  await Promise.all([
-    document.fonts.load(`500 40px "Inter Variable"`),
-    document.fonts.load(`400 24px "JetBrains Mono"`),
-  ]).catch(() => {});
-  const [avatars, arts, emote] = await Promise.all([
-    Promise.all(d.streamers.map((s) => loadImg(s.avatar))),
-    Promise.all(d.games.map((g) => loadImg(g.art))),
+  await Promise.all([document.fonts.load(`500 40px "Inter Variable"`), document.fonts.load(`400 24px "JetBrains Mono"`)]).catch(() => {});
+  const [hero, emote, ...listImgs] = await Promise.all([
+    loadImg(d.hero?.img),
     loadImg(d.emote?.url),
+    ...d.lists.flatMap((l) => l.items.map((it) => loadImg(it.shape === 'none' ? undefined : it.img))),
   ]);
 
   const P = 72;
   ctx.fillStyle = C.bg;
   ctx.fillRect(0, 0, W, H);
-  ctx.textBaseline = 'alphabetic';
 
   // Header
   let y = P + 28;
@@ -79,27 +117,44 @@ export async function drawCard(canvas: HTMLCanvasElement, d: CardData, format: '
   ctx.fillText(d.period, W - P, y);
   ctx.textAlign = 'left';
 
+  // Hero (a streamer or a category)
+  if (d.hero) {
+    y += story ? 96 : 56;
+    const hw = d.hero.shape === 'circle' ? 120 : 108;
+    const hh = d.hero.shape === 'circle' ? 120 : 144;
+    drawImage(ctx, hero, d.hero.shape, P, y, hw, hh, d.hero.name);
+    ctx.fillStyle = C.text;
+    ctx.font = `500 56px ${SANS}`;
+    ctx.fillText(fit(ctx, d.hero.name, W - 2 * P - hw - 32), P + hw + 32, y + hh / 2 + 4);
+    ctx.fillStyle = C.text2;
+    ctx.font = `400 26px ${SANS}`;
+    ctx.fillText(fit(ctx, d.hero.caption, W - 2 * P - hw - 32), P + hw + 32, y + hh / 2 + 44);
+    y += hh;
+  }
+
   // Big figure
-  y += format === 'post' ? 150 : 230;
+  y += d.hero ? (story ? 190 : 150) : story ? 230 : 150;
   ctx.fillStyle = C.accent;
-  ctx.font = `500 168px ${SANS}`;
-  ctx.fillText(d.hours, P - 6, y);
-  const hw = ctx.measureText(d.hours).width;
+  ctx.font = `500 ${d.hero ? 140 : 168}px ${SANS}`;
+  ctx.fillText(sp(d.big), P - 6, y);
+  const bw = ctx.measureText(sp(d.big)).width;
   ctx.fillStyle = C.text;
   ctx.font = `400 48px ${SANS}`;
-  ctx.fillText('heures', P + hw + 18, y);
+  ctx.fillText(d.unit, P + bw + 18, y);
   y += 56;
   ctx.fillStyle = C.text2;
   ctx.font = `400 30px ${SANS}`;
-  ctx.fillText(d.login ? `regardées par ${d.login}` : 'regardées sur Twitch', P, y);
+  ctx.fillText(fit(ctx, d.subline, W - 2 * P), P, y);
 
-  // Facts row
-  y += format === 'post' ? 56 : 96;
-  const fw = (W - 2 * P - 16 * (d.facts.length - 1)) / d.facts.length;
+  // Facts
+  y += story ? 96 : 52;
+  const n = d.facts.length;
+  const fw = (W - 2 * P - 16 * (n - 1)) / n;
   d.facts.forEach((f, i) => {
     const x = P + i * (fw + 16);
     ctx.fillStyle = C.card;
-    rrect(ctx, x, y, fw, 128, 16);
+    ctx.beginPath();
+    ctx.roundRect(x, y, fw, 128, 16);
     ctx.fill();
     ctx.strokeStyle = C.line;
     ctx.lineWidth = 2;
@@ -111,83 +166,59 @@ export async function drawCard(canvas: HTMLCanvasElement, d: CardData, format: '
     ctx.font = `400 22px ${SANS}`;
     ctx.fillText(fit(ctx, f.label, fw - 48), x + 24, y + 100);
   });
-  y += 128 + (format === 'post' ? 56 : 96);
+  y += 128 + (story ? 96 : 52);
 
-  // Streamers and games side by side
+  // Two lists side by side
   const colW = (W - 2 * P - 48) / 2;
-  ctx.fillStyle = C.text2;
-  ctx.font = `400 24px ${SANS}`;
-  ctx.fillText('Streamers', P, y);
-  ctx.fillText('Catégories', P + colW + 48, y);
-  y += 32;
-  const rowH = format === 'post' ? 84 : 112;
-  d.streamers.forEach((s, i) => {
-    const ry = y + i * rowH;
-    const r = 28;
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(P + r, ry + r, r, 0, Math.PI * 2);
-    ctx.clip();
-    if (avatars[i]) ctx.drawImage(avatars[i]!, P, ry, r * 2, r * 2);
-    else {
-      ctx.fillStyle = C.raised;
-      ctx.fillRect(P, ry, r * 2, r * 2);
-      ctx.fillStyle = C.text2;
-      ctx.font = `500 26px ${SANS}`;
-      ctx.textAlign = 'center';
-      ctx.fillText(s.name.slice(0, 1).toUpperCase(), P + r, ry + r + 9);
-      ctx.textAlign = 'left';
+  let img = 0;
+  const footTop = H - P - (d.emote ? 200 : 72);
+  d.lists.slice(0, 2).forEach((list, li) => {
+    const x0 = P + li * (colW + 48);
+    let ly = y;
+    ctx.fillStyle = C.text2;
+    ctx.font = `400 24px ${SANS}`;
+    ctx.fillText(list.title, x0, ly);
+    ly += 28;
+    for (const it of list.items) {
+      const pic = listImgs[img++];
+      const box = it.shape === 'cover' ? { w: story ? 96 : 66, h: story ? 128 : 88 } : it.shape === 'circle' ? { w: 56, h: 56 } : { w: 0, h: 44 };
+      if (ly + box.h > footTop) break;
+      if (it.shape !== 'none') drawImage(ctx, pic, it.shape, x0, ly, box.w, box.h, it.name);
+      const tx = x0 + (box.w ? box.w + 20 : 0);
+      ctx.fillStyle = C.text;
+      ctx.font = `500 30px ${SANS}`;
+      ctx.fillText(fit(ctx, it.name, colW - (tx - x0) - (box.w ? 8 : 140)), tx, box.w ? ly + Math.min(box.h, 56) / 2 : ly + 30);
+      ctx.fillStyle = C.muted;
+      ctx.font = `400 22px ${MONO}`;
+      if (box.w) ctx.fillText(sp(it.value), tx, ly + Math.min(box.h, 56) / 2 + 32);
+      else {
+        ctx.textAlign = 'right';
+        ctx.fillText(sp(it.value), x0 + colW, ly + 30);
+        ctx.textAlign = 'left';
+      }
+      ly += box.h + (it.shape === 'cover' ? 16 : 20);
     }
-    ctx.restore();
-    ctx.fillStyle = i === 0 ? C.text : C.text;
-    ctx.font = `500 30px ${SANS}`;
-    ctx.fillText(fit(ctx, `${i + 1}. ${s.name}`, colW - 80), P + 76, ry + 26);
-    ctx.fillStyle = C.muted;
-    ctx.font = `400 22px ${MONO}`;
-    ctx.fillText(`${s.hours} h`, P + 76, ry + 56);
   });
 
-  // Games: covers in a column of up to 3
-  const gx = P + colW + 48;
-  const artW = format === 'post' ? 96 : 128, artH = Math.round(artW * 4 / 3);
-  const gStep = format === 'post' ? Math.max(artH + 12, 0) : artH + 24;
-  d.games.slice(0, 3).forEach((g, i) => {
-    const gy = y + i * gStep;
-    ctx.save();
-    rrect(ctx, gx, gy, artW, artH, 8);
-    ctx.clip();
-    if (arts[i]) ctx.drawImage(arts[i]!, gx, gy, artW, artH);
-    else {
-      ctx.fillStyle = C.raised;
-      ctx.fillRect(gx, gy, artW, artH);
-    }
-    ctx.restore();
-    ctx.fillStyle = C.text;
-    ctx.font = `500 28px ${SANS}`;
-    ctx.fillText(fit(ctx, g.name, colW - artW - 24), gx + artW + 20, gy + 40);
-    ctx.fillStyle = C.muted;
-    ctx.font = `400 22px ${MONO}`;
-    ctx.fillText(`${g.hours} h`, gx + artW + 20, gy + 72);
-  });
-
-  // Emote + footer
+  // Emote and footer
   const footY = H - P;
   if (d.emote) {
     const ey = footY - 120;
     ctx.fillStyle = C.card;
-    rrect(ctx, P, ey - 44, W - 2 * P, 96, 16);
+    ctx.beginPath();
+    ctx.roundRect(P, ey - 44, W - 2 * P, 96, 16);
     ctx.fill();
     if (emote) {
       const ratio = emote.naturalWidth / emote.naturalHeight || 1;
-      ctx.drawImage(emote, P + 24, ey - 28, 64 * ratio, 64);
+      ctx.drawImage(emote, P + 24, ey - 28, Math.min(160, 64 * ratio), 64);
     }
     ctx.fillStyle = C.text;
     ctx.font = `500 30px ${SANS}`;
-    ctx.fillText(fit(ctx, `Emote préférée : ${d.emote.name}`, W - 2 * P - 340), P + 120, ey + 14);
+    ctx.fillText(fit(ctx, `Emote préférée : ${d.emote.name}`, W - 2 * P - 340), P + 120 + (emote && emote.naturalWidth > emote.naturalHeight * 1.5 ? 40 : 0), ey + 14);
     ctx.fillStyle = C.muted;
     ctx.font = `400 24px ${MONO}`;
     ctx.textAlign = 'right';
-    ctx.fillText(`${d.emote.count} fois`, W - P - 24, ey + 14);
+    ctx.fillText(sp(`${d.emote.count} fois`), W - P - 24, ey + 14);
     ctx.textAlign = 'left';
   }
   ctx.strokeStyle = C.line;
@@ -198,7 +229,7 @@ export async function drawCard(canvas: HTMLCanvasElement, d: CardData, format: '
   ctx.stroke();
   ctx.fillStyle = C.muted;
   ctx.font = `400 22px ${SANS}`;
-  ctx.fillText("Calculé depuis mon export de données Twitch, sans rien stocker", P, footY);
+  ctx.fillText('Calculé depuis mon export de données Twitch, sans rien stocker', P, footY);
 }
 
 export function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {

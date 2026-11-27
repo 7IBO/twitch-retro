@@ -219,6 +219,11 @@ class Games {
   }
 }
 
+/** Twitch prefixes cells starting with @ + - = with a quote (spreadsheet formula guard). */
+function unescapeCell(s: string) {
+  return s.length > 1 && s[0] === "'" && '@+-='.includes(s[1]) ? s.slice(1) : s;
+}
+
 function platformOf(p: string): Platform {
   switch (p) {
     case 'web':
@@ -363,7 +368,7 @@ function build(zipBytes: Uint8Array): RetroData {
   const ownVodsRaw: { id: string; ts: number; title: string; game: string; seconds: number }[] = [];
   readCsv(text('vod/vod_create.csv'), ['vod_id', 'game', 'time', 'time_utc', 'title', 'video_duration'], (r) => {
     if (r[1]) games.teach(r[1]);
-    if (r[0]) ownVodsRaw.push({ id: r[0], game: r[1], ts: ts(r[3], r[2]), title: r[4], seconds: +r[5] || 0 });
+    if (r[0]) ownVodsRaw.push({ id: r[0], game: r[1], ts: ts(r[3], r[2]), title: unescapeCell(r[4]), seconds: +r[5] || 0 });
   });
 
   // --- ads seen (only time and channel are read)
@@ -386,7 +391,7 @@ function build(zipBytes: Uint8Array): RetroData {
     const t = ts(r[1], r[0]);
     if (Number.isNaN(t)) return;
     const ch = reg.resolve(r[2], t);
-    if (ch >= 0) chat.push({ ts: t, ch, body: r[3].replace(/\\U000e0000/gi, '').trim() });
+    if (ch >= 0) chat.push({ ts: t, ch, body: unescapeCell(r[3]).replace(/\\U000e0000/gi, '').trim() });
   });
 
   // --- subs

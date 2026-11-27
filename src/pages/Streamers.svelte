@@ -54,7 +54,7 @@
           <span class="rank-n">{c.rank}</span>
           <Avatar ch={c.ch} size={36} />
           <span class="rank-main">
-            <a class="rank-name" href="#/streamers/{c.ch}">{app.chName(c.ch)}</a>
+            <a class="rank-name" href={app.chHref(c.ch)}>{app.chName(c.ch)}</a>
             <span class="rank-meta">
               {day(c.first)} → {day(c.last)}{c.topGame >= 0 ? ` · ${app.gameName(c.topGame)}` : ''}{old.length ? ` · ex ${old.join(', ')}` : ''}
             </span>

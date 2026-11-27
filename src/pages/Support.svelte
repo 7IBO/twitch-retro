@@ -37,7 +37,7 @@
             <li>
               <span class="rank-n">{i + 1}</span>
               <Avatar ch={c.ch} size={28} />
-              <a class="rank-name" href="#/streamers/{c.ch}">{app.chName(c.ch)}</a>
+              <a class="rank-name" href={app.chHref(c.ch)}>{app.chName(c.ch)}</a>
               <Meter value={c.months} max={s.subChannels[0].months} />
               <span class="rank-val">{n(c.months)}</span>
             </li>
@@ -53,7 +53,7 @@
             <li>
               <span class="rank-n">{i + 1}</span>
               <Avatar ch={c.ch} size={28} />
-              <a class="rank-name" href="#/streamers/{c.ch}">{app.chName(c.ch)}</a>
+              <a class="rank-name" href={app.chHref(c.ch)}>{app.chName(c.ch)}</a>
               <Meter value={c.n} max={s.ads.channels[0].n} />
               <span class="rank-val">{n(c.n)}</span>
             </li>
@@ -72,7 +72,7 @@
         <tbody>
           {#each [...s.subs].reverse() as x (x.start + ':' + x.ch)}
             <tr>
-              <td><a href="#/streamers/{x.ch}">{app.chName(x.ch)}</a></td>
+              <td><a href={app.chHref(x.ch)}>{app.chName(x.ch)}</a></td>
               <td>{date(x.start)}</td>
               <td class="num">{plural(subMonths(x), 'mois', 'mois')}</td>
               <td>{KIND[x.kind]}</td>

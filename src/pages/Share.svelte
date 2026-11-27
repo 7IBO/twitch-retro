@@ -2,8 +2,10 @@
   import { app } from '../lib/state.svelte';
   import { drawCard, canvasBlob, type CardData } from '../lib/card';
   import { analyseChat } from '../lib/words';
-  import { h, n } from '../lib/format';
-  import { availableYears } from '../lib/stats';
+  import { h, n, dur, day, plural, share as sharePct } from '../lib/format';
+  import { availableYears, compute, channelDetail, gameDetail } from '../lib/stats';
+
+  let { target }: { target?: { kind: 'streamer' | 'category'; key: string } } = $props();
 
   let canvas: HTMLCanvasElement | undefined = $state();
   let format = $state<'post' | 'story'>('post');
@@ -11,31 +13,95 @@
   let error = $state('');
 
   const s = $derived(app.stats!);
-  const card = $derived.by((): CardData => {
-    const ys = availableYears(app.data!);
-    const a = app.emoteMap ? analyseChat(s.chat.msgs, app.data!.channels, app.emoteMap) : null;
-    const top = a?.emotes[0];
+  const d = $derived(app.data!);
+  const big = (min: number) => (min < 60 ? { big: String(Math.max(1, Math.round(min))), unit: 'minutes' } : { big: h(min), unit: 'heures' });
+  const big3x = (url: string) => url.replace(/\/1(x|\.0)(\.webp)?$/, (_m, a1, w) => (a1 === 'x' ? '/3x' + (w ?? '') : '/3.0'));
+  const yearSpan = (ys: number[]) => (ys.length ? (ys[0] === ys[ys.length - 1] ? String(ys[0]) : `${ys[0]} – ${ys[ys.length - 1]}`) : '');
+  const topEmote = (msgs: typeof d.chat) => {
+    const e = app.emoteMap ? analyseChat(msgs, d.channels, app.emoteMap).emotes[0] : undefined;
+    return e ? { name: e.emote.name, url: big3x(e.emote.url), count: n(e.n) } : undefined;
+  };
+  const stories = $derived(format === 'story' ? 7 : 5);
+
+  const ch = $derived(target?.kind === 'streamer' ? app.resolveCh(target.key) : -1);
+  const game = $derived(target?.kind === 'category' ? app.resolveGame(target.key) : -1);
+
+  const card = $derived.by((): CardData | null => {
+    if (target?.kind === 'streamer') {
+      if (ch < 0) return null;
+      const all = compute(d, null);
+      const rank = all.channels.findIndex((c) => c.ch === ch) + 1;
+      const det = channelDetail(d, ch, rank);
+      const ys = det.byYear.filter((y) => y.min > 0).map((y) => y.year);
+      return {
+        title: 'Ma rétro Twitch',
+        period: yearSpan(ys),
+        hero: { name: app.chName(ch), img: app.user(ch)?.avatar, shape: 'circle', caption: rank ? `N° ${rank} de mes ${n(all.channels.length)} streamers` : 'Streamer' },
+        ...big(det.min),
+        subline: `ensemble, depuis le ${day(det.first)}`,
+        facts: [
+          { value: n(det.days), label: 'jours ensemble' },
+          { value: n(det.chat), label: 'messages envoyés' },
+          { value: `${sharePct(det.min, all.totalMin)} %`, label: 'de mon temps' },
+        ],
+        lists: [
+          { title: 'Ce que je regardais', items: det.games.slice(0, 3).map((g) => ({ name: app.gameName(g.game), value: dur(g.min), img: app.boxArt(g.game, 285, 380), shape: 'cover' as const })) },
+          { title: 'Par année', items: [...det.byYear].filter((y) => y.min > 0).reverse().slice(0, stories).map((y) => ({ name: String(y.year), value: dur(y.min), shape: 'none' as const })) },
+        ],
+        emote: topEmote(d.chat.filter((m) => m.ch === ch)),
+      };
+    }
+    if (target?.kind === 'category') {
+      if (game < 0) return null;
+      const all = compute(d, null);
+      const rank = all.games.findIndex((g) => g.game === game) + 1;
+      const det = gameDetail(d, game, null);
+      const ys = det.byYear.filter((y) => y.min > 0).map((y) => y.year);
+      return {
+        title: 'Ma rétro Twitch',
+        period: yearSpan(ys),
+        hero: { name: app.gameName(game), img: app.boxArt(game, 285, 380), shape: 'cover', caption: rank ? `N° ${rank} de mes ${n(all.games.length)} catégories` : 'Catégorie' },
+        ...big(det.min),
+        subline: `chez ${plural(det.channels.length, 'streamer', 'streamers')}`,
+        facts: [
+          { value: n(det.channels.length), label: 'streamers' },
+          { value: String(ys[0] ?? '—'), label: 'première année' },
+          { value: `${sharePct(det.min, all.totalMin)} %`, label: 'de mon temps' },
+        ],
+        lists: [
+          { title: 'Chez qui', items: det.channels.slice(0, stories).map((c) => ({ name: app.chName(c.ch), value: dur(c.min), img: app.user(c.ch)?.avatar, shape: 'circle' as const })) },
+          { title: 'Par année', items: [...det.byYear].filter((y) => y.min > 0).reverse().slice(0, stories).map((y) => ({ name: String(y.year), value: dur(y.min), shape: 'none' as const })) },
+        ],
+      };
+    }
+    const ys = availableYears(d);
     return {
       title: 'Ma rétro Twitch',
-      period: app.year !== null ? String(app.year) : `${ys[0]} – ${ys[ys.length - 1]}`,
-      login: app.data!.user.login,
-      hours: h(s.totalMin),
+      period: app.year !== null ? String(app.year) : yearSpan(ys),
+      ...big(s.totalMin),
+      subline: d.user.login ? `regardées par ${d.user.login}` : 'regardées sur Twitch',
       facts: [
         { value: n(s.channels.length), label: 'chaînes' },
         { value: n(s.activeDays), label: 'jours actifs' },
         { value: n(s.chat.msgs.length), label: 'messages' },
       ],
-      streamers: s.channels.slice(0, 5).map((c) => ({ name: app.chName(c.ch), hours: h(c.min), avatar: app.user(c.ch)?.avatar })),
-      games: s.games.slice(0, 3).map((g) => ({ name: app.gameName(g.game), hours: h(g.min), art: app.boxArt(g.game, 285, 380) })),
-      emote: top ? { name: top.emote.name, url: top.emote.url.replace(/\/1(x|\.0)(\.webp)?$/, (m, a1, w) => (a1 === 'x' ? '/3x' + (w ?? '') : '/3.0')), count: n(top.n) } : undefined,
+      lists: [
+        { title: 'Streamers', items: s.channels.slice(0, stories).map((c) => ({ name: app.chName(c.ch), value: dur(c.min), img: app.user(c.ch)?.avatar, shape: 'circle' as const })) },
+        { title: 'Catégories', items: s.games.slice(0, format === 'story' ? 5 : 3).map((g) => ({ name: app.gameName(g.game), value: dur(g.min), img: app.boxArt(g.game, 285, 380), shape: 'cover' as const })) },
+      ],
+      emote: topEmote(s.chat.msgs),
     };
   });
 
+  const fileName = $derived(
+    `retro-twitch-${target ? app.slug(target.key) : (app.year ?? 'all-time')}-${format}.png`,
+  );
+
   $effect(() => {
-    const c = canvas, d = card, f = format;
-    if (!c) return;
+    const c = canvas, data = card, f = format;
+    if (!c || !data) return;
     busy = true;
-    drawCard(c, d, f).finally(() => (busy = false));
+    drawCard(c, data, f).finally(() => (busy = false));
   });
 
   async function download() {
@@ -45,7 +111,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `retro-twitch-${app.year ?? 'all-time'}-${format}.png`;
+      a.download = fileName;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 2000);
     } catch {
@@ -68,8 +134,15 @@
 
 <header class="page-head">
   <h1>Carte à partager</h1>
-  <p class="lead">Une image générée dans ton navigateur, pour {app.year !== null ? app.year : 'tout ton historique'}. Change d'année en haut pour une autre carte.</p>
+  {#if target?.kind === 'streamer'}
+    <p class="lead">Ta carte avec {ch >= 0 ? app.chName(ch) : 'ce streamer'}, sur tout ton historique. <a class="more" href="#/partager">Revenir à ta carte globale</a></p>
+  {:else if target?.kind === 'category'}
+    <p class="lead">Ta carte {game >= 0 ? app.gameName(game) : ''}, sur tout ton historique. <a class="more" href="#/partager">Revenir à ta carte globale</a></p>
+  {:else}
+    <p class="lead">Une image générée dans ton navigateur, pour {app.year !== null ? app.year : 'tout ton historique'}. Change d'année en haut, ou ouvre la fiche d'un streamer ou d'une catégorie pour sa carte.</p>
+  {/if}
 </header>
+{#if target && !card}<p class="error">Rien à afficher pour cette carte.</p>{/if}
 
 <div class="toolbar">
   <div class="seg" role="group" aria-label="Format">

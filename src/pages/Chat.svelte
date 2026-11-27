@@ -9,6 +9,7 @@
   import Meter from '../components/Meter.svelte';
   import Empty from '../components/Empty.svelte';
   import ChatText from '../components/ChatText.svelte';
+  import Combobox from '../components/Combobox.svelte';
 
   const s = $derived(app.stats!);
   const msgs = $derived(s.chat.msgs);
@@ -107,7 +108,7 @@
           <li>
             <span class="rank-n">{i + 1}</span>
             <Avatar ch={c.ch} size={28} />
-            <a class="rank-name" href="#/streamers/{c.ch}">{app.chName(c.ch)}</a>
+            <a class="rank-name" href={app.chHref(c.ch)}>{app.chName(c.ch)}</a>
             <Meter value={c.n} max={s.chat.channels[0].n} />
             <span class="rank-val">{n(c.n)}</span>
           </li>
@@ -147,10 +148,13 @@
       <header class="panel-head"><h2>Tes messages</h2><span class="hint">{plural(log.length, 'message', 'messages')}</span></header>
       <div class="log-tools">
         <input class="search" type="search" placeholder="Chercher" bind:value={q} aria-label="Chercher dans tes messages" oninput={() => (logLimit = 100)} />
-        <select class="search" bind:value={chFilter} aria-label="Filtrer par chat" onchange={() => (logLimit = 100)}>
-          <option value={-1}>Tous les chats</option>
-          {#each s.chat.channels as c (c.ch)}<option value={c.ch}>{app.chName(c.ch)} ({n(c.n)})</option>{/each}
-        </select>
+        <Combobox
+          label="Filtrer par chat"
+          allLabel="Tous les chats"
+          bind:value={chFilter}
+          onchange={() => (logLimit = 100)}
+          options={s.chat.channels.map((c) => ({ value: c.ch, label: app.chName(c.ch), meta: n(c.n), ch: c.ch }))}
+        />
       </div>
       <ul class="chatlog">
         {#each log.slice(0, logLimit) as m, i (i)}

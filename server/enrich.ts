@@ -143,10 +143,16 @@ export async function enrich(input: EnrichRequest, env: Env): Promise<EnrichResp
       notFound.map(async (n) => {
         const j = await helix('search/categories?first=10&query=' + encodeURIComponent(n));
         const hit = (j?.data ?? []).find((g: any) => norm(g.name) === norm(n));
-        cache.set('g:' + n.toLowerCase(), {
-          exp: Date.now() + TTL,
-          val: hit ? { id: hit.id, name: hit.name, boxArt: String(hit.box_art_url).replace(/\d+x\d+/, '{w}x{h}') } : null,
-        });
+        let val: EnrichResponse['games'][string] = hit
+          ? { id: hit.id, name: hit.name, boxArt: String(hit.box_art_url).replace(/\d+x\d+/, '{w}x{h}') }
+          : null;
+        // Old categories Twitch renamed (CS:GO became "Counter-Strike") keep their art under the old name.
+        if (!val) {
+          const byName = `https://static-cdn.jtvnw.net/ttv-boxart/${encodeURIComponent(n)}-{w}x{h}.jpg`;
+          const r = await fetch(byName.replace('{w}x{h}', '52x72'), { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(5000) }).catch(() => null);
+          if (r?.status === 200) val = { id: '', name: n, boxArt: byName };
+        }
+        cache.set('g:' + n.toLowerCase(), { exp: Date.now() + TTL, val });
       }),
     );
     for (const n of gameNames) {

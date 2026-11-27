@@ -82,7 +82,7 @@
           <li>
             <Avatar ch={f.ch} size={32} />
             <span class="rank-main">
-              <a class="rank-name" href="#/streamers/{f.ch}">{app.chName(f.ch)}</a>
+              <a class="rank-name" href={app.chHref(f.ch)}>{app.chName(f.ch)}</a>
               <span class="rank-meta">suivie le {date(f.ts)}{st && !st.following ? ' · plus suivie' : ''}</span>
             </span>
             <span class="rank-val">{watched.get(f.ch) ? `${dur(watched.get(f.ch)!)}` : 'jamais regardée'}</span>
@@ -102,7 +102,7 @@
       <header class="panel-head"><h2>Catégories suivies</h2></header>
       <div class="covers">
         {#each d.gameFollows as g, i (i)}
-          <a class="cover" href="#/categories/{g.game}">
+          <a class="cover" href={app.gameHref(g.game)}>
             <BoxArt game={g.game} w={144} h={192} />
             <span class="cover-name">{app.gameName(g.game)}</span>
             <span class="cover-meta">{date(g.ts)}</span>

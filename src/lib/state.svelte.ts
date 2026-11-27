@@ -8,15 +8,15 @@ import { saveExport, readExport, clearExport } from './store';
 export type Route =
   | { page: 'overview' }
   | { page: 'streamers' }
-  | { page: 'streamer'; ch: number }
+  | { page: 'streamer'; key: string }
   | { page: 'categories' }
-  | { page: 'category'; game: number }
+  | { page: 'category'; key: string }
   | { page: 'calendar' }
   | { page: 'chat' }
   | { page: 'follows' }
   | { page: 'support' }
   | { page: 'channel' }
-  | { page: 'share' };
+  | { page: 'share'; target?: { kind: 'streamer' | 'category'; key: string } };
 
 /** Year filter carried in the URL: #/streamers?y=2023 */
 function yearFromHash(hash: string): number | null {
@@ -25,13 +25,18 @@ function yearFromHash(hash: string): number | null {
 }
 
 function parseRoute(hash: string): Route {
-  const [, a, b] = hash.replace(/^#/, '').split('?')[0].split('/');
-  const id = b !== undefined && /^\d+$/.test(b) ? +b : -1;
+  const [, a, b, c] = hash.replace(/^#/, '').split('?')[0].split('/').map((x) => {
+    try {
+      return decodeURIComponent(x);
+    } catch {
+      return x;
+    }
+  });
   switch (a) {
     case 'streamers':
-      return id >= 0 ? { page: 'streamer', ch: id } : { page: 'streamers' };
+      return b ? { page: 'streamer', key: b } : { page: 'streamers' };
     case 'categories':
-      return id >= 0 ? { page: 'category', game: id } : { page: 'categories' };
+      return b ? { page: 'category', key: b } : { page: 'categories' };
     case 'calendrier':
       return { page: 'calendar' };
     case 'chat':
@@ -43,7 +48,9 @@ function parseRoute(hash: string): Route {
     case 'chaine':
       return { page: 'channel' };
     case 'partager':
-      return { page: 'share' };
+      return b === 'streamers' && c ? { page: 'share', target: { kind: 'streamer', key: c } }
+        : b === 'categories' && c ? { page: 'share', target: { kind: 'category', key: c } }
+        : { page: 'share' };
     default:
       return { page: 'overview' };
   }
@@ -249,6 +256,62 @@ class AppState {
       /* images stay as initials */
     }
     if (this.wantedUsers.size || this.wantedGames.size) this.timer ??= setTimeout(() => void this.flushWanted(), 150);
+  }
+
+  // ---- readable addresses: #/streamers/otplol_ and #/categories/counter-strike ----
+
+  /** login (current, export or former) -> channel; the most watched channel wins a clash. */
+  private loginIndex = $derived.by(() => {
+    const d = this.data;
+    const m = new Map<string, number>();
+    if (!d) return m;
+    const total = new Map<number, number>();
+    for (const w of d.watch) total.set(w.ch, (total.get(w.ch) ?? 0) + w.min);
+    const order = d.channels.map((_, i) => i).sort((a, b) => (total.get(a) ?? 0) - (total.get(b) ?? 0));
+    for (const i of order) {
+      const c = d.channels[i];
+      for (const name of [...c.oldNames].reverse()) m.set(name.toLowerCase(), i);
+      m.set(c.name.toLowerCase(), i);
+    }
+    // Current logins from Twitch take priority over old ones.
+    for (const i of order) {
+      const login = this.enrich?.users[d.channels[i].id]?.login;
+      if (login) m.set(login.toLowerCase(), i);
+    }
+    return m;
+  });
+
+  slug(name: string) {
+    return name.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'x';
+  }
+
+  private gameIndex = $derived.by(() => {
+    const m = new Map<string, number>();
+    this.data?.games.forEach((g, i) => {
+      const s = this.slug(g.name);
+      if (!m.has(s)) m.set(s, i);
+    });
+    return m;
+  });
+
+  chHref(ch: number) {
+    return '#/streamers/' + encodeURIComponent(this.login(ch));
+  }
+
+  gameHref(game: number) {
+    return '#/categories/' + this.slug(this.data?.games[game]?.name ?? '');
+  }
+
+  resolveCh(key: string): number {
+    const hit = this.loginIndex.get(key.toLowerCase());
+    if (hit !== undefined) return hit;
+    return /^\d+$/.test(key) && this.data?.channels[+key] ? +key : -1; // old numeric links
+  }
+
+  resolveGame(key: string): number {
+    const hit = this.gameIndex.get(this.slug(key));
+    if (hit !== undefined) return hit;
+    return /^\d+$/.test(key) && this.data?.games[+key] ? +key : -1;
   }
 
   // ---- lookups used across pages ----

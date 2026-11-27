@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { enrich } from './server/enrich';
+import { relayImage } from './server/img';
 
 // Strict CSP on the built site: code from the site only. The only network
 // calls are images from public CDNs (box art, avatars, emotes) and our own
@@ -33,6 +34,13 @@ const csp = (): Plugin => ({
 /** Serves /api/enrich in dev and preview, like the Vercel function does in production. */
 const api = (env: Record<string, string>): Plugin => {
   const handler = async (req: any, res: any, next: () => void) => {
+    if (req.url?.startsWith('/api/img?') && req.method === 'GET') {
+      const r = await relayImage(new URL(req.url, 'http://x').searchParams.get('u'));
+      res.statusCode = r.status;
+      r.headers.forEach((v: string, k: string) => res.setHeader(k, v));
+      res.end(Buffer.from(await r.arrayBuffer()));
+      return;
+    }
     if (req.url !== '/api/enrich' || req.method !== 'POST') return next();
     let body = '';
     for await (const chunk of req) body += chunk;

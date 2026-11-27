@@ -69,7 +69,7 @@
           <li>
             <Avatar {ch} size={28} />
             <span class="rank-main">
-              <a class="rank-name" href="#/streamers/{ch}">{app.chName(ch)}</a>
+              <a class="rank-name" href={app.chHref(ch)}>{app.chName(ch)}</a>
               <span class="rank-meta">{[...e.games].map((g) => app.gameName(g)).join(', ')}</span>
             </span>
             <span class="rank-val">{dur(e.min)}</span>

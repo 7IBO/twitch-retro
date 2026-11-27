@@ -46,6 +46,7 @@
         {#if old.length}Anciens pseudos : {old.join(', ')} · {/if}
         <a href="https://www.twitch.tv/{app.login(ch)}" target="_blank" rel="noopener noreferrer">twitch.tv/{app.login(ch)} ↗</a>
       </p>
+      <a class="btn small profile-share" href="#/partager/streamers/{encodeURIComponent(app.login(ch))}">Créer sa carte à partager</a>
     </div>
   </header>
 
@@ -76,7 +77,7 @@
         {#each det.games.slice(0, 10) as g (g.game)}
           <li>
             <BoxArt game={g.game} w={52} h={72} cls="thumb" />
-            <a class="rank-name" href="#/categories/{g.game}">{app.gameName(g.game)}</a>
+            <a class="rank-name" href={app.gameHref(g.game)}>{app.gameName(g.game)}</a>
             <Meter value={g.min} max={det.games[0].min} />
             <span class="rank-val">{dur(g.min)}</span>
           </li>

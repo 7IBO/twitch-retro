@@ -27,7 +27,7 @@
   {#if !q}
     <div class="covers big">
       {#each s.games.slice(0, 12) as g, i (g.game)}
-        <a class="cover" href="#/categories/{g.game}">
+        <a class="cover" href={app.gameHref(g.game)}>
           <BoxArt game={g.game} w={285} h={380} />
           <span class="cover-name">{i + 1}. {app.gameName(g.game)}</span>
           <span class="cover-meta">{dur(g.min)} · {plural(g.channels, 'chaîne', 'chaînes')}</span>
@@ -47,7 +47,7 @@
           <span class="rank-n">{g.rank}</span>
           <BoxArt game={g.game} w={52} h={72} cls="thumb" />
           <span class="rank-main">
-            <a class="rank-name" href="#/categories/{g.game}">{app.gameName(g.game)}</a>
+            <a class="rank-name" href={app.gameHref(g.game)}>{app.gameName(g.game)}</a>
             <span class="rank-meta">{plural(g.channels, 'chaîne', 'chaînes')}{g.topCh >= 0 ? ` · surtout ${app.chName(g.topCh)}` : ''}</span>
           </span>
           <Meter value={g.min} {max} />
