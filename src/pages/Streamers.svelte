@@ -35,21 +35,21 @@
 
 <header class="page-head">
   <h1>{t('Streamers')}</h1>
-  <p class="lead">{t('{n} chaînes regardées', { n: n(s.channels.length) })}{app.periodEn}. {t('Les changements de pseudo sont regroupés.')}</p>
+  <p class="lead">{t('{n} channels watched', { n: n(s.channels.length) })}{app.periodEn}. {t('Name changes are merged.')}</p>
 </header>
 
 <div class="toolbar">
-  <input class="search" type="search" placeholder={t('Chercher')} bind:value={q} aria-label={t('Chercher un streamer')} />
-  <div class="seg" role="group" aria-label={t('Trier')} use:slide>
-    <button class:on={sort === 'min'} onclick={() => (sort = 'min')}>{t('Heures')}</button>
-    <button class:on={sort === 'days'} onclick={() => (sort = 'days')}>{t('Jours')}</button>
-    <button class:on={sort === 'first'} onclick={() => (sort = 'first')}>{t('Plus anciens')}</button>
-    <button class:on={sort === 'last'} onclick={() => (sort = 'last')}>{t('Plus récents')}</button>
+  <input class="search" type="search" placeholder={t('Find')} bind:value={q} aria-label={t('Search a streamer')} />
+  <div class="seg" role="group" aria-label={t('Sort')} use:slide>
+    <button class:on={sort === 'min'} onclick={() => (sort = 'min')}>{t('Hours')}</button>
+    <button class:on={sort === 'days'} onclick={() => (sort = 'days')}>{t('Days')}</button>
+    <button class:on={sort === 'first'} onclick={() => (sort = 'first')}>{t('Oldest')}</button>
+    <button class:on={sort === 'last'} onclick={() => (sort = 'last')}>{t('Most recent')}</button>
   </div>
 </div>
 
 {#if !rows.length}
-  <Empty text={t('Aucun streamer ne correspond.')} />
+  <Empty text={t('No streamer matches.')} />
 {:else}
   <section class="panel flush">
     <ol class="rank table">
@@ -61,27 +61,27 @@
           <span class="rank-main">
             <a class="rank-name" href={app.chHref(c.ch)}>{app.chName(c.ch)}</a>
             <span class="rank-meta">
-              {day(c.first)} → {day(c.last)}{c.topGame >= 0 ? ` · ${app.gameName(c.topGame)}` : ''}{old.length ? ` · ${t('ex')} ${old.join(', ')}` : ''}
+              {day(c.first)} → {day(c.last)}{c.topGame >= 0 ? ` · ${app.gameName(c.topGame)}` : ''}{old.length ? ` · ${t('formerly')} ${old.join(', ')}` : ''}
             </span>
           </span>
           <Meter value={c.min} {max} />
-          <span class="rank-val">{dur(c.min)}<small>{n(c.days)} {t('j')}</small></span>
+          <span class="rank-val">{dur(c.min)}<small>{n(c.days)} {t('d')}</small></span>
         </li>
       {/each}
     </ol>
   </section>
   {#if rows.length > limit}
-    <button class="btn" onclick={() => (limit += 200)}>{t('Afficher plus ({n} restants)', { n: n(rows.length - limit) })}</button>
+    <button class="btn" onclick={() => (limit += 200)}>{t('Show more ({n} left)', { n: n(rows.length - limit) })}</button>
   {/if}
 {/if}
 
 {#if s.watchedVods.length && !q}
   <section class="panel flush">
     <header class="panel-head pad">
-      <h2>{t('Rediffusions')}</h2>
-      <div class="seg" role="group" aria-label={t('Filtrer les rediffusions')} use:slide>
-        <button class:on={!vodOnline} onclick={() => ((vodOnline = false), (vodLimit = 15))}>{t('Toutes')} ({n(s.watchedVods.length)})</button>
-        <button class:on={vodOnline} onclick={() => ((vodOnline = true), (vodLimit = 15))}>{t('Encore en ligne')} ({n(onlineCount)})</button>
+      <h2>{t('Replays')}</h2>
+      <div class="seg" role="group" aria-label={t('Filter replays')} use:slide>
+        <button class:on={!vodOnline} onclick={() => ((vodOnline = false), (vodLimit = 15))}>{t('All replays')} ({n(s.watchedVods.length)})</button>
+        <button class:on={vodOnline} onclick={() => ((vodOnline = true), (vodLimit = 15))}>{t('Still online')} ({n(onlineCount)})</button>
       </div>
     </header>
     <ol class="rank table">
@@ -93,26 +93,26 @@
           <Avatar ch={v.ch} size={28} />
           <span class="rank-main">
             {#if info}
-              <a class="rank-name" href="https://www.twitch.tv/videos/{v.id}" target="_blank" rel="noopener noreferrer">{info.title || t('Sans titre')} ↗</a>
-              <span class="rank-meta">{app.chName(v.ch)} · {t('vue le {date}', { date: day(v.day) })} · {t('encore en ligne')}</span>
+              <a class="rank-name" href="https://www.twitch.tv/videos/{v.id}" target="_blank" rel="noopener noreferrer">{info.title || t('Untitled')} ↗</a>
+              <span class="rank-meta">{app.chName(v.ch)} · {t('watched on {date}', { date: day(v.day) })} · {t('still online')}</span>
             {:else}
-              <a class="rank-name" href={app.chHref(v.ch)}>{t('VOD de {name}', { name: app.chName(v.ch) })}</a>
-              <span class="rank-meta">{t('vue le {date}', { date: day(v.day) })} · {app.enrich ? t('expirée ou supprimée sur Twitch, le lien mène à la fiche de la chaîne') : t('titre inconnu')}</span>
+              <a class="rank-name" href={app.chHref(v.ch)}>{t("{name}'s VOD", { name: app.chName(v.ch) })}</a>
+              <span class="rank-meta">{t('watched on {date}', { date: day(v.day) })} · {app.enrich ? t("expired or deleted on Twitch, the link opens the channel's page") : t('unknown title')}</span>
             {/if}
           </span>
-          <span class="rank-val">{v.min ? dur(v.min) : t('ouverte')}</span>
+          <span class="rank-val">{v.min ? dur(v.min) : t('opened')}</span>
         </li>
       {/each}
     </ol>
   </section>
   {#if vodRows.length > vodLimit}
-    <button class="btn" onclick={() => (vodLimit += 50)}>{t('Afficher plus de rediffusions')}</button>
+    <button class="btn" onclick={() => (vodLimit += 50)}>{t('Show more replays')}</button>
   {/if}
 {/if}
 
 {#if s.clips.count && !q}
   <section class="panel">
-    <header class="panel-head"><h2>{t('Clips regardés')}</h2><span class="hint">{plural(s.clips.count, 'clip lancé', 'clips lancés')}</span></header>
+    <header class="panel-head"><h2>{t('Clips watched')}</h2><span class="hint">{plural(s.clips.count, 'clip started', 'clips started')}</span></header>
     <ol class="rank">
       {#each s.clips.channels.slice(0, 8) as c, i (c.ch)}
         <li>

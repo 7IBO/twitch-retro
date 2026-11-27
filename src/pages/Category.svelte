@@ -17,26 +17,26 @@
 </script>
 
 {#if !det}
-  <Empty text={t('Catégorie introuvable.')} />
+  <Empty text={t('Category not found.')} />
 {:else}
-  <a class="back" href="#/categories">← {t('Catégories')}</a>
+  <a class="back" href="#/categories">← {t('Categories')}</a>
   <header class="profile">
     <BoxArt {game} w={144} h={192} cls="profile-art" />
     <div>
       <h1>{app.gameName(game)}</h1>
-      <p class="lead">{dur(det.min)}{app.periodEn}, {t('chez {n}', { n: plural(det.channels.length, 'streamer', 'streamers') })}</p>
-      <a class="btn small profile-share" href="#/partager/categories/{app.slug(app.data!.games[game].name)}">{t('Créer sa carte à partager')}</a>
+      <p class="lead">{dur(det.min)}{app.periodEn}, {t('with {n}', { n: plural(det.channels.length, 'streamer', 'streamers') })}</p>
+      <a class="btn small profile-share" href="#/partager/categories/{app.slug(app.data!.games[game].name)}">{t('Make a card to share')}</a>
     </div>
   </header>
 
   <section class="panel">
-    <header class="panel-head"><h2>{t(tl?.unit === 'jour' ? 'Heures par jour' : tl?.unit === 'mois' ? 'Heures par mois' : 'Heures par année')}</h2></header>
-    <Bars height={180} items={(tl?.items ?? []).map((it) => ({ ...it, mark: tl?.unit === 'année' && app.year !== null && parseInt(it.label) === app.year }))} />
+    <header class="panel-head"><h2>{t(tl?.unit === 'day' ? 'Hours per day' : tl?.unit === 'month' ? 'Hours per month' : 'Hours per year')}</h2></header>
+    <Bars height={180} items={(tl?.items ?? []).map((it) => ({ ...it, mark: tl?.unit === 'year' && app.year !== null && parseInt(it.label) === app.year }))} />
     {#if tl?.partial}<p class="chart-note">{tl.partial}</p>{/if}
   </section>
 
   <section class="panel flush">
-    <header class="panel-head pad"><h2>{t('Les streamers')}</h2></header>
+    <header class="panel-head pad"><h2>{t('Who streamed it')}</h2></header>
     {#if det.channels.length}
       <ol class="rank table">
         {#each det.channels.slice(0, limit) as c, i (c.ch)}
@@ -50,10 +50,10 @@
         {/each}
       </ol>
     {:else}
-      <Empty text={t('Rien dans cette catégorie sur cette période.')} />
+      <Empty text={t('Nothing in this category for this period.')} />
     {/if}
   </section>
   {#if det.channels.length > limit}
-    <button class="btn" onclick={() => (limit += 100)}>{t('Afficher plus ({n} restants)', { n: n(det.channels.length - limit) })}</button>
+    <button class="btn" onclick={() => (limit += 100)}>{t('Show more ({n} left)', { n: n(det.channels.length - limit) })}</button>
   {/if}
 {/if}

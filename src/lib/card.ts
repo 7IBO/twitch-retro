@@ -9,11 +9,11 @@ export interface CardItem {
 }
 
 export interface CardData {
-  title: string; // "Ma rétro Twitch"
+  title: string; // 'My Twitch retro'
   period: string; // "2016 – 2026" or "2023"
   hero?: { name: string; img?: string; shape: 'circle' | 'cover'; caption: string };
   big: string; // "34 080"
-  unit: string; // "heures"
+  unit: string; // 'hours'
   subline: string;
   facts: { value: string; label: string }[];
   lists: { title: string; items: CardItem[] }[];
@@ -224,11 +224,11 @@ export async function drawCard(canvas: HTMLCanvasElement, d: CardData, format: '
     }
     ctx.fillStyle = C.text;
     ctx.font = `500 30px ${SANS}`;
-    ctx.fillText(fit(ctx, t('Emote préférée : {name}', { name: d.emote.name }), W - 2 * P - 340), P + 120 + (emote && emote.naturalWidth > emote.naturalHeight * 1.5 ? 40 : 0), ey + 14);
+    ctx.fillText(fit(ctx, t('Favourite emote: {name}', { name: d.emote.name }), W - 2 * P - 340), P + 120 + (emote && emote.naturalWidth > emote.naturalHeight * 1.5 ? 40 : 0), ey + 14);
     ctx.fillStyle = C.muted;
     ctx.font = `400 24px ${MONO}`;
     ctx.textAlign = 'right';
-    ctx.fillText(sp(t('{n} fois', { n: d.emote.count })), W - P - 24, ey + 14);
+    ctx.fillText(sp(t('{n} times', { n: d.emote.count })), W - P - 24, ey + 14);
     ctx.textAlign = 'left';
   }
   ctx.strokeStyle = C.line;
@@ -239,7 +239,7 @@ export async function drawCard(canvas: HTMLCanvasElement, d: CardData, format: '
   ctx.stroke();
   ctx.fillStyle = C.muted;
   ctx.font = `400 22px ${SANS}`;
-  ctx.fillText(t("Rétro Twitch · d'après mon export de données Twitch"), P, footY);
+  ctx.fillText(t('Rétro Twitch · from my Twitch data export'), P, footY);
 }
 
 export function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {

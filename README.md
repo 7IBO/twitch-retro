@@ -1,19 +1,40 @@
 # Rétro Twitch
 
-Une rétrospective Twitch « de tous les temps » construite à partir de l'export de données Twitch (le zip `request-*.zip`).
+An all-time Twitch retrospective built from the data export Twitch sends
+you (the `request-*.zip` file), in French and English.
 
-Tout est calculé dans le navigateur : le zip est lu dans un Web Worker, rien n'est envoyé à un serveur ni stocké.
+Everything is computed in the browser: the zip is read in a Web Worker and
+is never sent to a server.
 
-## Vie privée
+## Privacy
 
-- Seuls ces fichiers du zip sont décompressés : `metadata.json`, `login_rename.csv`, `minute_watched.csv`, `video_play.csv`, `chat_messages.csv`, `minute_broadcast.csv`, les follows, les subs, les bits, `vod_create.csv`, `video_ad_impression.csv` (date et chaîne de chaque pub) et `users/user/<id>.json`, dont seul le champ `displayname` est lu par un motif : l'email et le téléphone qu'il contient ne sont jamais analysés. Les autres fichiers (sécurité, pages vues, autres pubs…) restent compressés.
-- Dans les fichiers lus, seules les colonnes utiles sont extraites (`src/csv.ts`) : IP, ville, pays, appareil et navigateur ne deviennent jamais des chaînes JavaScript.
-- Le site construit porte une Content Security Policy qui interdit toute requête réseau, sauf les images du CDN public de Twitch (`static-cdn.jtvnw.net`) pour les jaquettes des jeux.
+- Only these files of the zip are decompressed: `metadata.json`,
+  `login_rename.csv`, `minute_watched.csv`, `video_play.csv`,
+  `chat_messages.csv`, `minute_broadcast.csv`, the follow files, the subs,
+  the bits, `vod_create.csv`, `video_ad_impression.csv` (date and channel of
+  each ad) and `users/user/<id>.json`, of which only the `displayname` field
+  is read with a pattern: the email and phone number it holds are never
+  parsed. The other files (security, page views, other ads…) stay
+  compressed.
+- In the files that are read, only the needed columns are extracted
+  (`src/lib/csv.ts`): IP, city, country, device and browser never become
+  JavaScript strings.
+- For avatars, box art and emotes, the ids of the channels you watched,
+  followed or chatted in, game names and watched VOD ids go to the site's
+  own `/api/enrich`, which asks Twitch, 7TV, BTTV and FFZ and keeps
+  nothing. A box on the landing page turns this off.
+- The built site carries a Content Security Policy that forbids any network
+  call except its own API and images from the public CDNs of Twitch, 7TV,
+  BTTV and FFZ.
 
-## Développement
+## Development
 
-```
+```sh
 npm install
 npm run dev
 npm run build
+npm run check:all   # needs Bun
 ```
+
+`TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` (a Twitch app) go in
+`.env.local`; see `.env.example`. More in `CLAUDE.md`.

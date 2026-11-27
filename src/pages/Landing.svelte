@@ -30,11 +30,11 @@
 
   <main class="hero">
     <div class="hero-text">
-      <h1>{t('Toutes tes années Twitch, depuis ton premier stream')}</h1>
-      <p class="lead">{t("Dépose l'export de données que Twitch t'envoie. Tu retrouves tes heures, tes streamers, tes catégories, ton chat et tes emotes, année par année.")}</p>
+      <h1>{t('All your Twitch years, since your very first stream')}</h1>
+      <p class="lead">{t('Drop the data export Twitch sends you. Get back your hours, streamers, categories, chat and emotes, year by year.')}</p>
 
       {#if app.loading}
-        <div class="drop busy" aria-live="polite"><span>{t('Lecture de ton export')}</span><span class="progress" aria-hidden="true"><span></span></span></div>
+        <div class="drop busy" aria-live="polite"><span>{t('Reading your export')}</span><span class="progress" aria-hidden="true"><span></span></span></div>
       {:else}
         <button
           class="drop"
@@ -45,7 +45,7 @@
           ondrop={(e) => { e.preventDefault(); over = false; pick(e.dataTransfer?.files[0]); }}
         >
           <Upload size={18} strokeWidth={1.5} />
-          <span><strong>{t('Choisir le fichier .zip')}</strong> {t('ou le glisser ici')}</span>
+          <span><strong>{t('Choose the .zip file')}</strong> {t('or drop it here')}</span>
         </button>
         <input bind:this={input} type="file" accept=".zip,application/zip" hidden onchange={(e) => pick(e.currentTarget.files?.[0])} />
       {/if}
@@ -53,24 +53,24 @@
 
       <label class="toggle">
         <input type="checkbox" checked={!app.offline} onchange={(e) => app.setOffline(!e.currentTarget.checked)} />
-        <span>{t('Charger les avatars, jaquettes et emotes')}</span>
+        <span>{t('Load avatars, box art and emotes')}</span>
       </label>
       <label class="toggle">
         <input type="checkbox" checked={app.remember} onchange={(e) => app.setRemember(e.currentTarget.checked)} />
-        <span>{t("Garder l'export dans ce navigateur pendant 30 jours, pour le retrouver sans le redéposer")}</span>
+        <span>{t("Keep the export in this browser for 30 days, so you don't have to drop it again")}</span>
       </label>
 
       <ul class="facts-list">
-        <li><Lock size={16} strokeWidth={1.5} /><span>{t("Le zip est lu dans ton navigateur et n'est envoyé nulle part. Les IP, villes, appareils et pages vues qu'il contient ne sont jamais ouverts.")}</span></li>
-        <li><ImageIcon size={16} strokeWidth={1.5} /><span>{t('Pour les images, seuls les identifiants de tes chaînes et les noms de tes jeux partent vers notre serveur, qui interroge Twitch, 7TV, BTTV et FFZ sans rien garder. Décoche la case pour tout garder chez toi.')}</span></li>
-        <li><Clock size={16} strokeWidth={1.5} /><span>{t("Pas encore d'export ? Demande-le dans")} <a href="https://www.twitch.tv/settings/security" target="_blank" rel="noopener noreferrer">{t('Paramètres › Sécurité et confidentialité')}</a>{t(", « Télécharger vos données ». Twitch peut mettre plusieurs semaines, et l'export s'arrête au jour de ta demande.")}</span></li>
+        <li><Lock size={16} strokeWidth={1.5} /><span>{t('The zip is read in your browser and sent nowhere. The IPs, cities, devices and page views it contains are never opened.')}</span></li>
+        <li><ImageIcon size={16} strokeWidth={1.5} /><span>{t("For images, only your channels' ids and your games' names go to our server, which asks Twitch, 7TV, BTTV and FFZ and keeps nothing. Untick the box to keep everything on your side.")}</span></li>
+        <li><Clock size={16} strokeWidth={1.5} /><span>{t('No export yet? Request it in')} <a href="https://www.twitch.tv/settings/security" target="_blank" rel="noopener noreferrer">{t('Settings › Security and Privacy')}</a>{t(', “Download your data”. Twitch can take several weeks, and the export stops on the day you asked.')}</span></li>
       </ul>
     </div>
 
-    <figure class="hero-preview" aria-label={t('Exemple de résultat avec des données fictives')}>
+    <figure class="hero-preview" aria-label={t('Sample result with made-up data')}>
       <div class="pv-window">
-        <div class="pv-head"><span>{t('Aperçu')}</span><span class="pv-years">{t('Tout')} · 2023 · 2024 · 2025</span></div>
-        <div class="pv-figure"><span class="pv-big">7 412</span> {t('heures regardées')}</div>
+        <div class="pv-head"><span>{t('Overview')}</span><span class="pv-years">{t('All')} · 2023 · 2024 · 2025</span></div>
+        <div class="pv-figure"><span class="pv-big">7 412</span> {t('hours watched')}</div>
         <div class="pv-bars">
           {#each sample as s (s.y)}
             <span class="pv-bar" class:hi={s.v === 100} style:height="{s.v}%"><i>{s.y}</i></span>
@@ -82,7 +82,7 @@
           {/each}
         </ol>
       </div>
-      <figcaption>{t('Exemple avec des données fictives')}</figcaption>
+      <figcaption>{t('Sample with made-up data')}</figcaption>
     </figure>
   </main>
 </div>

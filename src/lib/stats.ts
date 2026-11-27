@@ -506,7 +506,7 @@ export interface TimelineItem {
 export function timeline(
   dayMin: Iterable<[number, number]>,
   opts: { endDay: number; year: number | null; month?: number | null; fmt: (min: number) => string },
-): { unit: 'jour' | 'mois' | 'année'; items: TimelineItem[]; partial: string | null } {
+): { unit: 'day' | 'month' | 'year'; items: TimelineItem[]; partial: string | null } {
   const byMonth = new Map<number, number>(); // y*12+m
   let first = Infinity, last = -Infinity;
   for (const [day, min] of dayMin) {
@@ -528,7 +528,7 @@ export function timeline(
       label: short,
       value: ghost ? 0 : v,
       ghost,
-      title: `${monthName(m)} ${y} : ${ghost ? t('après la fin de ton export') : opts.fmt(v)}`,
+      title: `${monthName(m)} ${y} : ${ghost ? t('after the end of your export') : opts.fmt(v)}`,
     };
   };
 
@@ -546,22 +546,22 @@ export function timeline(
         label: i === 0 || (i + 1) % 5 === 0 ? String(i + 1) : '',
         value: ghost ? 0 : v,
         ghost,
-        title: `${dateFmt({ day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(day * DAY)} : ${ghost ? t('après la fin de ton export') : opts.fmt(v)}`,
+        title: `${dateFmt({ day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(day * DAY)} : ${ghost ? t('after the end of your export') : opts.fmt(v)}`,
       });
     }
-    const partial = items.some((x) => x.ghost) ? t("Ton export s'arrête le {date}.", { date: endLabel }) : null;
-    return { unit: 'jour', items, partial };
+    const partial = items.some((x) => x.ghost) ? t('Your export stops on {date}.', { date: endLabel }) : null;
+    return { unit: 'day', items, partial };
   }
   if (opts.year !== null) {
     const items = Array.from({ length: 12 }, (_, m) => month(opts.year! * 12 + m, false));
-    const partial = Number.isFinite(opts.endDay) && end.getUTCFullYear() === opts.year && end.getUTCMonth() < 11 ? t("Ton export s'arrête le {date}.", { date: endLabel }) : null;
-    return { unit: 'mois', items, partial };
+    const partial = Number.isFinite(opts.endDay) && end.getUTCFullYear() === opts.year && end.getUTCMonth() < 11 ? t('Your export stops on {date}.', { date: endLabel }) : null;
+    return { unit: 'month', items, partial };
   }
-  if (!Number.isFinite(first)) return { unit: 'année', items: [], partial: null };
+  if (!Number.isFinite(first)) return { unit: 'year', items: [], partial: null };
   if (last - first < 24) {
     const items: TimelineItem[] = [];
     for (let k = first; k <= last; k++) items.push(month(k, true));
-    return { unit: 'mois', items, partial: null };
+    return { unit: 'month', items, partial: null };
   }
   const items: TimelineItem[] = [];
   const fy = Math.floor(first / 12), ly = Math.floor(last / 12);
@@ -569,10 +569,10 @@ export function timeline(
     let v = 0;
     for (let m = 0; m < 12; m++) v += byMonth.get(y * 12 + m) ?? 0;
     const cut = Number.isFinite(opts.endDay) && y === end.getUTCFullYear() && end.getUTCMonth() < 11;
-    items.push({ label: cut ? `${y}*` : String(y), value: v, title: `${y} : ${opts.fmt(v)}${cut ? ' ' + t("(jusqu'au {date})", { date: endLabel }) : ''}` });
+    items.push({ label: cut ? `${y}*` : String(y), value: v, title: `${y} : ${opts.fmt(v)}${cut ? ' ' + t('(until {date})', { date: endLabel }) : ''}` });
   }
-  const partial = items.some((i) => i.label.endsWith('*')) ? t("* Année incomplète : ton export s'arrête le {date}.", { date: endLabel }) : null;
-  return { unit: 'année', items, partial };
+  const partial = items.some((i) => i.label.endsWith('*')) ? t('* Incomplete year: your export stops on {date}.', { date: endLabel }) : null;
+  return { unit: 'year', items, partial };
 }
 
 /** Minutes per day for one channel or one category. */
