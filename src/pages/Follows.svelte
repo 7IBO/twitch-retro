@@ -1,5 +1,6 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
+  import { slide } from '../lib/slide';
   import { followState, yearOfTs } from '../lib/stats';
   import { h, n, date, dur } from '../lib/format';
   import Stat from '../components/Stat.svelte';
@@ -67,7 +68,7 @@
 
   <div class="toolbar">
     <input class="search" type="search" placeholder="Chercher" bind:value={q} aria-label="Chercher une chaîne" />
-    <div class="seg" role="group" aria-label="Filtrer">
+    <div class="seg" role="group" aria-label="Filtrer" use:slide>
       <button class:on={filter === 'all'} onclick={() => (filter = 'all')}>Tous</button>
       <button class:on={filter === 'on'} onclick={() => (filter = 'on')}>Encore suivies</button>
       <button class:on={filter === 'off'} onclick={() => (filter = 'off')}>Plus suivies</button>

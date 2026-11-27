@@ -1,5 +1,6 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
+  import { slide } from '../lib/slide';
   import { h, n, day, dur } from '../lib/format';
   import Avatar from '../components/Avatar.svelte';
   import Meter from '../components/Meter.svelte';
@@ -35,7 +36,7 @@
 
 <div class="toolbar">
   <input class="search" type="search" placeholder="Chercher" bind:value={q} aria-label="Chercher un streamer" />
-  <div class="seg" role="group" aria-label="Trier">
+  <div class="seg" role="group" aria-label="Trier" use:slide>
     <button class:on={sort === 'min'} onclick={() => (sort = 'min')}>Heures</button>
     <button class:on={sort === 'days'} onclick={() => (sort = 'days')}>Jours</button>
     <button class:on={sort === 'first'} onclick={() => (sort = 'first')}>Plus anciens</button>

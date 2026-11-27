@@ -2,6 +2,7 @@
   import { app } from './lib/state.svelte';
   import { availableYears } from './lib/stats';
   import { date } from './lib/format';
+  import { slide } from './lib/slide';
   import { fly } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
   const still = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -46,7 +47,7 @@
   <div class="shell">
     <aside class="sidebar">
       <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Rétro Twitch</div>
-      <nav class="nav" aria-label="Sections">
+      <nav class="nav" aria-label="Sections" use:slide>
         {#each NAV as item (item.path)}
           <a href="#/{item.path}" class:on={active === item.page} aria-current={active === item.page ? 'page' : undefined}>
             <item.icon size={16} strokeWidth={1.5} />
@@ -65,7 +66,7 @@
     </aside>
 
     <div class="main">
-      <div class="yearbar" role="group" aria-label="Période">
+      <div class="yearbar" role="group" aria-label="Période" use:slide>
         <button class:on={app.year === null} onclick={() => (app.setYear(null))}>Tout</button>
         {#each years as y (y)}
           <button class:on={app.year === y} onclick={() => (app.setYear(y))}>{y}</button>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
+  import { slide } from '../lib/slide';
   import { drawCard, canvasBlob, type CardData } from '../lib/card';
   import { analyseChat } from '../lib/words';
   import { h, n, dur, day, plural, share as sharePct } from '../lib/format';
@@ -145,7 +146,7 @@
 {#if target && !card}<p class="error">Rien à afficher pour cette carte.</p>{/if}
 
 <div class="toolbar">
-  <div class="seg" role="group" aria-label="Format">
+  <div class="seg" role="group" aria-label="Format" use:slide>
     <button class:on={format === 'post'} onclick={() => (format = 'post')}>Post 4:5</button>
     <button class:on={format === 'story'} onclick={() => (format = 'story')}>Story 9:16</button>
   </div>
