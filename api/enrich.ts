@@ -1,5 +1,5 @@
 // Vercel serverless function. Same handler as the dev server (vite.config.ts).
-import { enrich } from '../server/enrich';
+import { enrich } from '../server/enrich.js';
 
 export async function POST(request: Request): Promise<Response> {
   let body: unknown;
