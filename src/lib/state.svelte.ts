@@ -1,3 +1,4 @@
+import { tick } from 'svelte';
 import type { RetroData, WorkerMsg } from './types';
 import type { EnrichResponse, Emote } from '../../server/enrich';
 import { compute, indexChannels, type Stats } from './stats';
@@ -21,9 +22,12 @@ export type Route =
   | { page: 'share'; target?: { kind: 'streamer' | 'category'; key: string } };
 
 /** Top of the page now, and again once the new page has rendered (it can be taller). */
+/**
+ * Back to the top once the new page is in the DOM (it starts transparent and fades in),
+ * so the old page never visibly jumps to its top before being replaced.
+ */
 function toTop() {
-  scrollTo({ top: 0, behavior: 'instant' });
-  requestAnimationFrame(() => scrollTo({ top: 0, behavior: 'instant' }));
+  void tick().then(() => scrollTo({ top: 0, behavior: 'instant' }));
 }
 
 /** Year filter carried in the URL: #/streamers?y=2023 */
@@ -129,7 +133,10 @@ class AppState {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     addEventListener('click', (e: MouseEvent) => {
       const a = (e.target as HTMLElement).closest?.('a[href^="#/"]');
-      if (a && !e.defaultPrevented && e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey) toTop();
+      if (!a || e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      // Same page: no hashchange will follow, so go up here.
+      const target = (a.getAttribute('href') ?? '').split('?')[0];
+      if (target === location.hash.split('?')[0]) scrollTo({ top: 0, behavior: 'smooth' });
     });
     void readExport().then((saved) => {
       if (saved && !this.data && !this.loading) {

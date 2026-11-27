@@ -48,8 +48,8 @@
   }
   function go(h: Hit) {
     open = false;
+    if (location.hash.split('?')[0] === h.href) scrollTo({ top: 0, behavior: 'smooth' });
     location.hash = h.href;
-    scrollTo({ top: 0, behavior: 'instant' });
   }
   function key(e: KeyboardEvent) {
     if (e.key === 'ArrowDown') {
