@@ -428,6 +428,19 @@ function build(zipBytes: Uint8Array): RetroData {
   const watch = [...agg.values()].sort((a, b) => a.day - b.day);
   chat.sort((a, b) => a.ts - b.ts);
   follows.sort((a, b) => a.ts - b.ts);
+  // The export logs repeated "follow" events for a channel already followed
+  // (1 672 for a single channel in one export). Keep only real changes of state:
+  // a follow when not following, an unfollow when following.
+  const following = new Map<number, boolean>();
+  const cleaned = follows.filter((f) => {
+    const was = following.get(f.ch);
+    if (!f.unfollow && was === true) return false;
+    if (f.unfollow && was === false) return false;
+    following.set(f.ch, !f.unfollow);
+    return true;
+  });
+  follows.length = 0;
+  follows.push(...cleaned);
   subs.sort((a, b) => a.start - b.start);
 
   const t2 = performance.now();

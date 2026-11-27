@@ -1,6 +1,6 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
-  import { h, n, day } from '../lib/format';
+  import { h, n, day, dur } from '../lib/format';
   import Avatar from '../components/Avatar.svelte';
   import Meter from '../components/Meter.svelte';
   import Empty from '../components/Empty.svelte';
@@ -60,7 +60,7 @@
             </span>
           </span>
           <Meter value={c.min} {max} />
-          <span class="rank-val">{h(c.min)} h<small>{n(c.days)} j</small></span>
+          <span class="rank-val">{dur(c.min)}<small>{n(c.days)} j</small></span>
         </li>
       {/each}
     </ol>
@@ -88,7 +88,7 @@
               <span class="rank-meta">vue le {day(v.day)} · {app.enrich ? 'expirée ou supprimée' : 'titre inconnu'}</span>
             {/if}
           </span>
-          <span class="rank-val">{h(v.min)} h</span>
+          <span class="rank-val">{dur(v.min)}</span>
         </li>
       {/each}
     </ol>

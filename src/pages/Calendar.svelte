@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { availableYears, yearOfDay, localDay } from '../lib/stats';
-  import { h, day as fmtDay, plural } from '../lib/format';
+  import { h, day as fmtDay, plural, dur } from '../lib/format';
   import Heatmap from '../components/Heatmap.svelte';
   import Avatar from '../components/Avatar.svelte';
 
@@ -41,7 +41,7 @@
   <span>Moins</span>
   {#each [0, 1, 2, 3, 4] as l (l)}<span class="hm-key l{l}"></span>{/each}
   <span>Plus</span>
-  <span class="muted">(rien · moins de {h(steps[0])} h · jusqu'à {h(steps[1])} h · jusqu'à {h(steps[2])} h · plus, d'après tes propres journées)</span>
+  <span class="muted">(rien · moins de {dur(steps[0])} · jusqu'à {dur(steps[1])} · jusqu'à {dur(steps[2])} · plus, d'après tes propres journées)</span>
 </div>
 
 <div class="calendar-layout">
@@ -50,7 +50,7 @@
       <section class="panel">
         <header class="panel-head">
           <h2>{y}</h2>
-          <span class="hint">{h([...s.dayMin].filter(([d]) => yearOfDay(d) === y).reduce((a, [, m]) => a + m, 0))} h</span>
+          <span class="hint">{dur([...s.dayMin].filter(([d]) => yearOfDay(d) === y).reduce((a, [, m]) => a + m, 0))}</span>
         </header>
         <Heatmap year={y} dayMin={s.dayMin} {steps} selected={picked} onpick={(d) => (picked = d)} />
       </section>
@@ -63,7 +63,7 @@
         <h2>{fmtDay(detail.day)}</h2>
         <button class="icon-btn" onclick={() => (picked = null)} aria-label="Fermer">×</button>
       </header>
-      <p class="muted">{h(s.dayMin.get(detail.day) ?? 0)} h regardées{detail.msgs ? `, ${plural(detail.msgs, 'message envoyé', 'messages envoyés')}` : ''}</p>
+      <p class="muted">{dur(s.dayMin.get(detail.day) ?? 0)} regardées{detail.msgs ? `, ${plural(detail.msgs, 'message envoyé', 'messages envoyés')}` : ''}</p>
       <ol class="rank">
         {#each detail.chs as [ch, e] (ch)}
           <li>
@@ -72,7 +72,7 @@
               <a class="rank-name" href="#/streamers/{ch}">{app.chName(ch)}</a>
               <span class="rank-meta">{[...e.games].map((g) => app.gameName(g)).join(', ')}</span>
             </span>
-            <span class="rank-val">{h(e.min)} h</span>
+            <span class="rank-val">{dur(e.min)}</span>
           </li>
         {/each}
       </ol>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { yearly } from '../lib/stats';
-  import { h, n, day, plural, pct, duration, WEEKDAYS } from '../lib/format';
+  import { h, n, day, plural, pct, duration, WEEKDAYS, dur } from '../lib/format';
   import Stat from '../components/Stat.svelte';
   import Bars from '../components/Bars.svelte';
   import Avatar from '../components/Avatar.svelte';
@@ -50,7 +50,7 @@
     </header>
     <Bars
       height={260}
-      items={s.periods.map((p) => ({ label: p.label, value: p.min, title: `${p.label} : ${h(p.min)} h` }))}
+      items={s.periods.map((p) => ({ label: p.label, value: p.min, title: `${p.label} : ${dur(p.min)}` }))}
       onpick={app.year === null ? (i) => (app.setYear(+s.periods[i].key)) : undefined}
     />
   </section>
@@ -65,7 +65,7 @@
             <Avatar ch={c.ch} size={32} />
             <a class="rank-name" href="#/streamers/{c.ch}">{app.chName(c.ch)}</a>
             <Meter value={c.min} max={s.channels[0].min} />
-            <span class="rank-val">{h(c.min)} h</span>
+            <span class="rank-val">{dur(c.min)}</span>
           </li>
         {/each}
       </ol>
@@ -77,7 +77,7 @@
           <a class="cover" href="#/categories/{g.game}">
             <BoxArt game={g.game} w={144} h={192} />
             <span class="cover-name">{i + 1}. {app.gameName(g.game)}</span>
-            <span class="cover-meta">{h(g.min)} h</span>
+            <span class="cover-meta">{dur(g.min)}</span>
           </a>
         {/each}
       </div>
@@ -88,7 +88,7 @@
     <header class="panel-head"><h2>Records</h2></header>
     <div class="stats four">
       {#if s.biggestDay}
-        <Stat value="{h(s.biggestDay.min)} h" label="Ta plus grosse journée" sub="le {day(s.biggestDay.day)}, surtout chez {app.chName(s.biggestDay.topCh)}" />
+        <Stat value={dur(s.biggestDay.min)} label="Ta plus grosse journée" sub="le {day(s.biggestDay.day)}, surtout chez {app.chName(s.biggestDay.topCh)}" />
       {/if}
       {#if s.streak.len > 1}
         <Stat value={plural(s.streak.len, 'jour', 'jours')} label="D'affilée, sans un jour sans" sub="du {day(s.streak.from)} au {day(s.streak.to)}" />
@@ -96,7 +96,7 @@
       {#if s.loyal}
         <Stat value={duration(s.loyal.last - s.loyal.first)} label="Avec {app.chName(s.loyal.ch)}" sub="ta plus longue fidélité, depuis le {day(s.loyal.first)}" />
       {/if}
-      <Stat value="{pct(s.liveMin, s.totalMin)} %" label="En direct" sub="{h(s.vodMin)} h en rediffusion" />
+      <Stat value="{pct(s.liveMin, s.totalMin)} %" label="En direct" sub="{dur(s.vodMin)} en rediffusion" />
     </div>
     <p class="note">Twitch compte les minutes de chaque appareil et de chaque onglet ouvert, donc deux streams regardés en même temps comptent deux fois.</p>
   </section>
@@ -104,7 +104,7 @@
   <div class="split">
     <section class="panel">
       <header class="panel-head"><h2>Ta semaine</h2><span class="hint">surtout le {WEEKDAYS[favWd]}</span></header>
-      <Bars height={140} items={s.weekdays.map((v, i) => ({ label: WEEKDAYS[i].slice(0, 3), value: v, title: `${WEEKDAYS[i]} : ${h(v)} h` }))} />
+      <Bars height={140} items={s.weekdays.map((v, i) => ({ label: WEEKDAYS[i].slice(0, 3), value: v, title: `${WEEKDAYS[i]} : ${dur(v)}` }))} />
     </section>
     <section class="panel">
       <header class="panel-head">
@@ -129,7 +129,7 @@
       </div>
       <ul class="legend">
         {#each plat as p, i (p.key)}
-          <li><span class="dot p{i}"></span>{p.label}<span class="legend-val">{pct(p.min, s.totalMin)} % · {h(p.min)} h</span></li>
+          <li><span class="dot p{i}"></span>{p.label}<span class="legend-val">{pct(p.min, s.totalMin)} % · {dur(p.min)}</span></li>
         {/each}
       </ul>
     </section>
@@ -142,7 +142,7 @@
         {#each years as y (y.year)}
           <button class="year-card" onclick={() => (app.setYear(y.year))}>
             <span class="year-n">{y.year}</span>
-            <span class="year-h">{h(y.min)} h</span>
+            <span class="year-h">{dur(y.min)}</span>
             {#if y.topGame >= 0}<BoxArt game={y.topGame} w={144} h={192} cls="year-art" />{/if}
             <dl>
               <dt>Streamer</dt>

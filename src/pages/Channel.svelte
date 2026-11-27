@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { yearOfDay, yearOfTs } from '../lib/stats';
-  import { h, n, day, date, plural } from '../lib/format';
+  import { h, n, day, date, plural, dur } from '../lib/format';
   import Stat from '../components/Stat.svelte';
   import Bars from '../components/Bars.svelte';
   import BoxArt from '../components/BoxArt.svelte';
@@ -22,7 +22,7 @@
     for (const x of d.broadcast) m.set(yearOfDay(x.day), (m.get(yearOfDay(x.day)) ?? 0) + x.min);
     const ys = [...m.keys()];
     const out = [];
-    if (ys.length) for (let y = Math.min(...ys); y <= Math.max(...ys); y++) out.push({ label: String(y), value: m.get(y) ?? 0, mark: y === app.year, title: `${y} : ${h(m.get(y) ?? 0)} h` });
+    if (ys.length) for (let y = Math.min(...ys); y <= Math.max(...ys); y++) out.push({ label: String(y), value: m.get(y) ?? 0, mark: y === app.year, title: `${y} : ${dur(m.get(y) ?? 0)}` });
     return out;
   });
   const vods = $derived(app.year === null ? d.ownVods : d.ownVods.filter((v) => yearOfTs(v.ts) === app.year));
@@ -56,7 +56,7 @@
     <header class="panel-head"><h2>Tes lives</h2></header>
     {#if total}
       <div class="stats two">
-        <Stat value="{h(total)} h" label="En live" sub={plural(days.size, 'jour', 'jours')} />
+        <Stat value={dur(total)} label="En live" sub={plural(days.size, 'jour', 'jours')} />
         <Stat value={day(Math.min(...days))} label="Premier live" sub="dernier le {day(Math.max(...days))}" />
       </div>
       {#if perYear.length > 1}<Bars height={120} items={perYear} />{/if}
@@ -75,7 +75,7 @@
           <BoxArt game={g} w={52} h={72} cls="thumb" />
           <span class="rank-name">{app.gameName(g)}</span>
           <Meter value={m} max={games[0][1]} />
-          <span class="rank-val">{h(m)} h</span>
+          <span class="rank-val">{dur(m)}</span>
         </li>
       {/each}
     </ol>

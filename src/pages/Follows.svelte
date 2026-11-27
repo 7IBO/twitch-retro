@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { followState, yearOfTs } from '../lib/stats';
-  import { h, n, date } from '../lib/format';
+  import { h, n, date, dur } from '../lib/format';
   import Stat from '../components/Stat.svelte';
   import Bars from '../components/Bars.svelte';
   import Avatar from '../components/Avatar.svelte';
@@ -85,7 +85,7 @@
               <a class="rank-name" href="#/streamers/{f.ch}">{app.chName(f.ch)}</a>
               <span class="rank-meta">suivie le {date(f.ts)}{st && !st.following ? ' · plus suivie' : ''}</span>
             </span>
-            <span class="rank-val">{watched.get(f.ch) ? `${h(watched.get(f.ch)!)} h` : 'jamais regardée'}</span>
+            <span class="rank-val">{watched.get(f.ch) ? `${dur(watched.get(f.ch)!)}` : 'jamais regardée'}</span>
           </li>
         {/each}
       </ol>

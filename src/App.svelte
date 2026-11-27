@@ -2,6 +2,9 @@
   import { app } from './lib/state.svelte';
   import { availableYears } from './lib/stats';
   import { date } from './lib/format';
+  import { fly } from 'svelte/transition';
+  import { quintOut } from 'svelte/easing';
+  const still = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   import Landing from './pages/Landing.svelte';
   import Overview from './pages/Overview.svelte';
   import Streamers from './pages/Streamers.svelte';
@@ -68,6 +71,8 @@
       </div>
 
       <main class="content">
+        {#key JSON.stringify(r) + ':' + app.year}
+        <div class="page" in:fly={{ y: 8, duration: still ? 0 : 320, easing: quintOut }}>
         {#if r.page === 'overview'}<Overview />
         {:else if r.page === 'streamers'}<Streamers />
         {:else if r.page === 'streamer'}<Streamer ch={r.ch} />
@@ -80,6 +85,8 @@
         {:else if r.page === 'channel'}<Channel />
         {:else if r.page === 'share'}<Share />
         {/if}
+        </div>
+        {/key}
         <footer class="foot">
           Calculé dans ton navigateur à partir de ton export de données, rien n'est stocké. Recharge la page et tout disparaît.
           Les avatars, jaquettes et emotes viennent de Twitch, 7TV, BTTV et FFZ. Site non affilié à Twitch.

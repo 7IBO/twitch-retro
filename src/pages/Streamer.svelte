@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { channelDetail, subMonths } from '../lib/stats';
-  import { h, n, day, date, dateTime, plural, share, duration, lang } from '../lib/format';
+  import { h, n, day, date, dateTime, plural, share, duration, lang, dur } from '../lib/format';
   import Avatar from '../components/Avatar.svelte';
   import BoxArt from '../components/BoxArt.svelte';
   import Bars from '../components/Bars.svelte';
@@ -23,6 +23,7 @@
     for (const v of totals.values()) if (v > mine) r++;
     return mine ? r : 0;
   });
+  const watchedCount = $derived(new Set(app.data!.watch.map((w) => w.ch)).size);
   const det = $derived(exists ? channelDetail(app.data!, ch, rank) : null);
   const u = $derived(app.user(ch));
   const old = $derived(app.oldNames(ch));
@@ -39,7 +40,7 @@
     <div>
       <h1>{app.chName(ch)}</h1>
       <p class="lead">
-        {#if det.rank}N° {det.rank} de tous les temps, {/if}{h(det.min)} h ensemble, {share(det.min, total)} % de ton temps
+        {[det.rank ? `N° ${n(det.rank)} sur ${n(watchedCount)} chaînes` : 'Jamais regardé', det.min ? `${dur(det.min)} ensemble` : '', det.min ? `${share(det.min, total)} % de ton temps de visionnage` : ''].filter(Boolean).join(' · ')}
       </p>
       <p class="muted">
         {#if old.length}Anciens pseudos : {old.join(', ')} · {/if}
@@ -65,7 +66,7 @@
 
   <section class="panel">
     <header class="panel-head"><h2>Heures par année</h2></header>
-    <Bars height={200} items={det.byYear.map((y) => ({ label: String(y.year), value: y.min, title: `${y.year} : ${h(y.min)} h`, mark: y.year === app.year }))} />
+    <Bars height={200} items={det.byYear.map((y) => ({ label: String(y.year), value: y.min, title: `${y.year} : ${dur(y.min)}`, mark: y.year === app.year }))} />
   </section>
 
   <div class="split">
@@ -77,7 +78,7 @@
             <BoxArt game={g.game} w={52} h={72} cls="thumb" />
             <a class="rank-name" href="#/categories/{g.game}">{app.gameName(g.game)}</a>
             <Meter value={g.min} max={det.games[0].min} />
-            <span class="rank-val">{h(g.min)} h</span>
+            <span class="rank-val">{dur(g.min)}</span>
           </li>
         {/each}
       </ol>
@@ -85,8 +86,8 @@
     <section class="panel">
       <header class="panel-head"><h2>Moments</h2></header>
       <dl class="facts">
-        {#if det.biggestDay}<dt>Plus grosse journée</dt><dd>{h(det.biggestDay.min)} h le {day(det.biggestDay.day)}</dd>{/if}
-        {#if det.vodMin}<dt>En rediffusion</dt><dd>{h(det.vodMin)} h</dd>{/if}
+        {#if det.biggestDay}<dt>Plus grosse journée</dt><dd>{dur(det.biggestDay.min)} le {day(det.biggestDay.day)}</dd>{/if}
+        {#if det.vodMin}<dt>En rediffusion</dt><dd>{dur(det.vodMin)}</dd>{/if}
         {#if det.subs.length}
           <dt>Subs</dt>
           <dd>{plural(det.subs.reduce((a, s) => a + subMonths(s), 0), 'mois', 'mois')}, depuis le {date(det.subs[0].start)}</dd>

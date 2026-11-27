@@ -10,6 +10,8 @@ const dMonth = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric'
 export const n = (x: number) => nf.format(Math.round(x));
 /** Minutes as hours: "4 226", or "1,5" under 10 h. */
 export const h = (min: number) => (min < 600 ? nf1.format(min / 60) : nf.format(Math.round(min / 60)));
+/** A duration: "45 min" under an hour, otherwise hours. */
+export const dur = (min: number) => (min < 59.5 ? `${Math.max(1, Math.round(min))} min` : `${h(min)} h`);
 export const day = (d: number) => dShort.format(new Date(d * DAY));
 export const date = (t: number) => dLong.format(new Date(t));
 export const dateTime = (t: number) => dTime.format(new Date(t));

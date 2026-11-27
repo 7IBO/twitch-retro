@@ -172,6 +172,8 @@ p { margin: 0; }
 
 .content { padding: 40px 32px 64px; max-width: 1440px; display: grid; gap: 20px; align-content: start; }
 .content > * { min-width: 0; }
+.page { display: grid; gap: 20px; align-content: start; min-width: 0; }
+.page > * { min-width: 0; }
 .foot { color: var(--muted); font-size: 12px; line-height: 18px; margin-top: 24px; max-width: 48rem; }
 
 .page-head { display: grid; gap: 8px; margin-bottom: 4px; }

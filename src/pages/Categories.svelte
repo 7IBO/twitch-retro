@@ -1,6 +1,6 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
-  import { h, n, plural } from '../lib/format';
+  import { h, n, plural, dur } from '../lib/format';
   import BoxArt from '../components/BoxArt.svelte';
   import Meter from '../components/Meter.svelte';
   import Empty from '../components/Empty.svelte';
@@ -30,7 +30,7 @@
         <a class="cover" href="#/categories/{g.game}">
           <BoxArt game={g.game} w={285} h={380} />
           <span class="cover-name">{i + 1}. {app.gameName(g.game)}</span>
-          <span class="cover-meta">{h(g.min)} h · {plural(g.channels, 'chaîne', 'chaînes')}</span>
+          <span class="cover-meta">{dur(g.min)} · {plural(g.channels, 'chaîne', 'chaînes')}</span>
           {#if g.topCh >= 0}<span class="cover-meta">surtout chez {app.chName(g.topCh)}</span>{/if}
         </a>
       {/each}
@@ -51,7 +51,7 @@
             <span class="rank-meta">{plural(g.channels, 'chaîne', 'chaînes')}{g.topCh >= 0 ? ` · surtout ${app.chName(g.topCh)}` : ''}</span>
           </span>
           <Meter value={g.min} {max} />
-          <span class="rank-val">{h(g.min)} h</span>
+          <span class="rank-val">{dur(g.min)}</span>
         </li>
       {/each}
     </ol>
