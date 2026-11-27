@@ -26,7 +26,7 @@ export interface Emote {
 export interface EnrichResponse {
   twitch: boolean; // false when the server has no Twitch credentials
   users: Record<string, { login: string; displayName: string; avatar: string; type: string; createdAt: string; lang: string }>;
-  games: Record<string, { id: string; name: string; boxArt: string }>; // keyed by lowercase name
+  games: Record<string, { id: string; name: string; boxArt: string } | null>; // keyed by lowercase name, null when Twitch has no such category
   emotes: { global: Emote[]; channels: Record<string, Emote[]> };
   vods: Record<string, { title: string; createdAt: string; duration: string; type: string; thumb: string }>;
 }
@@ -133,12 +133,25 @@ export async function enrich(input: EnrichRequest, env: Env): Promise<EnrichResp
             val: { id: g.id, name: g.name, boxArt: String(g.box_art_url).replace('{width}x{height}', '{w}x{h}') },
           });
         }
-        for (const n of batch) if (!cache.has('g:' + n.toLowerCase())) cache.set('g:' + n.toLowerCase(), { exp: Date.now() + TTL, val: null });
+      }),
+    );
+    // Names Twitch does not match exactly (renamed or odd casing): try its category search,
+    // and keep a result only when its name is the same once punctuation and case are ignored.
+    const norm = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]+/gu, '');
+    const notFound = missing.filter((n) => !cache.has('g:' + n.toLowerCase())).slice(0, 60);
+    await Promise.all(
+      notFound.map(async (n) => {
+        const j = await helix('search/categories?first=10&query=' + encodeURIComponent(n));
+        const hit = (j?.data ?? []).find((g: any) => norm(g.name) === norm(n));
+        cache.set('g:' + n.toLowerCase(), {
+          exp: Date.now() + TTL,
+          val: hit ? { id: hit.id, name: hit.name, boxArt: String(hit.box_art_url).replace(/\d+x\d+/, '{w}x{h}') } : null,
+        });
       }),
     );
     for (const n of gameNames) {
-      const v = cache.get('g:' + n.toLowerCase())?.val as EnrichResponse['games'][string] | null;
-      if (v) res.games[n.toLowerCase()] = v;
+      const c = cache.get('g:' + n.toLowerCase());
+      if (c) res.games[n.toLowerCase()] = (c.val as EnrichResponse['games'][string]) ?? null;
     }
   })();
 

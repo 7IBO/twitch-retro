@@ -3,6 +3,7 @@ import type { EnrichResponse, Emote } from '../../server/enrich';
 import { compute, type Stats } from './stats';
 // Inlined so a page left open during a site update still has its worker.
 import ParseWorker from './worker.ts?worker&inline';
+import { saveExport, readExport, clearExport } from './store';
 
 export type Route =
   | { page: 'overview' }
@@ -17,8 +18,14 @@ export type Route =
   | { page: 'channel' }
   | { page: 'share' };
 
+/** Year filter carried in the URL: #/streamers?y=2023 */
+function yearFromHash(hash: string): number | null {
+  const m = /[?&]y=(\d{4})/.exec(hash);
+  return m ? +m[1] : null;
+}
+
 function parseRoute(hash: string): Route {
-  const [, a, b] = hash.replace(/^#/, '').split('/');
+  const [, a, b] = hash.replace(/^#/, '').split('?')[0].split('/');
   const id = b !== undefined && /^\d+$/.test(b) ? +b : -1;
   switch (a) {
     case 'streamers':
@@ -53,8 +60,10 @@ function readOffline() {
 
 class AppState {
   data = $state.raw<RetroData | null>(null);
-  year = $state<number | null>(null);
+  year = $state<number | null>(yearFromHash(location.hash));
   route = $state<Route>(parseRoute(location.hash));
+  remember = $state(false);
+  stored = $state(false);
   loading = $state<string | null>(null);
   error = $state<string | null>(null);
   offline = $state(readOffline());
@@ -65,9 +74,38 @@ class AppState {
 
   constructor() {
     addEventListener('hashchange', () => {
+      const prev = this.route;
       this.route = parseRoute(location.hash);
-      scrollTo(0, 0);
+      const y = yearFromHash(location.hash);
+      // Links inside the site have no ?y=: keep the current year and write it back in the URL.
+      if (y !== null) this.year = y;
+      else if (this.year !== null) this.writeYear();
+      if (prev.page !== this.route.page || JSON.stringify(prev) !== JSON.stringify(this.route)) scrollTo(0, 0);
     });
+    void readExport().then((blob) => {
+      if (blob && !this.data && !this.loading) {
+        this.stored = true;
+        this.remember = true;
+        void this.load(new File([blob], 'export.zip'), false);
+      }
+    });
+  }
+
+  setYear(y: number | null) {
+    this.year = y;
+    this.writeYear();
+  }
+
+  private writeYear() {
+    const path = location.hash.replace(/^#/, '').split('?')[0] || '/';
+    history.replaceState(null, '', '#' + path + (this.year !== null ? '?y=' + this.year : ''));
+  }
+
+  async forget() {
+    await clearExport();
+    this.stored = false;
+    this.remember = false;
+    this.reset();
   }
 
   setOffline(v: boolean) {
@@ -79,8 +117,9 @@ class AppState {
     }
   }
 
-  async load(file: File) {
+  async load(file: File, save = this.remember) {
     this.error = null;
+    if (save) void saveExport(file).then(() => (this.stored = true));
     this.loading = 'Lecture du fichier';
     let buf: ArrayBuffer;
     try {
@@ -99,10 +138,11 @@ class AppState {
         this.loading = null;
         if (m.type === 'error') this.error = m.message;
         else {
-          this.year = null;
           this.enrich = null;
           this.data = m.data;
-          location.hash = '#/';
+          // Keep the page and year from the URL (reload, shared link); drop an unknown year.
+          if (this.year !== null && !m.data.watch.some((w) => new Date(w.day * 86400000).getUTCFullYear() === this.year)) this.year = null;
+          this.writeYear();
           if (!this.offline) void this.fetchEnrich();
         }
       }
@@ -118,6 +158,9 @@ class AppState {
   }
 
   reset() {
+    void clearExport();
+    this.stored = false;
+    this.year = null;
     this.data = null;
     this.enrich = null;
     this.enrichState = 'idle';
@@ -171,6 +214,43 @@ class AppState {
     }
   }
 
+  // ---- lazy enrichment for anything shown that the first request did not cover ----
+
+  private wantedUsers = new Set<string>();
+  private wantedGames = new Set<string>();
+  private asked = new Set<string>();
+  private timer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Called by Avatar and BoxArt when they have nothing to show yet. */
+  want(kind: 'user' | 'game', key: string) {
+    if (this.offline || !this.enrich?.twitch || this.asked.has(kind + key)) return;
+    this.asked.add(kind + key);
+    (kind === 'user' ? this.wantedUsers : this.wantedGames).add(key);
+    this.timer ??= setTimeout(() => void this.flushWanted(), 150);
+  }
+
+  private async flushWanted() {
+    this.timer = null;
+    const channels = [...this.wantedUsers].slice(0, 500);
+    const games = [...this.wantedGames].slice(0, 400);
+    channels.forEach((x) => this.wantedUsers.delete(x));
+    games.forEach((x) => this.wantedGames.delete(x));
+    if (!channels.length && !games.length) return;
+    try {
+      const r = await fetch('/api/enrich', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channels, games }),
+      });
+      if (!r.ok || !this.enrich) return;
+      const more = (await r.json()) as EnrichResponse;
+      this.enrich = { ...this.enrich, users: { ...this.enrich.users, ...more.users }, games: { ...this.enrich.games, ...more.games } };
+    } catch {
+      /* images stay as initials */
+    }
+    if (this.wantedUsers.size || this.wantedGames.size) this.timer ??= setTimeout(() => void this.flushWanted(), 150);
+  }
+
   // ---- lookups used across pages ----
 
   user(ch: number) {
@@ -201,6 +281,7 @@ class AppState {
     if (!name) return '';
     const g = this.enrich?.games[name.toLowerCase()];
     if (g) return g.boxArt.replace('{w}x{h}', `${w}x${hgt}`);
+    if (g === null) return ''; // Twitch has no box art for it: show our own placeholder
     return `https://static-cdn.jtvnw.net/ttv-boxart/${encodeURIComponent(name)}-${w}x${hgt}.jpg`;
   }
 

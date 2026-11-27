@@ -8,6 +8,7 @@
   import Avatar from '../components/Avatar.svelte';
   import Meter from '../components/Meter.svelte';
   import Empty from '../components/Empty.svelte';
+  import ChatText from '../components/ChatText.svelte';
 
   const s = $derived(app.stats!);
   const msgs = $derived(s.chat.msgs);
@@ -29,10 +30,18 @@
   });
 
   let q = $state('');
-  const found = $derived.by(() => {
+  let chFilter = $state(-1);
+  let logLimit = $state(100);
+  const log = $derived.by(() => {
     const query = q.trim().toLowerCase();
-    if (query.length < 2) return [];
-    return msgs.filter((m) => m.body.toLowerCase().includes(query)).slice(-100).reverse();
+    const out = [];
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      const m = msgs[i];
+      if (chFilter >= 0 && m.ch !== chFilter) continue;
+      if (query && !m.body.toLowerCase().includes(query)) continue;
+      out.push(m);
+    }
+    return out;
   });
   let random = $state<number | null>(null);
   const maxW = $derived(a.words[0]?.n ?? 1);
@@ -117,27 +126,31 @@
       <header class="panel-head"><h2>{app.year === null ? 'Ton tout premier message' : `Ton premier message de ${app.year}`}</h2></header>
       <figure class="chatline">
         <figcaption>{dateTime(msgs[0].ts)} · chez {app.chName(msgs[0].ch)}</figcaption>
-        <p>{msgs[0].body}</p>
+        <p><ChatText body={msgs[0].body} ch={msgs[0].ch} /></p>
       </figure>
       <header class="panel-head"><h2>Un message au hasard</h2><button class="btn small" onclick={() => (random = Math.floor(Math.random() * msgs.length))}>Tirer</button></header>
       {#if random !== null && msgs[random]}
         <figure class="chatline">
           <figcaption>{dateTime(msgs[random].ts)} · chez {app.chName(msgs[random].ch)}</figcaption>
-          <p>{msgs[random].body}</p>
+          <p><ChatText body={msgs[random].body} ch={msgs[random].ch} /></p>
         </figure>
       {/if}
     </section>
     <section class="panel">
-      <header class="panel-head"><h2>Retrouver un message</h2></header>
-      <input class="search wide" type="search" placeholder="Chercher dans tes messages" bind:value={q} aria-label="Chercher dans tes messages" />
-      {#if q.trim().length >= 2}
-        <p class="muted">{found.length === 100 ? '100 derniers résultats' : plural(found.length, 'résultat', 'résultats')}</p>
-        <ul class="chatlog">
-          {#each found as m, i (i)}
-            <li><span class="chatlog-meta">{dateTime(m.ts)} · {app.chName(m.ch)}</span>{m.body}</li>
-          {/each}
-        </ul>
-      {/if}
+      <header class="panel-head"><h2>Tes messages</h2><span class="hint">{plural(log.length, 'message', 'messages')}</span></header>
+      <div class="log-tools">
+        <input class="search" type="search" placeholder="Chercher" bind:value={q} aria-label="Chercher dans tes messages" oninput={() => (logLimit = 100)} />
+        <select class="search" bind:value={chFilter} aria-label="Filtrer par chat" onchange={() => (logLimit = 100)}>
+          <option value={-1}>Tous les chats</option>
+          {#each s.chat.channels as c (c.ch)}<option value={c.ch}>{app.chName(c.ch)} ({n(c.n)})</option>{/each}
+        </select>
+      </div>
+      <ul class="chatlog">
+        {#each log.slice(0, logLimit) as m, i (i)}
+          <li><span class="chatlog-meta">{dateTime(m.ts)} · {app.chName(m.ch)}</span><ChatText body={m.body} ch={m.ch} /></li>
+        {/each}
+      </ul>
+      {#if log.length > logLimit}<button class="btn small" onclick={() => (logLimit += 200)}>Afficher plus</button>{/if}
     </section>
   </div>
 {/if}

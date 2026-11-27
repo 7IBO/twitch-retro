@@ -4,6 +4,10 @@
   const url = $derived(app.user(ch)?.avatar);
   const name = $derived(app.chName(ch));
   let failed = $state(false);
+  $effect(() => {
+    const id = app.data?.channels[ch]?.id;
+    if (!url && app.enrich && id && /^\d+$/.test(id)) app.want('user', id);
+  });
   function hue(s: string) {
     let x = 0;
     for (let i = 0; i < s.length; i++) x = (x * 31 + s.charCodeAt(i)) >>> 0;

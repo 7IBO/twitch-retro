@@ -109,6 +109,7 @@ p { margin: 0; }
 .drop.busy { cursor: default; border-style: solid; }
 .spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line-2); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+.toggle + .toggle { margin-top: 8px; }
 .toggle { display: flex; align-items: center; gap: 10px; margin-top: 16px; color: var(--text-2); font-size: 14px; cursor: pointer; width: fit-content; }
 .toggle input { accent-color: var(--accent); width: 16px; height: 16px; }
 .facts-list { list-style: none; padding: 0; margin: 32px 0 0; display: grid; gap: 12px; max-width: 34rem; }
@@ -137,7 +138,7 @@ p { margin: 0; }
 .hero-preview figcaption { margin-top: 12px; font-size: 12px; color: var(--muted); text-align: right; }
 
 /* ---------- shell ---------- */
-.shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+.shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh;  background: linear-gradient(to right, var(--bg-deep) 247px, var(--line) 247px, var(--line) 248px, var(--bg) 248px); }
 .sidebar {
   position: sticky; top: 0; height: 100vh; background: var(--bg-deep); border-right: 1px solid var(--line);
   display: flex; flex-direction: column; padding: 20px 12px; gap: 24px;
@@ -202,7 +203,8 @@ p { margin: 0; }
 
 /* ---------- bars ---------- */
 .bars { display: flex; align-items: stretch; gap: 6px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
-.bar { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; position: relative; border: 0; background: none; padding: 0; }
+.bars { justify-content: center; }
+.bar { flex: 1; min-width: 0; max-width: 72px; display: flex; flex-direction: column; justify-content: flex-end; position: relative; border: 0; background: none; padding: 0; }
 button.bar { cursor: pointer; }
 .bar-fill { display: block; width: 100%; min-height: 2px; background: var(--raised-2); border-radius: 4px 4px 2px 2px; transition: background 0.15s var(--ease); }
 .bar.hi .bar-fill { background: var(--accent); }
@@ -232,6 +234,9 @@ button.bar { cursor: pointer; }
 .avatar.initials { display: inline-grid; place-items: center; font-weight: 500; font-size: calc(var(--s) * 0.42); color: var(--text); background: hsl(var(--h) 22% 30%); }
 
 .boxart { display: block; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 8px; background: var(--raised); }
+.boxart.empty { display: grid; place-items: center; padding: 8px; overflow: hidden; background: linear-gradient(160deg, var(--raised-2), var(--raised)); }
+.boxart.empty span { font-size: 13px; line-height: 1.2; text-align: center; color: var(--text-2); font-weight: 500; overflow-wrap: anywhere; }
+.boxart.thumb.empty span, .year-art.empty span { display: none; }
 .boxart.thumb { width: 30px; height: 40px; border-radius: 4px; flex: none; }
 
 /* ---------- covers ---------- */
@@ -283,8 +288,12 @@ button.bar { cursor: pointer; }
 .panel-head + .chatline { margin-top: 0; }
 .chatline figcaption { font: 400 12px var(--mono); color: var(--muted); }
 .chatline p { margin-top: 4px; font-size: 15px; overflow-wrap: anywhere; }
-.chatlog { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; max-height: 420px; overflow-y: auto; font-size: 14px; }
+.log-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.log-tools .search { flex: 1 1 160px; width: auto; }
+.chatlog + .btn { margin-top: 12px; }
+.chatlog { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; max-height: 560px; overflow-y: auto; font-size: 14px; }
 .chatlog li { overflow-wrap: anywhere; }
+.emote { height: 24px; width: auto; vertical-align: middle; margin: -4px 1px; }
 .chatlog-meta { display: block; font: 400 12px var(--mono); color: var(--muted); }
 
 /* ---------- emotes, words ---------- */
@@ -347,7 +356,7 @@ button.bar { cursor: pointer; }
   .day-detail { position: static; max-height: none; }
 }
 @media (max-width: 1023px) {
-  .shell { grid-template-columns: minmax(0, 1fr); }
+  .shell { grid-template-columns: minmax(0, 1fr); background: var(--bg); }
   .sidebar {
     position: sticky; top: 0; z-index: 6; height: auto; flex-direction: row; align-items: center; gap: 12px;
     padding: 8px 16px; border-right: 0; border-bottom: 1px solid var(--line);

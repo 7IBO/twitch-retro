@@ -54,15 +54,16 @@
           Données jusqu'au {date(app.data.user.end)}.
           {#if app.offline}Mode hors ligne.{:else if app.enrichState === 'loading'}Chargement des images…{:else if app.enrichState === 'failed'}Images indisponibles.{/if}
         </p>
-        <button class="btn ghost small" onclick={() => app.reset()}>Charger un autre export</button>
+        {#if app.stored}<p class="muted small">Export gardé dans ce navigateur.</p>{/if}
+        <button class="btn ghost small" onclick={() => app.reset()}>{app.stored ? 'Oublier et charger un autre export' : 'Charger un autre export'}</button>
       </div>
     </aside>
 
     <div class="main">
       <div class="yearbar" role="group" aria-label="Période">
-        <button class:on={app.year === null} onclick={() => (app.year = null)}>Tout</button>
+        <button class:on={app.year === null} onclick={() => (app.setYear(null))}>Tout</button>
         {#each years as y (y)}
-          <button class:on={app.year === y} onclick={() => (app.year = y)}>{y}</button>
+          <button class:on={app.year === y} onclick={() => (app.setYear(y))}>{y}</button>
         {/each}
       </div>
 

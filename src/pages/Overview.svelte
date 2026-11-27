@@ -51,7 +51,7 @@
     <Bars
       height={260}
       items={s.periods.map((p) => ({ label: p.label, value: p.min, title: `${p.label} : ${h(p.min)} h` }))}
-      onpick={app.year === null ? (i) => (app.year = +s.periods[i].key) : undefined}
+      onpick={app.year === null ? (i) => (app.setYear(+s.periods[i].key)) : undefined}
     />
   </section>
 
@@ -140,7 +140,7 @@
       <header class="panel-head"><h2>Année par année</h2></header>
       <div class="years">
         {#each years as y (y.year)}
-          <button class="year-card" onclick={() => (app.year = y.year)}>
+          <button class="year-card" onclick={() => (app.setYear(y.year))}>
             <span class="year-n">{y.year}</span>
             <span class="year-h">{h(y.min)} h</span>
             {#if y.topGame >= 0}<BoxArt game={y.topGame} w={144} h={192} cls="year-art" />{/if}

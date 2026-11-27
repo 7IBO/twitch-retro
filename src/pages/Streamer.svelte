@@ -8,6 +8,7 @@
   import Stat from '../components/Stat.svelte';
   import Meter from '../components/Meter.svelte';
   import Empty from '../components/Empty.svelte';
+  import ChatText from '../components/ChatText.svelte';
 
   let { ch }: { ch: number } = $props();
   const all = $derived(app.data ? app.stats : null);
@@ -97,7 +98,7 @@
       {#if det.firstMsg}
         <figure class="chatline">
           <figcaption>Ton premier message chez {app.chName(ch)}, le {dateTime(det.firstMsg.ts)}</figcaption>
-          <p>{det.firstMsg.body}</p>
+          <p><ChatText body={det.firstMsg.body} {ch} /></p>
         </figure>
       {/if}
     </section>

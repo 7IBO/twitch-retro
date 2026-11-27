@@ -52,6 +52,10 @@
         <input type="checkbox" checked={!app.offline} onchange={(e) => app.setOffline(!e.currentTarget.checked)} />
         <span>Charger les avatars, jaquettes et emotes</span>
       </label>
+      <label class="toggle">
+        <input type="checkbox" bind:checked={app.remember} />
+        <span>Garder l'export dans ce navigateur, pour le retrouver après un rechargement</span>
+      </label>
 
       <ul class="facts-list">
         <li><Lock size={16} strokeWidth={1.5} /><span>Le zip est lu dans ton navigateur et n'est envoyé nulle part. Les IP, villes, appareils et pages vues qu'il contient ne sont jamais ouverts.</span></li>
