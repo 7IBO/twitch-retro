@@ -1,3 +1,4 @@
+import { t, monthName, monthShort, dateFmt } from './i18n/index.svelte';
 import type { FollowEvent, Platform, RetroData, Sub, WatchedVod } from './types';
 
 export const DAY = 86400000;
@@ -161,7 +162,6 @@ export function yearly(d: RetroData): YearStat[] {
     });
 }
 
-const MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 
 /** Is a day / a timestamp inside the selected period (a year, optionally one month of it)? */
 export function periodTest(year: number | null, month: number | null = null) {
@@ -222,7 +222,7 @@ export function compute(d: RetroData, year: number | null, month: number | null 
 
   const periodList: Stats['periods'] = [];
   if (year !== null) {
-    for (let m = 0; m < 12; m++) periodList.push({ key: String(m), label: MONTHS[m], min: periods.get(String(m)) ?? 0 });
+    for (let m = 0; m < 12; m++) periodList.push({ key: String(m), label: monthShort(m), min: periods.get(String(m)) ?? 0 });
   } else {
     const ys = [...periods.keys()].map(Number);
     if (ys.length)
@@ -497,7 +497,6 @@ export interface TimelineItem {
   ghost?: boolean; // after the end of the export: no data, not zero
 }
 
-const MONTHS_FULL = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
 /**
  * Bars over time from minutes per day. One year selected: its 12 months, with the
@@ -519,17 +518,17 @@ export function timeline(
   }
   const end = new Date(opts.endDay * DAY);
   const endK = end.getUTCFullYear() * 12 + end.getUTCMonth();
-  const endLabel = `${end.getUTCDate()} ${MONTHS_FULL[end.getUTCMonth()]} ${end.getUTCFullYear()}`;
+  const endLabel = dateFmt({ day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(end);
   const month = (k: number, withYear: boolean): TimelineItem => {
     const y = Math.floor(k / 12), m = k % 12;
     const v = byMonth.get(k) ?? 0;
     const ghost = Number.isFinite(opts.endDay) && k > endK;
-    const short = MONTHS[m] + (withYear && (m === 0 || k === first) ? ` ${String(y).slice(2)}` : '');
+    const short = monthShort(m) + (withYear && (m === 0 || k === first) ? ` ${String(y).slice(2)}` : '');
     return {
       label: short,
       value: ghost ? 0 : v,
       ghost,
-      title: ghost ? `${MONTHS_FULL[m]} ${y} : après la fin de ton export` : `${MONTHS_FULL[m]} ${y} : ${opts.fmt(v)}`,
+      title: `${monthName(m)} ${y} : ${ghost ? t('après la fin de ton export') : opts.fmt(v)}`,
     };
   };
 
@@ -547,15 +546,15 @@ export function timeline(
         label: i === 0 || (i + 1) % 5 === 0 ? String(i + 1) : '',
         value: ghost ? 0 : v,
         ghost,
-        title: `${i + 1} ${MONTHS_FULL[opts.month]} ${opts.year} : ${ghost ? 'après la fin de ton export' : opts.fmt(v)}`,
+        title: `${dateFmt({ day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(day * DAY)} : ${ghost ? t('après la fin de ton export') : opts.fmt(v)}`,
       });
     }
-    const partial = items.some((x) => x.ghost) ? `Ton export s'arrête le ${endLabel}.` : null;
+    const partial = items.some((x) => x.ghost) ? t("Ton export s'arrête le {date}.", { date: endLabel }) : null;
     return { unit: 'jour', items, partial };
   }
   if (opts.year !== null) {
     const items = Array.from({ length: 12 }, (_, m) => month(opts.year! * 12 + m, false));
-    const partial = Number.isFinite(opts.endDay) && end.getUTCFullYear() === opts.year && end.getUTCMonth() < 11 ? `Ton export s'arrête le ${endLabel}.` : null;
+    const partial = Number.isFinite(opts.endDay) && end.getUTCFullYear() === opts.year && end.getUTCMonth() < 11 ? t("Ton export s'arrête le {date}.", { date: endLabel }) : null;
     return { unit: 'mois', items, partial };
   }
   if (!Number.isFinite(first)) return { unit: 'année', items: [], partial: null };
@@ -570,9 +569,9 @@ export function timeline(
     let v = 0;
     for (let m = 0; m < 12; m++) v += byMonth.get(y * 12 + m) ?? 0;
     const cut = Number.isFinite(opts.endDay) && y === end.getUTCFullYear() && end.getUTCMonth() < 11;
-    items.push({ label: cut ? `${y}*` : String(y), value: v, title: `${y} : ${opts.fmt(v)}${cut ? ` (jusqu'au ${endLabel})` : ''}` });
+    items.push({ label: cut ? `${y}*` : String(y), value: v, title: `${y} : ${opts.fmt(v)}${cut ? ' ' + t("(jusqu'au {date})", { date: endLabel }) : ''}` });
   }
-  const partial = items.some((i) => i.label.endsWith('*')) ? `* Année incomplète : ton export s'arrête le ${endLabel}.` : null;
+  const partial = items.some((i) => i.label.endsWith('*')) ? t("* Année incomplète : ton export s'arrête le {date}.", { date: endLabel }) : null;
   return { unit: 'année', items, partial };
 }
 

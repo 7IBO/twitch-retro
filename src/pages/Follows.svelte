@@ -1,5 +1,6 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
+  import { t } from '../lib/i18n/index.svelte';
   import { slide } from '../lib/slide';
   import { followState, yearOfTs } from '../lib/stats';
   import { h, n, date, dur } from '../lib/format';
@@ -45,33 +46,33 @@
 </script>
 
 <header class="page-head">
-  <h1>Follows</h1>
-  <p class="lead">Les chaînes que tu as suivies{app.periodEn}, et celles que tu suivais encore à la date de l'export.</p>
+  <h1>{t('Follows')}</h1>
+  <p class="lead">{t('Les chaînes que tu as suivies')}{app.periodEn}{t(", et celles que tu suivais encore à la date de l'export.")}</p>
 </header>
 
 {#if !d.follows.length}
-  <Empty text="Ton export ne contient aucun follow." />
+  <Empty text={t('Ton export ne contient aucun follow.')} />
 {:else}
   <div class="stats four">
-    <Stat value={n(s.follows.length)} label="Follows" sub={app.periodName ? `en ${app.periodName}` : ''} />
-    <Stat value={n(s.unfollows)} label="Unfollows" />
-    <Stat value={n(stillFollowing)} label="Suivies à la fin de l'export" />
-    <Stat value={n(neverWatched)} label="Suivies sans jamais les regarder" sub="d'après l'historique de visionnage" />
+    <Stat value={n(s.follows.length)} label={t('Follows')} sub={app.periodName ? t('en {period}', { period: app.periodName }) : ''} />
+    <Stat value={n(s.unfollows)} label={t('Unfollows')} />
+    <Stat value={n(stillFollowing)} label={t("Suivies à la fin de l'export")} />
+    <Stat value={n(neverWatched)} label={t('Suivies sans jamais les regarder')} sub={t("d'après l'historique de visionnage")} />
   </div>
 
   {#if perYear.length > 1}
     <section class="panel">
-      <header class="panel-head"><h2>Follows par année</h2></header>
+      <header class="panel-head"><h2>{t('Follows par année')}</h2></header>
       <Bars height={160} items={perYear} unit=" follows" />
     </section>
   {/if}
 
   <div class="toolbar">
-    <input class="search" type="search" placeholder="Chercher" bind:value={q} aria-label="Chercher une chaîne" />
-    <div class="seg" role="group" aria-label="Filtrer" use:slide>
-      <button class:on={filter === 'all'} onclick={() => (filter = 'all')}>Tous</button>
-      <button class:on={filter === 'on'} onclick={() => (filter = 'on')}>Encore suivies</button>
-      <button class:on={filter === 'off'} onclick={() => (filter = 'off')}>Plus suivies</button>
+    <input class="search" type="search" placeholder={t('Chercher')} bind:value={q} aria-label={t('Chercher une chaîne')} />
+    <div class="seg" role="group" aria-label={t('Filtrer')} use:slide>
+      <button class:on={filter === 'all'} onclick={() => (filter = 'all')}>{t('Tous')}</button>
+      <button class:on={filter === 'on'} onclick={() => (filter = 'on')}>{t('Encore suivies')}</button>
+      <button class:on={filter === 'off'} onclick={() => (filter = 'off')}>{t('Plus suivies')}</button>
     </div>
   </div>
 
@@ -84,23 +85,23 @@
             <Avatar ch={f.ch} size={32} />
             <span class="rank-main">
               <a class="rank-name" href={app.chHref(f.ch)}>{app.chName(f.ch)}</a>
-              <span class="rank-meta">suivie le {date(f.ts)}{st && !st.following ? ' · plus suivie' : ''}</span>
+              <span class="rank-meta">{t('suivie le {date}', { date: date(f.ts) })}{st && !st.following ? ' · ' + t('plus suivie') : ''}</span>
             </span>
-            <span class="rank-val">{watched.get(f.ch) ? `${dur(watched.get(f.ch)!)}` : 'jamais regardée'}</span>
+            <span class="rank-val">{watched.get(f.ch) ? `${dur(watched.get(f.ch)!)}` : t('jamais regardée')}</span>
           </li>
         {/each}
       </ol>
     {:else}
-      <Empty text="Aucun follow ne correspond." />
+      <Empty text={t('Aucun follow ne correspond.')} />
     {/if}
   </section>
   {#if rows.length > limit}
-    <button class="btn" onclick={() => (limit += 200)}>Afficher plus ({n(rows.length - limit)} restants)</button>
+    <button class="btn" onclick={() => (limit += 200)}>{t('Afficher plus ({n} restants)', { n: n(rows.length - limit) })}</button>
   {/if}
 
   {#if d.gameFollows.length}
     <section class="panel">
-      <header class="panel-head"><h2>Catégories suivies</h2></header>
+      <header class="panel-head"><h2>{t('Catégories suivies')}</h2></header>
       <div class="covers">
         {#each d.gameFollows as g, i (i)}
           <a class="cover" href={app.gameHref(g.game)}>

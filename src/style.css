@@ -143,7 +143,10 @@ kbd { font: 11px var(--mono); color: var(--muted); padding: 2px 6px; border-radi
 
 /* ---------- landing ---------- */
 .landing { min-height: 100vh; display: flex; flex-direction: column; padding: 0 32px; max-width: 1280px; margin: 0 auto; }
-.landing-top { height: 64px; display: flex; align-items: center; }
+.landing-top { height: 64px; display: flex; align-items: center; justify-content: space-between; }
+.lang-switch button { height: 26px; padding: 0 10px; font-size: 12px; }
+.side-foot .lang-switch { width: fit-content; }
+.foot-lang { display: none; }
 .hero { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 64px; align-items: center; padding: 48px 0 80px; }
 .hero h1 { font-size: 52px; line-height: 1.06; letter-spacing: -0.03em; max-width: 13em; }
 .hero .lead { margin-top: 20px; }
@@ -492,6 +495,7 @@ button.combo-icon:hover { background: var(--raised); color: var(--text); }
   .nav::-webkit-scrollbar { display: none; }
   .nav a { flex: none; height: 32px; padding: 0 10px; }
   .side-foot { display: none; }
+  .foot-lang { display: block; margin-top: 16px; }
   .search-trigger { width: 36px; padding: 0; justify-content: center; flex: none; }
   .search-trigger-label, .search-trigger kbd { display: none; }
   .yearbar { top: 49px; padding: 8px 16px; }

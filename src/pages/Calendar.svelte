@@ -1,5 +1,6 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
+  import { t } from '../lib/i18n/index.svelte';
   import { availableYears, yearOfDay, localDay } from '../lib/stats';
   import { h, day as fmtDay, plural, dur } from '../lib/format';
   import Heatmap from '../components/Heatmap.svelte';
@@ -33,15 +34,15 @@
 </script>
 
 <header class="page-head">
-  <h1>Calendrier</h1>
-  <p class="lead">Une case par jour, plus elle est claire plus tu as regardé. Clique un jour pour le détail.</p>
+  <h1>{t('Calendrier')}</h1>
+  <p class="lead">{t('Une case par jour, plus elle est claire plus tu as regardé. Clique un jour pour le détail.')}</p>
 </header>
 
 <div class="legend-row">
-  <span>Moins</span>
+  <span>{t('Moins')}</span>
   {#each [0, 1, 2, 3, 4] as l (l)}<span class="hm-key l{l}"></span>{/each}
-  <span>Plus</span>
-  <span class="muted">(rien · moins de {dur(steps[0])} · jusqu'à {dur(steps[1])} · jusqu'à {dur(steps[2])} · plus, d'après tes propres journées)</span>
+  <span>{t('Plus')}</span>
+  <span class="muted">{t("(rien · moins de {a} · jusqu'à {b} · jusqu'à {c} · plus, d'après tes propres journées)", { a: dur(steps[0]), b: dur(steps[1]), c: dur(steps[2]) })}</span>
 </div>
 
 <div class="calendar-layout">
@@ -61,9 +62,9 @@
     <aside class="panel day-detail">
       <header class="panel-head">
         <h2>{fmtDay(detail.day)}</h2>
-        <button class="icon-btn" onclick={() => (picked = null)} aria-label="Fermer">×</button>
+        <button class="icon-btn" onclick={() => (picked = null)} aria-label={t('Fermer')}>×</button>
       </header>
-      <p class="muted">{dur(s.dayMin.get(detail.day) ?? 0)} regardées{detail.msgs ? `, ${plural(detail.msgs, 'message envoyé', 'messages envoyés')}` : ''}</p>
+      <p class="muted">{t('{d} regardées', { d: dur(s.dayMin.get(detail.day) ?? 0) })}{detail.msgs ? `, ${plural(detail.msgs, 'message envoyé', 'messages envoyés')}` : ''}</p>
       <ol class="rank">
         {#each detail.chs as [ch, e] (ch)}
           <li>

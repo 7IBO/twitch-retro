@@ -2,6 +2,8 @@
   import { app } from './lib/state.svelte';
   import { availableYears } from './lib/stats';
   import { date } from './lib/format';
+  import { t, monthShort } from './lib/i18n/index.svelte';
+  import LangSwitch from './components/LangSwitch.svelte';
   import { slide, rankDigits } from './lib/slide';
   import Search from './components/Search.svelte';
   import Landing from './pages/Landing.svelte';
@@ -31,7 +33,6 @@
   ] as const;
 
   const years = $derived(app.data ? availableYears(app.data) : []);
-  const MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
   // Months of the selected year that have something to show.
   const activeMonths = $derived.by(() => {
     const s = new Set<number>();
@@ -53,44 +54,45 @@
 </script>
 
 {#if !app.data && app.booting}
-  <div class="boot" aria-live="polite"><span class="brand"><span class="brand-mark" aria-hidden="true"></span>Rétro Twitch</span><span class="progress" aria-hidden="true"><span></span></span><span class="sr-only">Ouverture de ton export</span></div>
+  <div class="boot" aria-live="polite"><span class="brand"><span class="brand-mark" aria-hidden="true"></span>Rétro Twitch</span><span class="progress" aria-hidden="true"><span></span></span><span class="sr-only">{t('Ouverture de ton export')}</span></div>
 {:else if !app.data}
   <Landing />
 {:else}
   <div class="shell">
     <aside class="sidebar">
       <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Rétro Twitch</div>
-      <Search pages={NAV.map((x) => ({ path: x.path, label: x.label }))} />
+      <Search pages={NAV.map((x) => ({ path: x.path, label: t(x.label) }))} />
       <nav class="nav" aria-label="Sections" use:slide>
         {#each NAV as item (item.path)}
           <a href="#/{item.path}" class:on={active === item.page} aria-current={active === item.page ? 'page' : undefined}>
             <item.icon size={16} strokeWidth={1.5} />
-            <span>{item.label}</span>
+            <span>{t(item.label)}</span>
           </a>
         {/each}
       </nav>
       <div class="side-foot">
         <p class="muted small">
-          Données jusqu'au {date(app.data.user.end)}.
-          {#if app.offline}Mode hors ligne.{:else if app.enrichState === 'loading'}Chargement des images…{:else if app.enrichState === 'failed'}Images indisponibles.{/if}
+          {t("Données jusqu'au {date}.", { date: date(app.data.user.end) })}
+          {#if app.offline}{t('Mode hors ligne.')}{:else if app.enrichState === 'loading'}{t('Chargement des images…')}{:else if app.enrichState === 'failed'}{t('Images indisponibles.')}{/if}
         </p>
-        {#if app.storedUntil}<p class="muted small">Gardé dans ce navigateur jusqu'au {date(app.storedUntil)}.</p>{/if}
-        <button class="btn ghost small" onclick={() => app.reset()} title={app.stored ? "Efface la copie gardée dans ce navigateur" : undefined}>Changer d'export</button>
+        {#if app.storedUntil}<p class="muted small">{t("Gardé dans ce navigateur jusqu'au {date}.", { date: date(app.storedUntil) })}</p>{/if}
+        <button class="btn ghost small" onclick={() => app.reset()} title={app.stored ? t('Efface la copie gardée dans ce navigateur') : undefined}>{t("Changer d'export")}</button>
+        <LangSwitch />
       </div>
     </aside>
 
     <div class="main">
-      <div class="yearbar" role="group" aria-label="Période" use:slide>
-        <button class:on={app.year === null} onclick={() => (app.setYear(null))}>Tout</button>
+      <div class="yearbar" role="group" aria-label={t('Période')} use:slide>
+        <button class:on={app.year === null} onclick={() => (app.setYear(null))}>{t('Tout')}</button>
         {#each years as y (y)}
           <button class:on={app.year === y} onclick={() => (app.setYear(y))}>{y}</button>
         {/each}
       </div>
       {#if app.year !== null}
-        <div class="monthbar" role="group" aria-label="Mois" use:slide>
-          <button class:on={app.month === null} onclick={() => app.setMonth(null)}>Toute l'année</button>
-          {#each MONTHS as label, m (m)}
-            <button class:on={app.month === m} disabled={!activeMonths.has(m)} onclick={() => app.setMonth(m)}>{label}</button>
+        <div class="monthbar" role="group" aria-label={t('Mois')} use:slide>
+          <button class:on={app.month === null} onclick={() => app.setMonth(null)}>{t("Toute l'année")}</button>
+          {#each Array.from({ length: 12 }, (_, i) => i) as m (m)}
+            <button class:on={app.month === m} disabled={!activeMonths.has(m)} onclick={() => app.setMonth(m)}>{monthShort(m)}</button>
           {/each}
         </div>
       {/if}
@@ -113,9 +115,10 @@
         </div>
         {/key}
         <footer class="foot">
-          Tout est calculé dans ton navigateur, ton export n'est envoyé à aucun serveur.
-          {app.stored ? "Une copie reste dans ce navigateur pendant 30 jours au plus, « Changer d'export » l'efface." : 'Rien n’est gardé : recharger la page efface tout.'}
-          Avatars, jaquettes et emotes : Twitch, 7TV, BTTV et FFZ. Site non affilié à Twitch.
+          {t("Tout est calculé dans ton navigateur, ton export n'est envoyé à aucun serveur.")}
+          {app.stored ? t("Une copie reste dans ce navigateur pendant 30 jours au plus, « Changer d'export » l'efface.") : t('Rien n’est gardé : recharger la page efface tout.')}
+          {t('Avatars, jaquettes et emotes : Twitch, 7TV, BTTV et FFZ. Site non affilié à Twitch.')}
+          <span class="foot-lang"><LangSwitch /></span>
         </footer>
       </main>
     </div>

@@ -1,8 +1,9 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
+  import { t } from '../lib/i18n/index.svelte';
   import { analyseChat } from '../lib/words';
   import { timeline, localDay, DAY } from '../lib/stats';
-  import { h, n, day, dateTime, plural, pct } from '../lib/format';
+  import { h, n, day, dateTime, plural, pct, pc } from '../lib/format';
   import Stat from '../components/Stat.svelte';
   import Bars from '../components/Bars.svelte';
   import Avatar from '../components/Avatar.svelte';
@@ -71,25 +72,25 @@
 </script>
 
 <header class="page-head">
-  <h1>Chat</h1>
-  <p class="lead">Tout ce que tu as écrit{app.periodEn}, et les emotes que tu utilises.</p>
+  <h1>{t('Chat')}</h1>
+  <p class="lead">{t('Tout ce que tu as écrit')}{app.periodEn}{t(', et les emotes que tu utilises.')}</p>
 </header>
 
 {#if !msgs.length}
-  <Empty text={app.year === null ? "Ton export ne contient aucun message." : `Aucun message${app.periodEn}.`} />
+  <Empty text={app.year === null ? t('Ton export ne contient aucun message.') : t('Aucun message') + app.periodEn + '.'} />
 {:else}
   <div class="stats four">
-    <Stat value={n(msgs.length)} label="Messages" sub="{Math.round(s.chat.avgLen)} caractères en moyenne" />
-    <Stat value={n(s.chat.channels.length)} label="Chats différents" />
-    {#if s.chat.busiest}<Stat value={n(s.chat.busiest.n)} label="Messages en un jour" sub="le {day(s.chat.busiest.day)}" />{/if}
+    <Stat value={n(msgs.length)} label={t('Messages')} sub={t('{n} caractères en moyenne', { n: Math.round(s.chat.avgLen) })} />
+    <Stat value={n(s.chat.channels.length)} label={t('Chats différents')} />
+    {#if s.chat.busiest}<Stat value={n(s.chat.busiest.n)} label={t('Messages en un jour')} sub={t('le {date}', { date: day(s.chat.busiest.day) })} />{/if}
     {#if app.emoteMap}
-      <Stat value={n(a.emotesUsed)} label="Emotes envoyées" sub="dans {pct(a.msgsWithEmote, msgs.length)} % de tes messages" />
+      <Stat value={n(a.emotesUsed)} label={t('Emotes envoyées')} sub={t('dans {p} % de tes messages', { p: pct(a.msgsWithEmote, msgs.length) })} />
     {/if}
   </div>
 
   <section class="panel">
-    <header class="panel-head"><h2>Tes emotes</h2>
-      {#if app.emoteMap}<span class="hint">{Object.entries(a.providers).filter(([, v]) => v).map(([k, v]) => `${PROVIDERS[k as keyof typeof PROVIDERS]} ${pct(v, a.emotesUsed)} %`).join(' · ')}</span>{/if}
+    <header class="panel-head"><h2>{t('Tes emotes')}</h2>
+      {#if app.emoteMap}<span class="hint">{Object.entries(a.providers).filter(([, v]) => v).map(([k, v]) => `${PROVIDERS[k as keyof typeof PROVIDERS]} ${pc(pct(v, a.emotesUsed))}`).join(' · ')}</span>{/if}
     </header>
     {#if app.emoteMap}
       {#if a.emotes.length}
@@ -104,25 +105,25 @@
           {/each}
         </ol>
       {:else}
-        <Empty text="Aucune emote reconnue." />
+        <Empty text={t('Aucune emote reconnue.')} />
       {/if}
-      <p class="note">Emotes reconnues : les globales de Twitch, 7TV, BTTV et FFZ, et celles de chaque chat où tu as écrit ({n(app.enrich ? Object.keys(app.enrich.emotes.channels).length : 0)} chats chargés). Pour 7TV, les anciens sets d'emotes des chaînes comptent aussi. Une emote retirée et introuvable aujourd'hui n'est plus reconnue.</p>
+      <p class="note">{t("Emotes reconnues : les globales de Twitch, 7TV, BTTV et FFZ, et celles de chaque chat où tu as écrit ({n} chats chargés). Pour 7TV, les anciens sets d'emotes des chaînes comptent aussi. Une emote retirée et introuvable aujourd'hui n'est plus reconnue.", { n: n(app.enrich ? Object.keys(app.enrich.emotes.channels).length : 0) })}</p>
     {:else if app.enrichState === 'loading'}
-      <p class="muted">Chargement des emotes…</p>
+      <p class="muted">{t('Chargement des emotes…')}</p>
     {:else}
-      <p class="muted">Les emotes demandent les listes de Twitch, 7TV, BTTV et FFZ{app.offline ? ', désactivées en mode hors ligne' : ", qui n'ont pas pu être chargées"}. Elles restent visibles dans tes mots ci-dessous.</p>
+      <p class="muted">{t('Les emotes demandent les listes de Twitch, 7TV, BTTV et FFZ')}{app.offline ? t(', désactivées en mode hors ligne') : t(", qui n'ont pas pu être chargées")}. {t('Elles restent visibles dans tes mots ci-dessous.')}</p>
     {/if}
   </section>
 
   <section class="panel">
-    <header class="panel-head"><h2>Messages par {ctl.unit}</h2></header>
+    <header class="panel-head"><h2>{t(ctl.unit === 'jour' ? 'Messages par jour' : ctl.unit === 'mois' ? 'Messages par mois' : 'Messages par année')}</h2></header>
     <Bars height={200} items={ctl.items} />
     {#if ctl.partial}<p class="chart-note">{ctl.partial}</p>{/if}
   </section>
 
   <div class="split">
     <section class="panel">
-      <header class="panel-head"><h2>Là où tu parles</h2></header>
+      <header class="panel-head"><h2>{t('Là où tu parles')}</h2></header>
       <ol class="rank">
         {#each s.chat.channels.slice(0, 12) as c, i (c.ch)}
           <li>
@@ -136,10 +137,10 @@
       </ol>
     </section>
     <section class="panel">
-      <header class="panel-head"><h2>Tes mots</h2></header>
+      <header class="panel-head"><h2>{t('Tes mots')}</h2></header>
       <div class="cloud">
         {#each a.words as w (w.w)}
-          <span style:--w={0.85 + (w.n / maxW) * 1.3} title="{n(w.n)} messages">{w.w}</span>
+          <span style:--w={0.85 + (w.n / maxW) * 1.3} title={plural(w.n, 'message', 'messages')}>{w.w}</span>
         {/each}
       </div>
     </section>
@@ -147,33 +148,33 @@
 
   {#if a.retired.length}
     <section class="panel">
-      <header class="panel-head"><h2>Anciennes emotes</h2><span class="hint">sans image, retirées depuis</span></header>
+      <header class="panel-head"><h2>{t('Anciennes emotes')}</h2><span class="hint">{t('sans image, retirées depuis')}</span></header>
       <div class="cloud">
-        {#each a.retired as r (r.name)}<span style:--w={0.85 + (r.n / a.retired[0].n) * 0.9} title="{n(r.n)} fois">{r.name}</span>{/each}
+        {#each a.retired as r (r.name)}<span style:--w={0.85 + (r.n / a.retired[0].n) * 0.9} title={plural(r.n, "fois", "fois")}>{r.name}</span>{/each}
       </div>
-      <p class="note">Des noms au format des emotes de sub (comme kaydopV) qui n'existent plus aujourd'hui. Leur image n'est plus récupérable, sauf pour tes messages depuis 2023, où Twitch a gardé l'identifiant de chaque emote.</p>
+      <p class="note">{t("Des noms au format des emotes de sub (comme kaydopV) qui n'existent plus aujourd'hui. Leur image n'est plus récupérable, sauf pour tes messages depuis 2023, où Twitch a gardé l'identifiant de chaque emote.")}</p>
     </section>
   {/if}
 
   {#if shownBadges.length}
     <section class="panel">
-      <header class="panel-head"><h2>Badges affichés</h2><span class="hint">à côté de ton pseudo, dans tes messages depuis 2023</span></header>
+      <header class="panel-head"><h2>{t('Badges affichés')}</h2><span class="hint">{t('à côté de ton pseudo, dans tes messages depuis 2023')}</span></header>
       <ul class="badge-strip">
         {#each shownBadges as b (b.key)}
           {@const info = app.enrich?.badges?.[b.key]}
-          <li title="{n(b.n)} messages · {day(localDay(b.first))} → {day(localDay(b.last))}">
+          <li title="{plural(b.n, 'message', 'messages')} · {day(localDay(b.first))} → {day(localDay(b.last))}">
             {#if info}<img src={info.url} alt="" width="24" height="24" loading="lazy" referrerpolicy="no-referrer" />{/if}
             <span>{info?.title ?? b.key.split('/')[0]}</span>
           </li>
         {/each}
       </ul>
-      <p class="note">Twitch ne garde que le badge visible au moment de chaque message, pas la liste de tous ceux que tu possèdes. Ton badge d'abonné est sur la fiche de chaque streamer.</p>
+      <p class="note">{t("Twitch ne garde que le badge visible au moment de chaque message, pas la liste de tous ceux que tu possèdes. Ton badge d'abonné est sur la fiche de chaque streamer.")}</p>
     </section>
   {/if}
 
   {#if replies.length}
   <section class="panel">
-    <header class="panel-head"><h2>Tu réponds le plus à</h2></header>
+    <header class="panel-head"><h2>{t('Tu réponds le plus à')}</h2></header>
     {#if replies.length}
       <ol class="rank">
         {#each replies.slice(0, 12) as [login, c], i (login)}
@@ -181,24 +182,24 @@
         {/each}
       </ol>
     {:else}
-      <Empty text="Aucune réponse enregistrée sur cette période." />
+      <Empty text={t('Aucune réponse enregistrée sur cette période.')} />
     {/if}
   </section>
   {/if}
 
   <div class="split">
     <section class="panel">
-      <header class="panel-head"><h2>{app.year === null ? 'Ton tout premier message' : `Ton premier message${app.periodEn}`}</h2></header>
+      <header class="panel-head"><h2>{app.year === null ? t('Ton tout premier message') : t('Ton premier message') + app.periodEn}</h2></header>
       <figure class="chatline">
-        <figcaption>{dateTime(msgs[0].ts)} · chez {app.chName(msgs[0].ch)}</figcaption>
+        <figcaption>{dateTime(msgs[0].ts)} · {t('chez {name}', { name: app.chName(msgs[0].ch) })}</figcaption>
         <p><ChatText body={msgs[0].body} ch={msgs[0].ch} msg={msgs[0]} /></p>
       </figure>
     </section>
     <section class="panel">
-      <header class="panel-head"><h2>Un message au hasard</h2><button class="btn small" onclick={() => (random = Math.floor(Math.random() * msgs.length))}>Tirer</button></header>
+      <header class="panel-head"><h2>{t('Un message au hasard')}</h2><button class="btn small" onclick={() => (random = Math.floor(Math.random() * msgs.length))}>{t('Tirer')}</button></header>
       {#if random !== null && msgs[random]}
         <figure class="chatline">
-          <figcaption>{dateTime(msgs[random].ts)} · chez {app.chName(msgs[random].ch)}</figcaption>
+          <figcaption>{dateTime(msgs[random].ts)} · {t('chez {name}', { name: app.chName(msgs[random].ch) })}</figcaption>
           <p><ChatText body={msgs[random].body} ch={msgs[random].ch} msg={msgs[random]} /></p>
         </figure>
       {/if}
@@ -206,12 +207,12 @@
   </div>
 
   <section class="panel">
-      <header class="panel-head"><h2>Tes messages</h2><span class="hint">{plural(log.length, 'message', 'messages')}</span></header>
+      <header class="panel-head"><h2>{t('Tes messages')}</h2><span class="hint">{plural(log.length, 'message', 'messages')}</span></header>
       <div class="log-tools">
-        <input class="search" type="search" placeholder="Chercher" bind:value={q} aria-label="Chercher dans tes messages" oninput={() => (logLimit = 100)} />
+        <input class="search" type="search" placeholder={t('Chercher')} bind:value={q} aria-label={t('Chercher dans tes messages')} oninput={() => (logLimit = 100)} />
         <Combobox
-          label="Filtrer par chat"
-          allLabel="Tous les chats"
+          label={t('Filtrer par chat')}
+          allLabel={t('Tous les chats')}
           bind:value={chFilter}
           onchange={() => (logLimit = 100)}
           options={s.chat.channels.map((c) => ({ value: c.ch, label: app.chName(c.ch), meta: n(c.n), ch: c.ch }))}

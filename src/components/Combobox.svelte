@@ -1,6 +1,7 @@
 <script lang="ts">
   /** A select you can type into: filters as you type, arrows and Enter to pick, Escape to close. */
   import Avatar from './Avatar.svelte';
+  import { t } from '../lib/i18n/index.svelte';
   import { ChevronDown, X } from '@lucide/svelte';
 
   interface Option {
@@ -85,7 +86,7 @@
       onkeydown={key}
     />
     {#if selected}
-      <button class="combo-icon" aria-label="Retirer le filtre" onclick={() => pick({ value: -1, label: allLabel })}><X size={14} strokeWidth={1.5} /></button>
+      <button class="combo-icon" aria-label={t('Retirer le filtre')} onclick={() => pick({ value: -1, label: allLabel })}><X size={14} strokeWidth={1.5} /></button>
     {:else}
       <span class="combo-icon" aria-hidden="true"><ChevronDown size={14} strokeWidth={1.5} /></span>
     {/if}
@@ -105,7 +106,7 @@
           {#if o.meta}<span class="combo-meta">{o.meta}</span>{/if}
         </li>
       {:else}
-        <li class="combo-empty">Aucun résultat</li>
+        <li class="combo-empty">{t('Aucun résultat')}</li>
       {/each}
     </ul>
   {/if}

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
+  import { t } from '../lib/i18n/index.svelte';
   import { channelDetail, subMonths } from '../lib/stats';
   import { timeline, DAY } from '../lib/stats';
   import { h, n, day, date, dateTime, plural, share, duration, lang, dur } from '../lib/format';
@@ -63,48 +64,48 @@
 </script>
 
 {#if !det || !all}
-  <Empty text="Chaîne introuvable." />
+  <Empty text={t('Chaîne introuvable.')} />
 {:else}
-  <a class="back" href="#/streamers">← Streamers</a>
+  <a class="back" href="#/streamers">← {t('Streamers')}</a>
   <header class="profile">
     <Avatar {ch} size={88} />
     <div>
       <h1>{app.chName(ch)}</h1>
       <p class="lead">
-        {[det.rank ? `N° ${n(det.rank)} sur ${n(watchedCount)} chaînes` : 'Jamais regardé', det.min ? `${dur(det.min)} ensemble` : '', det.min ? `${share(det.min, total)} % de ton temps de visionnage` : ''].filter(Boolean).join(' · ')}
+        {[det.rank ? t('N° {rank} sur {total} chaînes', { rank: n(det.rank), total: n(watchedCount) }) : t('Jamais regardé'), det.min ? t('{d} ensemble', { d: dur(det.min) }) : '', det.min ? t('{p} % de ton temps de visionnage', { p: share(det.min, total) }) : ''].filter(Boolean).join(' · ')}
       </p>
       <p class="muted">
-        {#if old.length}Anciens pseudos : {old.join(', ')} · {/if}
-        {#if app.gone(ch)}<span>Chaîne introuvable aujourd'hui sur Twitch (supprimée ou bannie), d'où l'absence d'image</span>{:else}<a href="https://www.twitch.tv/{app.login(ch)}" target="_blank" rel="noopener noreferrer">twitch.tv/{app.login(ch)} ↗</a>{/if}
+        {#if old.length}{t('Anciens pseudos :')} {old.join(', ')} · {/if}
+        {#if app.gone(ch)}<span>{t("Chaîne introuvable aujourd'hui sur Twitch (supprimée ou bannie), d'où l'absence d'image")}</span>{:else}<a href="https://www.twitch.tv/{app.login(ch)}" target="_blank" rel="noopener noreferrer">twitch.tv/{app.login(ch)} ↗</a>{/if}
       </p>
-      <a class="btn small profile-share" href="#/partager/streamers/{encodeURIComponent(app.login(ch))}">Créer sa carte à partager</a>
+      <a class="btn small profile-share" href="#/partager/streamers/{encodeURIComponent(app.login(ch))}">{t('Créer sa carte à partager')}</a>
     </div>
   </header>
 
   <div class="stats four">
-    <Stat value={n(det.days)} label="Jours ensemble" sub="du {day(det.first)} au {day(det.last)}" />
+    <Stat value={n(det.days)} label={t('Jours ensemble')} sub={t('du {from} au {to}', { from: day(det.first), to: day(det.last) })} />
     {#if app.year !== null}
-      <Stat value="{yearRow ? h(yearRow.min) : '0'} h" label="En {app.periodName}" sub={yearRow ? plural(yearRow.days, 'jour', 'jours') : 'pas vu sur cette période'} />
+      <Stat value="{yearRow ? h(yearRow.min) : '0'} h" label={t('En {period}', { period: app.periodName ?? '' })} sub={yearRow ? plural(yearRow.days, 'jour', 'jours') : t('pas vu sur cette période')} />
     {:else}
-      <Stat value={duration(det.last - det.first)} label="Depuis ta première fois" />
+      <Stat value={duration(det.last - det.first)} label={t('Depuis ta première fois')} />
     {/if}
-    <Stat value={n(det.chat)} label="Messages dans son chat" />
+    <Stat value={n(det.chat)} label={t('Messages dans son chat')} />
     {#if det.follow}
-      <Stat value={det.follow.following ? 'Suivi' : 'Plus suivi'} label="Follow" sub="depuis le {date(det.follow.since)}" />
+      <Stat value={t(det.follow.following ? 'Suivi' : 'Plus suivi')} label={t('Follow')} sub={t('depuis le {date}', { date: date(det.follow.since) })} />
     {:else}
-      <Stat value="—" label="Follow" sub="aucun follow dans l'export" />
+      <Stat value="—" label={t('Follow')} sub={t("aucun follow dans l'export")} />
     {/if}
   </div>
 
   <section class="panel">
-    <header class="panel-head"><h2>Heures par {tl?.unit ?? 'année'}</h2></header>
+    <header class="panel-head"><h2>{t(tl?.unit === 'jour' ? 'Heures par jour' : tl?.unit === 'mois' ? 'Heures par mois' : 'Heures par année')}</h2></header>
     <Bars height={200} items={(tl?.items ?? []).map((it) => ({ ...it, mark: tl?.unit === 'année' && app.year !== null && parseInt(it.label) === app.year }))} />
     {#if tl?.partial}<p class="chart-note">{tl.partial}</p>{/if}
   </section>
 
   <div class="split">
     <section class="panel">
-      <header class="panel-head"><h2>Ce que tu regardais chez {app.chName(ch)}</h2></header>
+      <header class="panel-head"><h2>{t('Ce que tu regardais chez {name}', { name: app.chName(ch) })}</h2></header>
       <ol class="rank">
         {#each det.games.slice(0, 10) as g (g.game)}
           <li>
@@ -117,25 +118,25 @@
       </ol>
     </section>
     <section class="panel">
-      <header class="panel-head"><h2>En détail</h2></header>
+      <header class="panel-head"><h2>{t('En détail')}</h2></header>
       <dl class="facts">
-        {#if det.biggestDay}<dt>Plus grosse journée</dt><dd>{dur(det.biggestDay.min)} le {day(det.biggestDay.day)}</dd>{/if}
-        {#if det.vodMin}<dt>En rediffusion</dt><dd>{dur(det.vodMin)}</dd>{/if}
+        {#if det.biggestDay}<dt>{t('Plus grosse journée')}</dt><dd>{t('{d} le {date}', { d: dur(det.biggestDay.min), date: day(det.biggestDay.day) })}</dd>{/if}
+        {#if det.vodMin}<dt>{t('En rediffusion')}</dt><dd>{dur(det.vodMin)}</dd>{/if}
         {#if det.subs.length}
-          <dt>Subs</dt>
-          <dd>{plural(det.subs.reduce((a, s) => a + subMonths(s), 0), 'mois', 'mois')}, depuis le {date(det.subs[0].start)}</dd>
+          <dt>{t('Subs')}</dt>
+          <dd>{plural(det.subs.reduce((a, s) => a + subMonths(s), 0), 'mois', 'mois')}, {t('depuis le {date}', { date: date(det.subs[0].start) })}</dd>
         {/if}
-        {#if det.bits}<dt>Bits</dt><dd>{n(det.bits)}</dd>{/if}
-        {#if det.ads}<dt>Pubs vues</dt><dd>{n(det.ads)}</dd>{/if}
-        {#if subBadge}<dt>Ton badge d'abonné</dt><dd class="badge-dd">{#if subBadge.img}<img src={subBadge.img.url} alt="" width="20" height="20" />{/if}{subBadge.months ? plural(subBadge.months, 'mois', 'mois') : 'affiché'}</dd>{/if}
-        {#if vodCount}<dt>Rediffusions ouvertes</dt><dd>{n(vodCount)}</dd>{/if}
-        {#if clips}<dt>Clips regardés</dt><dd>{n(clips)}</dd>{/if}
-        {#if u}<dt>Chaîne</dt><dd>{TYPES[u.type] ?? u.type}{u.createdAt ? `, créée le ${date(Date.parse(u.createdAt))}` : ''}</dd>{/if}
-        {#if u?.lang}<dt>Langue aujourd'hui</dt><dd>{lang(u.lang)}</dd>{/if}
+        {#if det.bits}<dt>{t('Bits')}</dt><dd>{n(det.bits)}</dd>{/if}
+        {#if det.ads}<dt>{t('Pubs vues')}</dt><dd>{n(det.ads)}</dd>{/if}
+        {#if subBadge}<dt>{t("Ton badge d'abonné")}</dt><dd class="badge-dd">{#if subBadge.img}<img src={subBadge.img.url} alt="" width="20" height="20" />{/if}{subBadge.months ? plural(subBadge.months, 'mois', 'mois') : t('affiché')}</dd>{/if}
+        {#if vodCount}<dt>{t('Rediffusions ouvertes')}</dt><dd>{n(vodCount)}</dd>{/if}
+        {#if clips}<dt>{t('Clips regardés')}</dt><dd>{n(clips)}</dd>{/if}
+        {#if u}<dt>{t('Chaîne')}</dt><dd>{t(TYPES[u.type] ?? u.type)}{u.createdAt ? ', ' + t('créée le {date}', { date: date(Date.parse(u.createdAt)) }) : ''}</dd>{/if}
+        {#if u?.lang}<dt>{t("Langue aujourd'hui")}</dt><dd>{lang(u.lang)}</dd>{/if}
       </dl>
       {#if det.firstMsg}
         <figure class="chatline">
-          <figcaption>Ton premier message chez {app.chName(ch)}, le {dateTime(det.firstMsg.ts)}</figcaption>
+          <figcaption>{t('Ton premier message chez {name}, le {date}', { name: app.chName(ch), date: dateTime(det.firstMsg.ts) })}</figcaption>
           <p><ChatText body={det.firstMsg.body} {ch} msg={det.firstMsg} /></p>
         </figure>
       {/if}
@@ -144,7 +145,7 @@
 
   {#if emo?.emotes.length}
     <section class="panel">
-      <header class="panel-head"><h2>Tes emotes chez {app.chName(ch)}</h2><span class="hint">{n(emo.emotesUsed)} envoyées dans {plural(myMsgs.length, 'message', 'messages')}</span></header>
+      <header class="panel-head"><h2>{t('Tes emotes chez {name}', { name: app.chName(ch) })}</h2><span class="hint">{t('{n} envoyées dans {m}', { n: n(emo.emotesUsed), m: plural(myMsgs.length, 'message', 'messages') })}</span></header>
       <ol class="emotes">
         {#each emo.emotes.slice(0, 15) as e, i (e.emote.name)}
           <li title={e.emote.name}>

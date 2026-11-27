@@ -1,9 +1,9 @@
 import { tick } from 'svelte';
+import { t, monthName } from './i18n/index.svelte';
 import type { RetroData, WorkerMsg } from './types';
 import type { EnrichResponse, Emote } from '../../server/enrich';
 import { compute, indexChannels, periodTest, type Stats } from './stats';
 
-const MONTH_NAMES = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 import { taggedEmoteIds } from './words';
 // Inlined so a page left open during a site update still has its worker.
 import ParseWorker from './worker.ts?worker&inline';
@@ -107,11 +107,11 @@ class AppState {
   /** "juin 2023", "2023" or null for all time */
   get periodName(): string | null {
     if (this.year === null) return null;
-    return this.month !== null ? `${MONTH_NAMES[this.month]} ${this.year}` : String(this.year);
+    return this.month !== null ? `${monthName(this.month)} ${this.year}` : String(this.year);
   }
   /** " en juin 2023", " en 2023" or "" — ready to append to a sentence */
   get periodEn(): string {
-    return this.periodName ? ` en ${this.periodName}` : '';
+    return this.periodName ? ' ' + t('en {period}', { period: this.periodName }) : '';
   }
   get period() {
     return periodTest(this.year, this.month);
@@ -215,7 +215,7 @@ class AppState {
     } catch {
       this.loading = null;
       this.booting = false;
-      this.error = "Le fichier n'a pas pu être lu. S'il est encore en cours de téléchargement, attends la fin et réessaie.";
+      this.error = t("Le fichier n'a pas pu être lu. S'il est encore en cours de téléchargement, attends la fin et réessaie.");
       return;
     }
     const worker = new ParseWorker();
@@ -226,7 +226,7 @@ class AppState {
         worker.terminate();
         this.loading = null;
         this.booting = false;
-        if (m.type === 'error') this.error = m.message;
+        if (m.type === 'error') this.error = t(m.message);
         else {
           this.enrich = null;
           this.data = m.data;
@@ -243,7 +243,7 @@ class AppState {
       this.booting = false;
       // An empty message usually means the worker script itself failed to load,
       // for example after the site was updated while the page stayed open.
-      this.error = e.message || 'Le site a été mis à jour pendant que la page était ouverte. Recharge la page et réessaie.';
+      this.error = e.message || t('Le site a été mis à jour pendant que la page était ouverte. Recharge la page et réessaie.');
     };
     worker.postMessage(buf, [buf]);
   }

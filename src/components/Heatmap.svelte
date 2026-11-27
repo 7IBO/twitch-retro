@@ -1,6 +1,7 @@
 <script lang="ts">
   import { DAY } from '../lib/stats';
   import { h, day as fmtDay } from '../lib/format';
+  import { t, monthShort, weekdayShort } from '../lib/i18n/index.svelte';
 
   let {
     year,
@@ -25,9 +26,8 @@
   });
   // Levels from the person's own quartiles (same for every year), so heavy and light viewers both get contrast.
   const level = (m: number) => (m === 0 ? 0 : m < steps[0] ? 1 : m < steps[1] ? 2 : m < steps[2] ? 3 : 4);
-  const months = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
   const monthX = $derived(
-    months.map((label, m) => {
+    Array.from({ length: 12 }, (_, m) => monthShort(m)).map((label, m) => {
       const d = Math.floor(Date.UTC(year, m, 1) / DAY);
       return { label, x: Math.floor((d - start + offset) / 7) * STEP };
     }),
@@ -36,11 +36,11 @@
 </script>
 
 <div class="heatmap-scroll">
-  <svg class="heatmap" viewBox="-28 -18 {width + 28} {7 * STEP + 18}" width="100%" style:max-width="{(width + 28) * 1.5}px" style:min-width="{width + 28}px" role="img" aria-label="Calendrier {year}">
+  <svg class="heatmap" viewBox="-28 -18 {width + 28} {7 * STEP + 18}" width="100%" style:max-width="{(width + 28) * 1.5}px" style:min-width="{width + 28}px" role="img" aria-label="{t('Calendrier')} {year}">
     {#each monthX as m (m.label)}
       <text class="hm-label" x={m.x} y="-6">{m.label}</text>
     {/each}
-    {#each ['lun', '', 'mer', '', 'ven', '', ''] as l, i (i)}
+    {#each [0, 2, 4].map((i) => ({ i, l: weekdayShort(i) })) as { i, l } (i)}
       {#if l}<text class="hm-label" x="-28" y={i * STEP + 10}>{l}</text>{/if}
     {/each}
     {#each cells as c (c.d)}
@@ -57,7 +57,7 @@
         tabindex={onpick && c.m ? 0 : undefined}
         onclick={onpick && c.m ? () => onpick(c.d) : undefined}
         onkeydown={onpick && c.m ? (e) => e.key === 'Enter' && onpick(c.d) : undefined}
-      ><title>{fmtDay(c.d)} : {c.m ? h(c.m) + ' h' : 'rien'}</title></rect>
+      ><title>{fmtDay(c.d)} : {c.m ? h(c.m) + ' h' : t('rien')}</title></rect>
     {/each}
   </svg>
 </div>

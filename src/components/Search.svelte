@@ -1,6 +1,7 @@
 <script lang="ts">
   /** Search everything (streamers, categories, pages) from anywhere. Ctrl+K or / opens it. */
   import { app } from '../lib/state.svelte';
+  import { t } from '../lib/i18n/index.svelte';
   import { compute } from '../lib/stats';
   import { dur } from '../lib/format';
   import Avatar from './Avatar.svelte';
@@ -25,7 +26,7 @@
     const pageHits: Hit[] = pages
       .filter((p) => !query || match(p.label))
       .slice(0, query ? 3 : 0)
-      .map((p) => ({ kind: 'page', href: '#/' + p.path, label: p.label, meta: 'Page', id: -1 }));
+      .map((p) => ({ kind: 'page', href: '#/' + p.path, label: p.label, meta: t('Page'), id: -1 }));
     const chHits: Hit[] = all.channels
       .filter((c) => !query || match(app.chName(c.ch), app.data!.channels[c.ch].name, ...app.oldNames(c.ch)))
       .slice(0, query ? 6 : 5)
@@ -76,15 +77,15 @@
 
 <svelte:window onkeydown={globalKey} />
 
-<button class="search-trigger" onclick={show} aria-label="Rechercher">
+<button class="search-trigger" onclick={show} aria-label={t('Rechercher')}>
   <SearchIcon size={16} strokeWidth={1.5} />
-  <span class="search-trigger-label">Rechercher</span>
+  <span class="search-trigger-label">{t('Rechercher')}</span>
   <kbd>{mac ? '⌘' : 'Ctrl'} K</kbd>
 </button>
 
 {#if open}
   <div class="palette-backdrop" onpointerdown={() => (open = false)} role="presentation"></div>
-  <div class="palette" role="dialog" aria-modal="true" aria-label="Rechercher">
+  <div class="palette" role="dialog" aria-modal="true" aria-label={t('Rechercher')}>
     <div class="palette-field">
       <SearchIcon size={18} strokeWidth={1.5} />
       <input
@@ -92,17 +93,17 @@
         bind:value={q}
         oninput={() => (active = 0)}
         onkeydown={key}
-        placeholder="Un streamer, une catégorie, une page"
+        placeholder={t('Un streamer, une catégorie, une page')}
         role="combobox"
         aria-expanded="true"
         aria-controls="palette-list"
         aria-autocomplete="list"
       />
-      <kbd>Échap</kbd>
+      <kbd>{t('Échap')}</kbd>
     </div>
     <ul class="palette-list" id="palette-list" role="listbox">
       {#each hits as h, i (h.kind + h.href)}
-        {#if i === 0 || hits[i - 1].kind !== h.kind}<li class="palette-group" role="presentation">{titles[h.kind]}</li>{/if}
+        {#if i === 0 || hits[i - 1].kind !== h.kind}<li class="palette-group" role="presentation">{t(titles[h.kind])}</li>{/if}
         <li
           role="option"
           aria-selected={i === active}
@@ -115,7 +116,7 @@
           <span class="palette-meta">{h.meta}</span>
         </li>
       {:else}
-        <li class="palette-empty">Aucun résultat</li>
+        <li class="palette-empty">{t('Aucun résultat')}</li>
       {/each}
     </ul>
   </div>

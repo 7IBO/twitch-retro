@@ -1,5 +1,6 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
+  import { t } from '../lib/i18n/index.svelte';
   import { yearOfDay, yearOfTs } from '../lib/stats';
   import { h, n, day, date, plural, dur } from '../lib/format';
   import Stat from '../components/Stat.svelte';
@@ -31,44 +32,44 @@
 </script>
 
 <header class="page-head">
-  <h1>Ma chaîne</h1>
-  <p class="lead">Ton côté streamer : tes lives, tes VOD et tes pseudos.</p>
+  <h1>{t('Ma chaîne')}</h1>
+  <p class="lead">{t('Ton côté streamer : tes lives, tes VOD et tes pseudos.')}</p>
 </header>
 
 <div class="split">
   <section class="panel">
-    <header class="panel-head"><h2>Tes pseudos</h2></header>
+    <header class="panel-head"><h2>{t('Tes pseudos')}</h2></header>
     {#if names.length}
       <ol class="timeline">
         {#each names as name, i (i)}
           <li>
             <span class="tl-name">{d.user.displayNames?.[name.toLowerCase()] ?? name}</span>
-            <span class="tl-date">{i === 0 ? (Number.isFinite(d.user.start) ? `compte créé le ${date(d.user.start)}` : 'au début') : `depuis le ${date(d.user.renames[i - 1].ts)}`}</span>
+            <span class="tl-date">{i === 0 ? (Number.isFinite(d.user.start) ? t('compte créé le {date}', { date: date(d.user.start) }) : t('au début')) : t('depuis le {date}', { date: date(d.user.renames[i - 1].ts) })}</span>
           </li>
         {/each}
       </ol>
     {:else}
-      <Empty text="Aucun changement de pseudo." />
+      <Empty text={t('Aucun changement de pseudo.')} />
     {/if}
   </section>
 
   <section class="panel">
-    <header class="panel-head"><h2>Tes lives</h2></header>
+    <header class="panel-head"><h2>{t('Tes lives')}</h2></header>
     {#if total}
       <div class="stats two">
-        <Stat value={dur(total)} label="En live" sub={plural(days.size, 'jour', 'jours')} />
-        <Stat value={day(Math.min(...days))} label="Premier live" sub="dernier le {day(Math.max(...days))}" />
+        <Stat value={dur(total)} label={t('En live')} sub={plural(days.size, 'jour', 'jours')} />
+        <Stat value={day(Math.min(...days))} label={t('Premier live')} sub={t('dernier le {date}', { date: day(Math.max(...days)) })} />
       </div>
       {#if perYear.length > 1}<Bars height={120} items={perYear} />{/if}
     {:else}
-      <Empty text={app.year === null ? "Tu n'as jamais streamé d'après l'export." : `Aucun live${app.periodEn}.`} />
+      <Empty text={app.year === null ? t("Tu n'as jamais streamé d'après l'export.") : t('Aucun live') + app.periodEn + '.'} />
     {/if}
   </section>
 </div>
 
 {#if games.length}
   <section class="panel">
-    <header class="panel-head"><h2>Catégories streamées</h2></header>
+    <header class="panel-head"><h2>{t('Catégories streamées')}</h2></header>
     <ol class="rank">
       {#each games.slice(0, 10) as [g, m] (g)}
         <li>
@@ -84,13 +85,13 @@
 
 {#if vods.length}
   <section class="panel flush">
-    <header class="panel-head pad"><h2>Tes VOD</h2><span class="hint">{n(vods.length)}</span></header>
+    <header class="panel-head pad"><h2>{t('Tes VOD')}</h2><span class="hint">{n(vods.length)}</span></header>
     <table class="table-plain">
-      <thead><tr><th>Titre</th><th>Date</th><th>Durée</th><th>Catégorie</th></tr></thead>
+      <thead><tr><th>{t('Titre')}</th><th>{t('Date')}</th><th>{t('Durée')}</th><th>{t('Catégorie')}</th></tr></thead>
       <tbody>
         {#each vods as v (v.id)}
           <tr>
-            <td><a href="https://www.twitch.tv/videos/{v.id}" target="_blank" rel="noopener noreferrer">{v.title || 'Sans titre'}</a></td>
+            <td><a href="https://www.twitch.tv/videos/{v.id}" target="_blank" rel="noopener noreferrer">{v.title || t('Sans titre')}</a></td>
             <td>{date(v.ts)}</td>
             <td class="num">{mins(v.seconds)}</td>
             <td>{app.gameName(v.game)}</td>
@@ -98,6 +99,6 @@
         {/each}
       </tbody>
     </table>
-    <p class="note pad">Les liens marchent tant que Twitch garde la VOD.</p>
+    <p class="note pad">{t('Les liens marchent tant que Twitch garde la VOD.')}</p>
   </section>
 {/if}

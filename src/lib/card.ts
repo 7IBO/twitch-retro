@@ -1,3 +1,4 @@
+import { t } from './i18n/index.svelte';
 /** Draws the shareable card on a canvas. Everything happens in the browser. */
 
 export interface CardItem {
@@ -223,11 +224,11 @@ export async function drawCard(canvas: HTMLCanvasElement, d: CardData, format: '
     }
     ctx.fillStyle = C.text;
     ctx.font = `500 30px ${SANS}`;
-    ctx.fillText(fit(ctx, `Emote préférée : ${d.emote.name}`, W - 2 * P - 340), P + 120 + (emote && emote.naturalWidth > emote.naturalHeight * 1.5 ? 40 : 0), ey + 14);
+    ctx.fillText(fit(ctx, t('Emote préférée : {name}', { name: d.emote.name }), W - 2 * P - 340), P + 120 + (emote && emote.naturalWidth > emote.naturalHeight * 1.5 ? 40 : 0), ey + 14);
     ctx.fillStyle = C.muted;
     ctx.font = `400 24px ${MONO}`;
     ctx.textAlign = 'right';
-    ctx.fillText(sp(`${d.emote.count} fois`), W - P - 24, ey + 14);
+    ctx.fillText(sp(t('{n} fois', { n: d.emote.count })), W - P - 24, ey + 14);
     ctx.textAlign = 'left';
   }
   ctx.strokeStyle = C.line;
@@ -238,7 +239,7 @@ export async function drawCard(canvas: HTMLCanvasElement, d: CardData, format: '
   ctx.stroke();
   ctx.fillStyle = C.muted;
   ctx.font = `400 22px ${SANS}`;
-  ctx.fillText("Rétro Twitch · d'après mon export de données Twitch", P, footY);
+  ctx.fillText(t("Rétro Twitch · d'après mon export de données Twitch"), P, footY);
 }
 
 export function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {
