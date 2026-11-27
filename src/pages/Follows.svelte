@@ -22,7 +22,7 @@
 
   let filter = $state<'all' | 'on' | 'off'>('all');
   let q = $state('');
-  let limit = $state(100);
+  let limit = $state(50);
   const rows = $derived.by(() => {
     const query = q.trim().toLowerCase();
     return [...s.follows]

@@ -39,3 +39,25 @@ export function slide(node: HTMLElement) {
     },
   };
 }
+
+/**
+ * Svelte action: sizes the rank column of every ranked list inside the node to
+ * the widest number it actually shows (1-9: one digit, up to 99: two...), so
+ * short lists do not keep room for four-digit ranks.
+ */
+export function rankDigits(node: HTMLElement) {
+  let frame = 0;
+  const update = () => {
+    frame = 0;
+    for (const ol of node.querySelectorAll<HTMLElement>('ol.rank')) {
+      let max = 1;
+      for (const el of ol.querySelectorAll(':scope > li > .rank-n')) max = Math.max(max, (el.textContent ?? '').trim().length);
+      ol.style.setProperty('--rank-digits', String(max));
+    }
+  };
+  const schedule = () => (frame ||= requestAnimationFrame(update));
+  update();
+  const mo = new MutationObserver(schedule);
+  mo.observe(node, { subtree: true, childList: true, characterData: true });
+  return { destroy: () => (mo.disconnect(), cancelAnimationFrame(frame)) };
+}

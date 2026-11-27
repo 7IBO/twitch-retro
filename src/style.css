@@ -283,7 +283,7 @@ button.bar { cursor: pointer; }
 .rank li:hover { background: var(--raised); }
 .rank li > .rank-name, .rank li > .rank-main { flex: 1 1 0; }
 .rank li > .meter { flex: 0 1 160px; min-width: 48px; }
-.rank.table li { margin: 0; padding: 8px 24px; border-radius: 0; border-top: 1px solid var(--line); min-height: 56px; }
+.rank.table li { margin: 0; padding: 8px 24px 8px 16px; border-radius: 0; border-top: 1px solid var(--line); min-height: 56px; }
 .rank.table { gap: 0; }
 /* The whole row opens the item: the name's link stretches over the row. */
 .rank li:has(> a.rank-name, > .rank-main > a.rank-name) { position: relative; cursor: pointer; }
@@ -292,7 +292,7 @@ button.bar { cursor: pointer; }
 .rank li a.rank-name:focus-visible { outline: none; }
 .rank li:has(a.rank-name:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
 .rank.table li:first-child { border-top: 0; }
-.rank-n { flex: none; width: 3ch; text-align: right; color: var(--muted); font: 400 12px var(--mono); }
+.rank-n { flex: none; width: calc(var(--rank-digits, 2) * 1ch + 1px); text-align: right; color: var(--muted); font: 400 12px var(--mono); }
 .rank-main { display: grid; min-width: 0; }
 .rank-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .rank-meta { color: var(--muted); font-size: 12px; line-height: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

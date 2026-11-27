@@ -7,7 +7,7 @@
 
   const s = $derived(app.stats!);
   let q = $state('');
-  let limit = $state(100);
+  let limit = $state(50);
   const rows = $derived.by(() => {
     const ranked = s.games.map((g, i) => ({ ...g, rank: i + 1 }));
     const query = q.trim().toLowerCase();

@@ -9,7 +9,7 @@
   const s = $derived(app.stats!);
   let q = $state('');
   let sort = $state<'min' | 'days' | 'first' | 'last'>('min');
-  let limit = $state(100);
+  let limit = $state(50);
   let vodLimit = $state(15);
   let vodOnline = $state(false);
   const onlineCount = $derived(s.watchedVods.filter((v) => app.enrich?.vods?.[v.id]).length);

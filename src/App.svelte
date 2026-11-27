@@ -2,7 +2,7 @@
   import { app } from './lib/state.svelte';
   import { availableYears } from './lib/stats';
   import { date } from './lib/format';
-  import { slide } from './lib/slide';
+  import { slide, rankDigits } from './lib/slide';
   import Search from './components/Search.svelte';
   import { fly } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
@@ -75,7 +75,7 @@
         {/each}
       </div>
 
-      <main class="content">
+      <main class="content" use:rankDigits>
         {#key JSON.stringify(r) + ':' + app.year}
         <div class="page" in:fly={{ y: 8, duration: still ? 0 : 320, easing: quintOut }}>
         {#if r.page === 'overview'}<Overview />
