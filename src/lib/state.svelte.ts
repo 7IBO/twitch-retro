@@ -15,7 +15,6 @@ export type Route =
   | { page: 'category'; key: string }
   | { page: 'calendar' }
   | { page: 'chat' }
-  | { page: 'badges' }
   | { page: 'follows' }
   | { page: 'support' }
   | { page: 'channel' }
@@ -53,8 +52,6 @@ function parseRoute(hash: string): Route {
       return { page: 'calendar' };
     case 'chat':
       return { page: 'chat' };
-    case 'badges':
-      return { page: 'badges' };
     case 'follows':
       return { page: 'follows' };
     case 'soutien':

@@ -410,6 +410,9 @@ button.combo-icon:hover { background: var(--raised); color: var(--text); }
 .badges img, .badge-empty { width: 28px; height: 28px; flex: none; border-radius: 4px; }
 .badge-empty { background: var(--raised); }
 .badges .rank-main, .badges .rank-name { flex: 1; }
+.badge-strip { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.badge-strip li { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px 0 8px; border-radius: 8px; background: var(--raised); font-size: 13px; }
+.badge-strip img { width: 24px; height: 24px; border-radius: 4px; }
 .sub-h { font-size: 14px; color: var(--text-2); margin: 20px 0 8px; }
 .sub-h.first { margin-top: 0; }
 .month-n { font-family: var(--sans); font-size: 18px; text-transform: capitalize; }

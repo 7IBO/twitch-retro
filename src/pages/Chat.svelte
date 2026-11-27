@@ -47,6 +47,22 @@
   const maxW = $derived(a.words[0]?.n ?? 1);
 
   // Badges and replies come from the chat tags Twitch kept (recent messages only).
+  // Only the badges shown next to your name, from messages since 2023: not your whole collection.
+  const shownBadges = $derived.by(() => {
+    const sets = new Map<string, { key: string; n: number; first: number; last: number }>();
+    for (const m of msgs)
+      for (const b of m.badges ?? []) {
+        const set = b.split('/')[0];
+        if (set === 'subscriber') continue;
+        const e = sets.get(set);
+        if (!e) sets.set(set, { key: b, n: 1, first: m.ts, last: m.ts });
+        else {
+          e.n++;
+          if (m.ts > e.last) (e.last = m.ts), (e.key = b);
+        }
+      }
+    return [...sets.values()].sort((x, y) => y.n - x.n);
+  });
   const replies = $derived.by(() => {
     const r = new Map<string, number>();
     for (const m of msgs) if (m.replyTo) r.set(m.replyTo, (r.get(m.replyTo) ?? 0) + 1);
@@ -136,6 +152,22 @@
         {#each a.retired as r (r.name)}<span style:--w={0.85 + (r.n / a.retired[0].n) * 0.9} title="{n(r.n)} fois">{r.name}</span>{/each}
       </div>
       <p class="note">Des noms au format des emotes de sub (comme kaydopV) qui n'existent plus aujourd'hui. Leur image n'est plus récupérable, sauf pour tes messages depuis 2023, où Twitch a gardé l'identifiant de chaque emote.</p>
+    </section>
+  {/if}
+
+  {#if shownBadges.length}
+    <section class="panel">
+      <header class="panel-head"><h2>Badges affichés</h2><span class="hint">à côté de ton pseudo, dans tes messages depuis 2023</span></header>
+      <ul class="badge-strip">
+        {#each shownBadges as b (b.key)}
+          {@const info = app.enrich?.badges?.[b.key]}
+          <li title="{n(b.n)} messages · {day(localDay(b.first))} → {day(localDay(b.last))}">
+            {#if info}<img src={info.url} alt="" width="24" height="24" loading="lazy" referrerpolicy="no-referrer" />{/if}
+            <span>{info?.title ?? b.key.split('/')[0]}</span>
+          </li>
+        {/each}
+      </ul>
+      <p class="note">Twitch ne garde que le badge visible au moment de chaque message, pas la liste de tous ceux que tu possèdes. Ton badge d'abonné est sur la fiche de chaque streamer.</p>
     </section>
   {/if}
 

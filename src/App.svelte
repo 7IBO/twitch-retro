@@ -16,8 +16,7 @@
   import Support from './pages/Support.svelte';
   import Channel from './pages/Channel.svelte';
   import Share from './pages/Share.svelte';
-  import Badges from './pages/Badges.svelte';
-  import { LayoutGrid, Users, Gamepad2, CalendarDays, MessageSquare, Heart, Gift, Radio, Share2, Award } from '@lucide/svelte';
+  import { LayoutGrid, Users, Gamepad2, CalendarDays, MessageSquare, Heart, Gift, Radio, Share2 } from '@lucide/svelte';
 
   const NAV = [
     { path: '', page: 'overview', label: 'Aperçu', icon: LayoutGrid },
@@ -25,7 +24,6 @@
     { path: 'categories', page: 'categories', label: 'Catégories', icon: Gamepad2 },
     { path: 'calendrier', page: 'calendar', label: 'Calendrier', icon: CalendarDays },
     { path: 'chat', page: 'chat', label: 'Chat', icon: MessageSquare },
-    { path: 'badges', page: 'badges', label: 'Badges', icon: Award },
     { path: 'follows', page: 'follows', label: 'Follows', icon: Heart },
     { path: 'soutien', page: 'support', label: 'Soutien', icon: Gift },
     { path: 'chaine', page: 'channel', label: 'Ma chaîne', icon: Radio },
@@ -88,7 +86,6 @@
         {:else if r.page === 'support'}<Support />
         {:else if r.page === 'channel'}<Channel />
         {:else if r.page === 'share'}<Share target={r.target} />
-        {:else if r.page === 'badges'}<Badges />
         {/if}
         </div>
         {/key}
