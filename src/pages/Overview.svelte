@@ -213,7 +213,7 @@
       <header class="panel-head"><h2>{t('Mois par mois')}</h2><span class="hint">{app.year}</span></header>
       <div class="years">
         {#each months as m (m.month)}
-          <a class="year-card" href="#/calendrier" title={t('Voir {month} dans le calendrier', { month: monthName(m.month) })}>
+          <button class="year-card" onclick={() => app.setMonth(m.month, true)} title={t("Voir {month} en détail", { month: monthName(m.month) })}>
             <span class="year-n month-n">{monthName(m.month)}</span>
             <span class="year-h">{dur(m.min)}</span>
             {#if m.topGame >= 0}<BoxArt game={m.topGame} w={144} h={192} cls="year-art" />{/if}
@@ -225,7 +225,7 @@
               <dt>{t('Jours actifs')}</dt>
               <dd>{n(m.days)}{m.newChannels ? ` · ${plural(m.newChannels, 'chaîne découverte', 'chaînes découvertes')}` : ''}</dd>
             </dl>
-          </a>
+          </button>
         {/each}
       </div>
     </section>

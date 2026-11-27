@@ -454,7 +454,22 @@ button.combo-icon:hover { background: var(--raised); color: var(--text); }
 .legend-row { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; flex-wrap: wrap; }
 .legend-row .muted { margin-left: 8px; }
 .calendar-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
-.calendar-layout:has(.day-detail) { grid-template-columns: minmax(0, 1fr) 320px; }
+.calendar-layout:has(.day-detail) { grid-template-columns: minmax(0, 1fr) 340px; }
+.month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.mg-head { font: 12px var(--mono); color: var(--muted); text-align: left; padding: 0 4px 4px; }
+.mg-cell {
+  aspect-ratio: 1.4; min-height: 56px; border-radius: 8px; border: 1px solid transparent; padding: 8px; cursor: pointer;
+  display: flex; flex-direction: column; justify-content: space-between; text-align: left; background: var(--raised); color: var(--text);
+  transition: border-color 0.15s var(--ease);
+}
+.mg-cell:disabled { cursor: default; opacity: 0.6; }
+.mg-cell.after { opacity: 0.3; }
+.mg-cell:not(:disabled):hover, .mg-cell.sel { border-color: var(--text); }
+.mg-cell.l1 { background: #3b2f52; } .mg-cell.l2 { background: #5a4382; } .mg-cell.l3 { background: #8158c4; } .mg-cell.l4 { background: var(--accent); color: #140b24; }
+.mg-n { font: 12px var(--mono); opacity: 0.8; }
+.mg-h { font: 500 14px var(--mono); }
+.linklike { border: 0; background: none; padding: 0; font: inherit; font-weight: 500; color: inherit; cursor: pointer; text-align: left; }
+.linklike:hover { color: var(--accent-ink); }
 .calendar-years { display: grid; gap: 16px; min-width: 0; }
 .day-detail { position: sticky; top: 72px; max-height: calc(100vh - 96px); overflow-y: auto; }
 .day-detail .muted { margin-bottom: 12px; font-size: 13px; }
@@ -481,6 +496,7 @@ button.combo-icon:hover { background: var(--raised); color: var(--text); }
 }
 @media (max-width: 1100px) {
   .stats.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mg-h { font-size: 11px; }
   .calendar-layout:has(.day-detail) { grid-template-columns: minmax(0, 1fr); }
   .day-detail { position: static; max-height: none; }
 }
