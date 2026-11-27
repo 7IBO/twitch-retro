@@ -18,13 +18,13 @@ import { hasPause, QUOTED } from "./pause-dash"
 // files, and the components when the copy is written in them), and the
 // files that may keep a word (a vendored text, a test).
 export const MARKDOWN = /\.mdx?$/
-export const INTERFACE = [
-  /(^|\/)src\/lib\/i18n\/.*\.ts$/,
-  /(^|\/)src\/(pages|components)\/.*\.svelte$/,
-]
+// Every visible text is written in the code (English keys of t()) and in
+// src/lib/i18n/fr.ts, so the whole of src/ is read.
+export const INTERFACE = [/(^|\/)src\/.*\.(ts|svelte)$/]
 export const EXEMPT = [
   /(^|\/)upstream\//, // a vendored text keeps its author's words
   /(^|\/)CHANGELOG\.md$/,
+  /(^|\/)src\/lib\/words\.ts$/, // the stop words of the word cloud
 ]
 
 /** Words that sell instead of saying, English and French. */
