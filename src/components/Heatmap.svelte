@@ -7,7 +7,8 @@
     dayMin,
     selected = null,
     onpick,
-  }: { year: number; dayMin: Map<number, number>; selected?: number | null; onpick?: (day: number) => void } = $props();
+    steps,
+  }: { year: number; dayMin: Map<number, number>; selected?: number | null; onpick?: (day: number) => void; steps: number[] } = $props();
 
   const CELL = 12, GAP = 3, STEP = CELL + GAP;
   const start = $derived(Math.floor(Date.UTC(year, 0, 1) / DAY));
@@ -22,8 +23,8 @@
     }
     return out;
   });
-  // Levels on fixed hour thresholds, so years compare honestly.
-  const level = (m: number) => (m === 0 ? 0 : m < 60 ? 1 : m < 180 ? 2 : m < 360 ? 3 : 4);
+  // Levels from the person's own quartiles (same for every year), so heavy and light viewers both get contrast.
+  const level = (m: number) => (m === 0 ? 0 : m < steps[0] ? 1 : m < steps[1] ? 2 : m < steps[2] ? 3 : 4);
   const months = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
   const monthX = $derived(
     months.map((label, m) => {
@@ -35,7 +36,7 @@
 </script>
 
 <div class="heatmap-scroll">
-  <svg class="heatmap" viewBox="-28 -18 {width + 28} {7 * STEP + 18}" width={width + 28} height={7 * STEP + 18} role="img" aria-label="Calendrier {year}">
+  <svg class="heatmap" viewBox="-28 -18 {width + 28} {7 * STEP + 18}" width="100%" style:max-width="{(width + 28) * 1.5}px" style:min-width="{width + 28}px" role="img" aria-label="Calendrier {year}">
     {#each monthX as m (m.label)}
       <text class="hm-label" x={m.x} y="-6">{m.label}</text>
     {/each}

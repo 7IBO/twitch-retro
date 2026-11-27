@@ -15,6 +15,16 @@ export const date = (t: number) => dLong.format(new Date(t));
 export const dateTime = (t: number) => dTime.format(new Date(t));
 export const month = (d: number) => dMonth.format(new Date(d * DAY));
 export const pct = (a: number, b: number) => (b ? Math.round((a / b) * 100) : 0);
+/** Share as text, "moins d'1" instead of a misleading 0. */
+export const share = (a: number, b: number) => (b && a > 0 && (a / b) * 100 < 1 ? "moins d'1" : String(pct(a, b)));
+const langNames = new Intl.DisplayNames(['fr'], { type: 'language' });
+export const lang = (code: string) => {
+  try {
+    return langNames.of(code) ?? code;
+  } catch {
+    return code;
+  }
+};
 export const plural = (x: number, one: string, many: string) => `${n(x)} ${Math.round(x) > 1 ? many : one}`;
 
 export function duration(days: number) {

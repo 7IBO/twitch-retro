@@ -236,6 +236,7 @@ button.bar { cursor: pointer; }
 
 /* ---------- covers ---------- */
 .covers { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 16px; }
+.covers.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .covers.big { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px 16px; }
 .cover { display: grid; gap: 4px; min-width: 0; align-content: start; }
 .cover .boxart { margin-bottom: 6px; transition: opacity 0.15s var(--ease); }
@@ -246,13 +247,13 @@ button.bar { cursor: pointer; }
 /* ---------- years ---------- */
 .years { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
 .year-card {
-  text-align: left; cursor: pointer; background: var(--raised); border: 1px solid transparent; border-radius: 12px; padding: 16px;
-  display: grid; grid-template-columns: minmax(0, 1fr) 48px; gap: 4px 12px; transition: border-color 0.15s var(--ease);
+  text-align: left; align-content: start; cursor: pointer; background: var(--raised); border: 1px solid transparent; border-radius: 12px; padding: 16px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; transition: border-color 0.15s var(--ease);
 }
 .year-card:hover { border-color: var(--line-2); }
 .year-n { font: 400 20px var(--mono); }
 .year-h { text-align: right; font: 400 13px var(--mono); color: var(--accent-ink); align-self: center; }
-.year-card .year-art { grid-column: 2; grid-row: 2; border-radius: 4px; margin-top: 8px; }
+.year-card .year-art { grid-column: 2; grid-row: 2; width: 48px; border-radius: 4px; margin-top: 8px; justify-self: end; }
 .year-card dl { margin: 8px 0 0; grid-column: 1; grid-row: 2; font-size: 13px; min-width: 0; }
 .year-card dt { color: var(--muted); font-size: 12px; }
 .year-card dd { margin: 0 0 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -380,4 +381,10 @@ button.bar { cursor: pointer; }
   .pv-rows li { grid-template-columns: 16px 28px 1fr 48px; }
   .pv-meter { display: none; }
   .emotes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bars.dense .bar:nth-child(even) .bar-label { visibility: hidden; }
+  .years { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .year-card { padding: 12px; }
+  .year-card .year-art { display: none; }
+  .year-card dl { grid-column: 1 / -1; }
+  .year-n { font-size: 16px; }
 }

@@ -62,7 +62,7 @@
     {#if app.emoteMap}
       {#if a.emotes.length}
         <ol class="emotes">
-          {#each a.emotes.slice(0, 30) as e, i (e.emote.provider + e.emote.name)}
+          {#each a.emotes.slice(0, 30) as e, i (e.emote.name)}
             <li title="{e.emote.name} · {PROVIDERS[e.emote.provider]}">
               <span class="emote-n">{i + 1}</span>
               <img src={e.emote.url} alt={e.emote.name} height="28" loading="lazy" referrerpolicy="no-referrer" />

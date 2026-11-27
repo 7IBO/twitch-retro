@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { channelDetail, subMonths } from '../lib/stats';
-  import { h, n, day, date, dateTime, plural, pct, duration } from '../lib/format';
+  import { h, n, day, date, dateTime, plural, share, duration, lang } from '../lib/format';
   import Avatar from '../components/Avatar.svelte';
   import BoxArt from '../components/BoxArt.svelte';
   import Bars from '../components/Bars.svelte';
@@ -38,7 +38,7 @@
     <div>
       <h1>{app.chName(ch)}</h1>
       <p class="lead">
-        {#if det.rank}N° {det.rank} de tous les temps · {/if}{h(det.min)} h ensemble, {pct(det.min, total)} % de ton temps
+        {#if det.rank}N° {det.rank} de tous les temps, {/if}{h(det.min)} h ensemble, {share(det.min, total)} % de ton temps
       </p>
       <p class="muted">
         {#if old.length}Anciens pseudos : {old.join(', ')} · {/if}
@@ -92,7 +92,7 @@
         {/if}
         {#if det.bits}<dt>Bits</dt><dd>{n(det.bits)}</dd>{/if}
         {#if det.ads}<dt>Pubs vues</dt><dd>{n(det.ads)}</dd>{/if}
-        {#if u?.lang}<dt>Langue de la chaîne aujourd'hui</dt><dd>{u.lang}</dd>{/if}
+        {#if u?.lang}<dt>Langue de la chaîne aujourd'hui</dt><dd>{lang(u.lang)}</dd>{/if}
       </dl>
       {#if det.firstMsg}
         <figure class="chatline">

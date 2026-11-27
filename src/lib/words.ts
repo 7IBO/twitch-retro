@@ -36,6 +36,8 @@ export function analyseChat(msgs: ChatMsg[], channels: Channel[], emotes: EmoteM
   const providers: ChatAnalysis['providers'] = { twitch: 0, '7tv': 0, bttv: 0, ffz: 0 };
   const words = new Map<string, number>();
   let used = 0, withEmote = 0;
+  // Emote names typed in lower case ("kekw") are not emotes, but they are not words either.
+  const lowerEmotes = emotes ? new Set([...emotes.global.keys(), ...[...emotes.perChannel.values()].flatMap((m) => [...m.keys()])].map((x) => x.toLowerCase())) : null;
   for (const m of msgs) {
     const local = emotes?.perChannel.get(channels[m.ch]?.id ?? '');
     const seen = new Set<string>();
@@ -47,7 +49,7 @@ export function analyseChat(msgs: ChatMsg[], channels: Channel[], emotes: EmoteM
         used++;
         had = true;
         providers[e.provider]++;
-        const k = e.provider + ':' + e.name;
+        const k = e.name;
         const c = eCount.get(k);
         if (c) c.n++;
         else eCount.set(k, { emote: e, n: 1 });
@@ -57,7 +59,7 @@ export function analyseChat(msgs: ChatMsg[], channels: Channel[], emotes: EmoteM
       if (w.length < 3 || w.startsWith('@') || /^\d+$/.test(w)) continue;
       // Without emote lists, keep emote-like casing (KEKW, SeemsGood) apart from plain words.
       const key = !emotes && /\p{Lu}/u.test(w.slice(1)) ? w : w.toLowerCase();
-      if (STOP.has(key.toLowerCase()) || seen.has(key)) continue;
+      if (STOP.has(key.toLowerCase()) || seen.has(key) || lowerEmotes?.has(key.toLowerCase())) continue;
       seen.add(key);
       words.set(key, (words.get(key) ?? 0) + 1);
     }

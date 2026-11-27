@@ -16,7 +16,7 @@
   const marked = $derived(items.some((i) => i.mark));
 </script>
 
-<div class="bars" style:height="{height}px" role="list">
+<div class="bars" class:dense={items.length > 8} style:height="{height}px" role="list">
   {#each items as it, i (i)}
     <svelte:element
       this={onpick ? 'button' : 'div'}

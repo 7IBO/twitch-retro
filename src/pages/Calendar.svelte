@@ -1,13 +1,21 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { availableYears, yearOfDay, localDay } from '../lib/stats';
-  import { h, n, day as fmtDay } from '../lib/format';
+  import { h, day as fmtDay, plural } from '../lib/format';
   import Heatmap from '../components/Heatmap.svelte';
   import Avatar from '../components/Avatar.svelte';
 
   const s = $derived(app.stats!);
   const years = $derived(app.year !== null ? [app.year] : availableYears(app.data!).filter((y) => [...s.dayMin.keys()].some((d) => yearOfDay(d) === y)).reverse());
   let picked = $state<number | null>(null);
+  // Quartiles of all active days, all-time, so colours mean the same thing in every year.
+  const steps = $derived.by(() => {
+    const all = new Map<number, number>();
+    for (const w of app.data!.watch) all.set(w.day, (all.get(w.day) ?? 0) + w.min);
+    const v = [...all.values()].sort((a, b) => a - b);
+    const q = (p: number) => v[Math.min(v.length - 1, Math.floor(v.length * p))] ?? 60;
+    return [q(0.25), q(0.5), q(0.75)];
+  });
 
   const detail = $derived.by(() => {
     if (picked === null) return null;
@@ -33,7 +41,7 @@
   <span>Moins</span>
   {#each [0, 1, 2, 3, 4] as l (l)}<span class="hm-key l{l}"></span>{/each}
   <span>Plus</span>
-  <span class="muted">(rien · moins d'1 h · 1 à 3 h · 3 à 6 h · plus de 6 h)</span>
+  <span class="muted">(rien · moins de {h(steps[0])} h · jusqu'à {h(steps[1])} h · jusqu'à {h(steps[2])} h · plus, d'après tes propres journées)</span>
 </div>
 
 <div class="calendar-layout">
@@ -44,7 +52,7 @@
           <h2>{y}</h2>
           <span class="hint">{h([...s.dayMin].filter(([d]) => yearOfDay(d) === y).reduce((a, [, m]) => a + m, 0))} h</span>
         </header>
-        <Heatmap year={y} dayMin={s.dayMin} selected={picked} onpick={(d) => (picked = d)} />
+        <Heatmap year={y} dayMin={s.dayMin} {steps} selected={picked} onpick={(d) => (picked = d)} />
       </section>
     {/each}
   </div>
@@ -55,7 +63,7 @@
         <h2>{fmtDay(detail.day)}</h2>
         <button class="icon-btn" onclick={() => (picked = null)} aria-label="Fermer">×</button>
       </header>
-      <p class="muted">{h(s.dayMin.get(detail.day) ?? 0)} h regardées{detail.msgs ? `, ${n(detail.msgs)} messages envoyés` : ''}</p>
+      <p class="muted">{h(s.dayMin.get(detail.day) ?? 0)} h regardées{detail.msgs ? `, ${plural(detail.msgs, 'message envoyé', 'messages envoyés')}` : ''}</p>
       <ol class="rank">
         {#each detail.chs as [ch, e] (ch)}
           <li>

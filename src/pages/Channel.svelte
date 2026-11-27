@@ -1,6 +1,6 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
-  import { yearOfDay, yearOfTs, DAY } from '../lib/stats';
+  import { yearOfDay, yearOfTs } from '../lib/stats';
   import { h, n, day, date, plural } from '../lib/format';
   import Stat from '../components/Stat.svelte';
   import Bars from '../components/Bars.svelte';

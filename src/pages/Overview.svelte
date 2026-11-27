@@ -59,7 +59,7 @@
     <section class="panel">
       <header class="panel-head"><h2>Streamers</h2><a class="more" href="#/streamers">Tout voir</a></header>
       <ol class="rank">
-        {#each s.channels.slice(0, 8) as c, i (c.ch)}
+        {#each s.channels.slice(0, 12) as c, i (c.ch)}
           <li>
             <span class="rank-n">{i + 1}</span>
             <Avatar ch={c.ch} size={32} />
@@ -72,8 +72,8 @@
     </section>
     <section class="panel">
       <header class="panel-head"><h2>Catégories</h2><a class="more" href="#/categories">Tout voir</a></header>
-      <div class="covers">
-        {#each s.games.slice(0, 6) as g, i (g.game)}
+      <div class="covers four">
+        {#each s.games.slice(0, 8) as g, i (g.game)}
           <a class="cover" href="#/categories/{g.game}">
             <BoxArt game={g.game} w={144} h={192} />
             <span class="cover-name">{i + 1}. {app.gameName(g.game)}</span>
