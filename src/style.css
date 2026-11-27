@@ -411,6 +411,9 @@ button.combo-icon:hover { background: var(--raised); color: var(--text); }
 .badge-empty { background: var(--raised); }
 .badges .rank-main, .badges .rank-name { flex: 1; }
 .sub-h { font-size: 14px; color: var(--text-2); margin: 20px 0 8px; }
+.sub-h.first { margin-top: 0; }
+.month-n { font-family: var(--sans); font-size: 18px; text-transform: capitalize; }
+.year-card { color: inherit; }
 .cloud { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; }
 .cloud span { font-size: calc(var(--w) * 15px); line-height: 1.3; color: color-mix(in srgb, var(--text) calc(var(--w) * 45%), var(--muted)); }
 

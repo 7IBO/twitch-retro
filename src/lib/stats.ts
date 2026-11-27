@@ -50,6 +50,8 @@ export interface Stats {
   biggestDay: { day: number; min: number; topCh: number } | null;
   busiestDay: { day: number; channels: number } | null; // most different channels in a day
   overDays: number; // days with more than 24 h counted: several streams at once
+  avgChannels: number; // different channels per active day
+  busiestChannels: { ch: number; min: number }[]; // channels of the day with the most channels
   streak: { len: number; from: number; to: number };
   loyal: ChannelStat | null;
   chat: {
@@ -92,6 +94,37 @@ export function availableYears(d: RetroData): number[] {
   for (const m of d.chat) ys.add(yearOfTs(m.ts));
   for (const b of d.broadcast) ys.add(yearOfDay(b.day));
   return [...ys].sort((a, b) => a - b);
+}
+
+export interface MonthStat {
+  month: number; // 0-11
+  min: number;
+  days: number;
+  topCh: number;
+  topGame: number;
+  newChannels: number;
+}
+
+/** Month by month for one year: hours, active days, top streamer and category, channels discovered. */
+export function monthly(d: RetroData, year: number): MonthStat[] {
+  const firstSeen = new Map<number, number>();
+  for (const w of d.watch) if (!firstSeen.has(w.ch)) firstSeen.set(w.ch, w.day);
+  const months = new Map<number, { min: number; days: Set<number>; ch: Map<number, number>; g: Map<number, number>; fresh: Set<number> }>();
+  for (const w of d.watch) {
+    const dt = new Date(w.day * DAY);
+    if (dt.getUTCFullYear() !== year) continue;
+    const m = dt.getUTCMonth();
+    let e = months.get(m);
+    if (!e) months.set(m, (e = { min: 0, days: new Set(), ch: new Map(), g: new Map(), fresh: new Set() }));
+    e.min += w.min;
+    e.days.add(w.day);
+    inc(e.ch, w.ch, w.min);
+    if (w.game >= 0) inc(e.g, w.game, w.min);
+    if (firstSeen.get(w.ch) === w.day) e.fresh.add(w.ch);
+  }
+  return [...months.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([month, e]) => ({ month, min: e.min, days: e.days.size, topCh: argmax(e.ch)[0] as number, topGame: argmax(e.g)[0] as number, newChannels: e.fresh.size }));
 }
 
 export function yearly(d: RetroData): YearStat[] {
@@ -196,6 +229,10 @@ export function compute(d: RetroData, year: number | null): Stats {
 
   let busiestDay: Stats['busiestDay'] = null;
   for (const [day, m] of dayCh) if (!busiestDay || m.size > busiestDay.channels) busiestDay = { day, channels: m.size };
+  let chSum = 0;
+  for (const m of dayCh.values()) chSum += m.size;
+  const avgChannels = dayCh.size ? chSum / dayCh.size : 0;
+  const busiestChannels = busiestDay ? sortMap(dayCh.get(busiestDay.day)!).map(([ch, min]) => ({ ch, min })) : [];
   let overDays = 0;
   for (const v of dayMin.values()) if (v > 1440) overDays++;
   const days = [...dayMin.keys()].sort((a, b) => a - b);
@@ -279,6 +316,8 @@ export function compute(d: RetroData, year: number | null): Stats {
     biggestDay,
     busiestDay,
     overDays,
+    avgChannels,
+    busiestChannels,
     streak,
     loyal,
     chat: {

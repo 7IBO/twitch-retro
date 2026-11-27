@@ -1,6 +1,6 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
-  import { yearly, timeline, DAY } from '../lib/stats';
+  import { yearly, monthly, timeline, DAY } from '../lib/stats';
   import { h, n, day, plural, pct, duration, WEEKDAYS, dur } from '../lib/format';
   import Stat from '../components/Stat.svelte';
   import Bars from '../components/Bars.svelte';
@@ -11,6 +11,8 @@
 
   const s = $derived(app.stats!);
   const years = $derived(app.year === null ? yearly(app.data!) : []);
+  const months = $derived(app.year !== null ? monthly(app.data!, app.year) : []);
+  const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
   const tl = $derived(timeline(s.dayMin, { endDay: Math.floor(app.data!.user.end / DAY), year: app.year, fmt: dur }));
   const favWd = $derived(s.weekdays.indexOf(Math.max(...s.weekdays)));
   const plays = $derived(s.hours.reduce((a, b) => a + b, 0));
@@ -94,13 +96,38 @@
       {#if s.loyal}
         <Stat value={duration(s.loyal.last - s.loyal.first)} label="Avec {app.chName(s.loyal.ch)}" sub="ta plus longue fidélité, depuis le {day(s.loyal.first)}" />
       {/if}
-      {#if s.busiestDay && s.busiestDay.channels > 1}
-        <Stat value={plural(s.busiestDay.channels, 'chaîne', 'chaînes')} label="Le plus de chaînes en un jour" sub="le {day(s.busiestDay.day)}" />
-      {/if}
       <Stat value="{pct(s.liveMin, s.totalMin)} %" label="En direct" sub="{dur(s.vodMin)} en rediffusion" />
     </div>
-    <p class="note">Twitch compte les minutes de chaque appareil et de chaque onglet ouvert : deux streams regardés en même temps comptent deux fois.{s.overDays ? ` Tu dépasses 24 h de visionnage sur ${plural(s.overDays, 'journée', 'journées')}, signe de streams en parallèle.` : ''}</p>
+    <p class="note">Twitch compte les minutes de chaque appareil et de chaque onglet ouvert : deux streams regardés en même temps comptent deux fois.</p>
   </section>
+
+  {#if s.busiestDay && s.busiestDay.channels > 1}
+    <section class="panel">
+      <header class="panel-head"><h2>Streams en parallèle</h2><span class="hint">plusieurs chaînes ouvertes en même temps</span></header>
+      <div class="split">
+        <div>
+          <div class="stats two">
+            <Stat value={new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(s.avgChannels)} label="Chaînes par jour actif" sub="en moyenne" />
+            <Stat value={n(s.overDays)} label="Journées à plus de 24 h" sub={s.activeDays ? `${pct(s.overDays, s.activeDays)} % de tes jours actifs` : ''} />
+          </div>
+          <p class="note">Une journée ne dure que 24 h : au-delà, c'est forcément que plusieurs streams tournaient en même temps (plusieurs onglets, ou le mobile et l'ordinateur à la fois). L'export donne les minutes par jour et par chaîne, mais pas l'heure de chaque minute. On voit donc combien de streams se superposaient, sans savoir exactement lesquels à quel moment.</p>
+        </div>
+        <div>
+          <h3 class="sub-h first">Le jour où tu as ouvert le plus de chaînes : {plural(s.busiestDay.channels, 'chaîne', 'chaînes')} le {day(s.busiestDay.day)}</h3>
+          <ol class="rank">
+            {#each s.busiestChannels.slice(0, 8) as c (c.ch)}
+              <li>
+                <Avatar ch={c.ch} size={28} />
+                <a class="rank-name" href={app.chHref(c.ch)}>{app.chName(c.ch)}</a>
+                <Meter value={c.min} max={s.busiestChannels[0].min} />
+                <span class="rank-val">{dur(c.min)}</span>
+              </li>
+            {/each}
+          </ol>
+        </div>
+      </div>
+    </section>
+  {/if}
 
   <div class="split">
     <section class="panel">
@@ -154,6 +181,28 @@
               <dd>{n(y.newChannels)}</dd>
             </dl>
           </button>
+        {/each}
+      </div>
+    </section>
+  {/if}
+  {#if months.length}
+    <section class="panel">
+      <header class="panel-head"><h2>Mois par mois</h2><span class="hint">{app.year}</span></header>
+      <div class="years">
+        {#each months as m (m.month)}
+          <a class="year-card" href="#/calendrier" title="Voir {MONTHS_FR[m.month]} dans le calendrier">
+            <span class="year-n month-n">{MONTHS_FR[m.month]}</span>
+            <span class="year-h">{dur(m.min)}</span>
+            {#if m.topGame >= 0}<BoxArt game={m.topGame} w={144} h={192} cls="year-art" />{/if}
+            <dl>
+              <dt>Streamer</dt>
+              <dd>{m.topCh >= 0 ? app.chName(m.topCh) : '?'}</dd>
+              <dt>Catégorie</dt>
+              <dd>{app.gameName(m.topGame)}</dd>
+              <dt>Jours actifs</dt>
+              <dd>{n(m.days)}{m.newChannels ? ` · ${plural(m.newChannels, "chaîne découverte", "chaînes découvertes")}` : ""}</dd>
+            </dl>
+          </a>
         {/each}
       </div>
     </section>
