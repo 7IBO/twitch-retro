@@ -44,6 +44,9 @@
     return out;
   });
   let random = $state<number | null>(null);
+  $effect(() => {
+    if (random === null && msgs.length) random = Math.floor(Math.random() * msgs.length);
+  });
   const maxW = $derived(a.words[0]?.n ?? 1);
 </script>
 
@@ -91,6 +94,11 @@
     {/if}
   </section>
 
+  <section class="panel">
+    <header class="panel-head"><h2>Messages par {app.year === null ? 'année' : 'mois'}</h2></header>
+    <Bars height={200} items={periods} unit=" messages" />
+  </section>
+
   <div class="split">
     <section class="panel">
       <header class="panel-head"><h2>Là où tu parles</h2></header>
@@ -107,19 +115,14 @@
       </ol>
     </section>
     <section class="panel">
-      <header class="panel-head"><h2>Messages par {app.year === null ? 'année' : 'mois'}</h2></header>
-      <Bars height={180} items={periods} unit=" messages" />
+      <header class="panel-head"><h2>Tes mots</h2></header>
+      <div class="cloud">
+        {#each a.words as w (w.w)}
+          <span style:--w={0.85 + (w.n / maxW) * 1.3} title="{n(w.n)} messages">{w.w}</span>
+        {/each}
+      </div>
     </section>
   </div>
-
-  <section class="panel">
-    <header class="panel-head"><h2>Tes mots</h2></header>
-    <div class="cloud">
-      {#each a.words as w (w.w)}
-        <span style:--w={0.85 + (w.n / maxW) * 1.3} title="{n(w.n)} messages">{w.w}</span>
-      {/each}
-    </div>
-  </section>
 
   <div class="split">
     <section class="panel">
@@ -128,6 +131,8 @@
         <figcaption>{dateTime(msgs[0].ts)} · chez {app.chName(msgs[0].ch)}</figcaption>
         <p><ChatText body={msgs[0].body} ch={msgs[0].ch} /></p>
       </figure>
+    </section>
+    <section class="panel">
       <header class="panel-head"><h2>Un message au hasard</h2><button class="btn small" onclick={() => (random = Math.floor(Math.random() * msgs.length))}>Tirer</button></header>
       {#if random !== null && msgs[random]}
         <figure class="chatline">
@@ -136,7 +141,9 @@
         </figure>
       {/if}
     </section>
-    <section class="panel">
+  </div>
+
+  <section class="panel">
       <header class="panel-head"><h2>Tes messages</h2><span class="hint">{plural(log.length, 'message', 'messages')}</span></header>
       <div class="log-tools">
         <input class="search" type="search" placeholder="Chercher" bind:value={q} aria-label="Chercher dans tes messages" oninput={() => (logLimit = 100)} />
@@ -151,6 +158,5 @@
         {/each}
       </ul>
       {#if log.length > logLimit}<button class="btn small" onclick={() => (logLimit += 200)}>Afficher plus</button>{/if}
-    </section>
-  </div>
+  </section>
 {/if}

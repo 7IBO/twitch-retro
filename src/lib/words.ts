@@ -72,7 +72,7 @@ export function analyseChat(msgs: ChatMsg[], channels: Channel[], emotes: EmoteM
     providers,
     words: [...words.entries()]
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 50)
+      .slice(0, 90)
       .map(([w, n]) => ({ w, n })),
   };
 }
