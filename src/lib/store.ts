@@ -8,6 +8,8 @@
 const DB = 'retro-twitch';
 const STORE = 'files';
 const KEY = 'export';
+/** The copy is deleted on the next visit after this many days. */
+export const KEEP_DAYS = 30;
 
 function open(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -27,17 +29,25 @@ async function tx<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBReq
   });
 }
 
-export async function saveExport(file: Blob): Promise<void> {
+export async function saveExport(file: Blob): Promise<number | null> {
   try {
-    await tx('readwrite', (s) => s.put(file, KEY));
+    const savedAt = Date.now();
+    await tx('readwrite', (s) => s.put({ blob: file, savedAt }, KEY));
+    return savedAt;
   } catch {
-    /* storage unavailable */
+    return null; /* storage unavailable */
   }
 }
 
-export async function readExport(): Promise<Blob | null> {
+export async function readExport(): Promise<{ blob: Blob; savedAt: number } | null> {
   try {
-    return ((await tx('readonly', (s) => s.get(KEY))) as Blob | undefined) ?? null;
+    const v = (await tx('readonly', (s) => s.get(KEY))) as { blob: Blob; savedAt: number } | undefined;
+    if (!v?.blob) return null;
+    if (Date.now() - v.savedAt > KEEP_DAYS * 86400000) {
+      await clearExport();
+      return null;
+    }
+    return v;
   } catch {
     return null;
   }

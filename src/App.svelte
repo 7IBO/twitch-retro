@@ -38,7 +38,9 @@
   const r = $derived(app.route);
 </script>
 
-{#if !app.data}
+{#if !app.data && app.booting}
+  <div class="boot" aria-live="polite"><span class="brand"><span class="brand-mark" aria-hidden="true"></span>Rétro Twitch</span><span class="progress" aria-hidden="true"><span></span></span><span class="sr-only">Ouverture de ton export</span></div>
+{:else if !app.data}
   <Landing />
 {:else}
   <div class="shell">
@@ -57,8 +59,8 @@
           Données jusqu'au {date(app.data.user.end)}.
           {#if app.offline}Mode hors ligne.{:else if app.enrichState === 'loading'}Chargement des images…{:else if app.enrichState === 'failed'}Images indisponibles.{/if}
         </p>
-        {#if app.stored}<p class="muted small">Export gardé dans ce navigateur.</p>{/if}
-        <button class="btn ghost small" onclick={() => app.reset()}>{app.stored ? 'Oublier et charger un autre export' : 'Charger un autre export'}</button>
+        {#if app.storedUntil}<p class="muted small">Gardé dans ce navigateur jusqu'au {date(app.storedUntil)}.</p>{/if}
+        <button class="btn ghost small" onclick={() => app.reset()} title={app.stored ? "Efface la copie gardée dans ce navigateur" : undefined}>Changer d'export</button>
       </div>
     </aside>
 

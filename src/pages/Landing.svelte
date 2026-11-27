@@ -31,7 +31,7 @@
       <p class="lead">Dépose l'export de données que Twitch t'envoie. Tu retrouves tes heures, tes streamers, tes catégories, ton chat et tes emotes, année par année.</p>
 
       {#if app.loading}
-        <div class="drop busy" aria-live="polite"><span class="spinner" aria-hidden="true"></span>{app.loading}…</div>
+        <div class="drop busy" aria-live="polite"><span>Lecture de ton export</span><span class="progress" aria-hidden="true"><span></span></span></div>
       {:else}
         <button
           class="drop"
@@ -53,8 +53,8 @@
         <span>Charger les avatars, jaquettes et emotes</span>
       </label>
       <label class="toggle">
-        <input type="checkbox" bind:checked={app.remember} />
-        <span>Garder l'export dans ce navigateur, pour le retrouver après un rechargement</span>
+        <input type="checkbox" checked={app.remember} onchange={(e) => app.setRemember(e.currentTarget.checked)} />
+        <span>Garder l'export dans ce navigateur pendant 30 jours, pour le retrouver sans le redéposer</span>
       </label>
 
       <ul class="facts-list">

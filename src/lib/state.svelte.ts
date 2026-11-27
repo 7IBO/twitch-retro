@@ -3,7 +3,7 @@ import type { EnrichResponse, Emote } from '../../server/enrich';
 import { compute, type Stats } from './stats';
 // Inlined so a page left open during a site update still has its worker.
 import ParseWorker from './worker.ts?worker&inline';
-import { saveExport, readExport, clearExport } from './store';
+import { saveExport, readExport, clearExport, KEEP_DAYS } from './store';
 
 export type Route =
   | { page: 'overview' }
@@ -56,6 +56,22 @@ function parseRoute(hash: string): Route {
   }
 }
 
+function readPref(key: string, fallback: boolean) {
+  try {
+    const v = localStorage.getItem(key);
+    return v === null ? fallback : v === '1';
+  } catch {
+    return fallback;
+  }
+}
+function writePref(key: string, v: boolean) {
+  try {
+    localStorage.setItem(key, v ? '1' : '0');
+  } catch {
+    /* preference simply not kept */
+  }
+}
+
 const OFFLINE_KEY = 'retro-offline';
 function readOffline() {
   try {
@@ -69,8 +85,14 @@ class AppState {
   data = $state.raw<RetroData | null>(null);
   year = $state<number | null>(yearFromHash(location.hash));
   route = $state<Route>(parseRoute(location.hash));
-  remember = $state(false);
-  stored = $state(false);
+  remember = $state(readPref('retro-remember', true));
+  /** Date the browser copy of the export expires, or null when there is none. */
+  storedUntil = $state<number | null>(null);
+  /** True while we look for a copy kept in this browser, so the home page does not flash. */
+  booting = $state(true);
+  get stored() {
+    return this.storedUntil !== null;
+  }
   loading = $state<string | null>(null);
   error = $state<string | null>(null);
   offline = $state(readOffline());
@@ -89,12 +111,11 @@ class AppState {
       else if (this.year !== null) this.writeYear();
       if (prev.page !== this.route.page || JSON.stringify(prev) !== JSON.stringify(this.route)) scrollTo(0, 0);
     });
-    void readExport().then((blob) => {
-      if (blob && !this.data && !this.loading) {
-        this.stored = true;
-        this.remember = true;
-        void this.load(new File([blob], 'export.zip'), false);
-      }
+    void readExport().then((saved) => {
+      if (saved && !this.data && !this.loading) {
+        this.storedUntil = saved.savedAt + KEEP_DAYS * 86400000;
+        void this.load(new File([saved.blob], 'export.zip'), false);
+      } else this.booting = false;
     });
   }
 
@@ -110,9 +131,12 @@ class AppState {
 
   async forget() {
     await clearExport();
-    this.stored = false;
-    this.remember = false;
     this.reset();
+  }
+
+  setRemember(v: boolean) {
+    this.remember = v;
+    writePref('retro-remember', v);
   }
 
   setOffline(v: boolean) {
@@ -126,13 +150,14 @@ class AppState {
 
   async load(file: File, save = this.remember) {
     this.error = null;
-    if (save) void saveExport(file).then(() => (this.stored = true));
+    if (save) void saveExport(file).then((at) => (this.storedUntil = at === null ? null : at + KEEP_DAYS * 86400000));
     this.loading = 'Lecture du fichier';
     let buf: ArrayBuffer;
     try {
       buf = await file.arrayBuffer();
     } catch {
       this.loading = null;
+      this.booting = false;
       this.error = "Le fichier n'a pas pu être lu. S'il est encore en cours de téléchargement, attends la fin et réessaie.";
       return;
     }
@@ -143,6 +168,7 @@ class AppState {
       else {
         worker.terminate();
         this.loading = null;
+        this.booting = false;
         if (m.type === 'error') this.error = m.message;
         else {
           this.enrich = null;
@@ -157,6 +183,7 @@ class AppState {
     worker.onerror = (e) => {
       worker.terminate();
       this.loading = null;
+      this.booting = false;
       // An empty message usually means the worker script itself failed to load,
       // for example after the site was updated while the page stayed open.
       this.error = e.message || 'Le site a été mis à jour pendant que la page était ouverte. Recharge la page et réessaie.';
@@ -166,7 +193,7 @@ class AppState {
 
   reset() {
     void clearExport();
-    this.stored = false;
+    this.storedUntil = null;
     this.year = null;
     this.data = null;
     this.enrich = null;
