@@ -91,8 +91,9 @@
         </div>
         {/key}
         <footer class="foot">
-          Calculé dans ton navigateur à partir de ton export de données, rien n'est stocké. Recharge la page et tout disparaît.
-          Les avatars, jaquettes et emotes viennent de Twitch, 7TV, BTTV et FFZ. Site non affilié à Twitch.
+          Tout est calculé dans ton navigateur, ton export n'est envoyé à aucun serveur.
+          {app.stored ? "Une copie reste dans ce navigateur pendant 30 jours au plus, « Changer d'export » l'efface." : 'Rien n’est gardé : recharger la page efface tout.'}
+          Avatars, jaquettes et emotes : Twitch, 7TV, BTTV et FFZ. Site non affilié à Twitch.
         </footer>
       </main>
     </div>

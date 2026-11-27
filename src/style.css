@@ -200,9 +200,10 @@ p { margin: 0; }
 .content > * { min-width: 0; }
 .page { display: grid; gap: 20px; align-content: start; min-width: 0; }
 .page > * { min-width: 0; }
-.foot { color: var(--muted); font-size: 12px; line-height: 18px; margin-top: 24px; max-width: 48rem; }
+.foot { color: var(--muted); font-size: 12px; line-height: 18px; margin-top: 24px; }
 
 .page-head { display: grid; gap: 8px; margin-bottom: 4px; }
+.page-head .lead, .lede .lead { max-width: none; }
 .lede { display: grid; gap: 12px; padding: 8px 0; }
 .period { font: 400 13px var(--mono); color: var(--muted); }
 .lede h1 { font-size: 40px; line-height: 1.1; letter-spacing: -0.02em; }
@@ -222,6 +223,7 @@ p { margin: 0; }
 
 .stats { display: grid; gap: 12px; }
 .stats.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.stats.auto { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
 .stats.two { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 20px; }
 .stat { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .panel .stat { background: var(--raised); border-color: transparent; border-radius: 10px; padding: 16px; }
@@ -230,7 +232,9 @@ p { margin: 0; }
 .stat-sub { color: var(--muted); font-size: 12px; line-height: 18px; }
 
 /* ---------- bars ---------- */
-.bars { display: flex; align-items: stretch; gap: 6px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+.bars { display: flex; align-items: stretch; gap: 6px; padding-bottom: 24px; position: relative; }
+/* Baseline right under the bars, labels below it */
+.bars::after { content: ''; position: absolute; left: 0; right: 0; bottom: 24px; height: 1px; background: var(--line); }
 .bars { justify-content: center; }
 .bar { flex: 1; min-width: 0; max-width: 72px; display: flex; flex-direction: column; justify-content: flex-end; position: relative; border: 0; background: none; padding: 0; }
 button.bar { cursor: pointer; }
@@ -365,6 +369,12 @@ button.combo-icon:hover { background: var(--raised); color: var(--text); }
 .emote-n { color: var(--muted); font: 12px var(--mono); }
 .emote-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .emote-count { color: var(--text-2); font: 12px var(--mono); }
+.badges { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; }
+.badges li { display: flex; align-items: center; gap: 12px; min-height: 44px; position: relative; }
+.badges img, .badge-empty { width: 28px; height: 28px; flex: none; border-radius: 4px; }
+.badge-empty { background: var(--raised); }
+.badges .rank-main, .badges .rank-name { flex: 1; }
+.sub-h { font-size: 14px; color: var(--text-2); margin: 20px 0 8px; }
 .cloud { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; }
 .cloud span { font-size: calc(var(--w) * 15px); line-height: 1.3; color: color-mix(in srgb, var(--text) calc(var(--w) * 45%), var(--muted)); }
 

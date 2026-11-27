@@ -219,6 +219,39 @@ class Games {
   }
 }
 
+/**
+ * Recent messages keep their IRC tags. Only these are read: emotes (ids and
+ * positions), badges, subscriber tenure and the login replied to. Message ids,
+ * nonces and the rest are ignored.
+ */
+function readTags(tags: string, body: string, msg: ChatMsg) {
+  const get = (k: string) => {
+    const m = new RegExp('(?:^|;)' + k + '=([^;]*)').exec(tags);
+    return m ? m[1] : '';
+  };
+  const em = get('emotes');
+  if (em) {
+    const cps = Array.from(body); // positions count code points
+    const list: { id: string; name: string }[] = [];
+    for (const part of em.split('/')) {
+      const [id, ranges] = part.split(':');
+      if (!id || !ranges) continue;
+      for (const range of ranges.split(',')) {
+        const [a, b] = range.split('-').map(Number);
+        const name = cps.slice(a, b + 1).join('');
+        if (name && !/\s/.test(name)) list.push({ id, name });
+      }
+    }
+    if (list.length) msg.emotes = list;
+  }
+  const badges = get('badges');
+  if (badges) msg.badges = badges.split(',').filter(Boolean);
+  const sub = /subscriber\/(\d+)/.exec(get('badge-info'));
+  if (sub) msg.subMonths = +sub[1];
+  const reply = get('reply-parent-user-login');
+  if (reply) msg.replyTo = reply;
+}
+
 /** Twitch prefixes cells starting with @ + - = with a quote (spreadsheet formula guard). */
 function unescapeCell(s: string) {
   return s.length > 1 && s[0] === "'" && '@+-='.includes(s[1]) ? s.slice(1) : s;
@@ -387,11 +420,15 @@ function build(zipBytes: Uint8Array): RetroData {
   // --- chat
   post({ type: 'progress', step: 'Messages du chat' });
   const chat: ChatMsg[] = [];
-  readCsv(text('site_history/chat_messages.csv'), ['time', 'time_utc', 'channel', 'body', 'room_id'], (r) => {
+  readCsv(text('site_history/chat_messages.csv'), ['time', 'time_utc', 'channel', 'body', 'filtered_tags'], (r) => {
     const t = ts(r[1], r[0]);
     if (Number.isNaN(t)) return;
     const ch = reg.resolve(r[2], t);
-    if (ch >= 0) chat.push({ ts: t, ch, body: unescapeCell(r[3]).replace(/\\U000e0000/gi, '').trim() });
+    if (ch < 0) return;
+    const raw = unescapeCell(r[3]);
+    const msg: ChatMsg = { ts: t, ch, body: raw.replace(/\\U000e0000/gi, '').trim() };
+    if (r[4]) readTags(r[4], raw, msg);
+    chat.push(msg);
   });
 
   // --- subs

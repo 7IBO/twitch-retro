@@ -48,6 +48,8 @@ export interface Stats {
   hours: number[]; // video plays per local hour
   platforms: Record<Platform, number>;
   biggestDay: { day: number; min: number; topCh: number } | null;
+  busiestDay: { day: number; channels: number } | null; // most different channels in a day
+  overDays: number; // days with more than 24 h counted: several streams at once
   streak: { len: number; from: number; to: number };
   loyal: ChannelStat | null;
   chat: {
@@ -191,6 +193,10 @@ export function compute(d: RetroData, year: number | null): Stats {
   for (const [day, min] of dayMin) if (!biggestDay || min > biggestDay.min) biggestDay = { day, min, topCh: -1 };
   if (biggestDay) biggestDay.topCh = argmax(dayCh.get(biggestDay.day)!)[0] as number;
 
+  let busiestDay: Stats['busiestDay'] = null;
+  for (const [day, m] of dayCh) if (!busiestDay || m.size > busiestDay.channels) busiestDay = { day, channels: m.size };
+  let overDays = 0;
+  for (const v of dayMin.values()) if (v > 1440) overDays++;
   const days = [...dayMin.keys()].sort((a, b) => a - b);
   let streak = { len: 0, from: 0, to: 0 };
   let runStart = days[0], prev = days[0] - 1;
@@ -262,6 +268,8 @@ export function compute(d: RetroData, year: number | null): Stats {
     hours,
     platforms,
     biggestDay,
+    busiestDay,
+    overDays,
     streak,
     loyal,
     chat: {

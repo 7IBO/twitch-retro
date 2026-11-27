@@ -221,13 +221,17 @@ class AppState {
       .filter((id): id is string => !!id && /^\d+$/.test(id))
       .slice(0, 300);
     const emoteChannels = emoteIds.slice(0, 30);
+    // Channels where a subscriber badge shows in your messages: their badge images.
+    const badgeChannels = [...new Set(d.chat.filter((m) => m.badges?.some((b) => b.startsWith('subscriber/'))).map((m) => d.channels[m.ch]?.id))]
+      .filter((id): id is string => !!id && /^\d+$/.test(id))
+      .slice(0, 40);
     const games = all.games.slice(0, 400).map((g) => d.games[g.game].name);
     this.enrichState = 'loading';
     try {
       const r = await fetch('/api/enrich', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channels: [...ids], games, emoteChannels, vods: d.watchedVods.slice(0, 300).map((v) => v.id) }),
+        body: JSON.stringify({ channels: [...ids], games, emoteChannels, vods: d.watchedVods.slice(0, 300).map((v) => v.id), badges: true, badgeChannels }),
       });
       if (!r.ok) throw new Error(String(r.status));
       if (this.data !== d) return;

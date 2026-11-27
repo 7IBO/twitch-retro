@@ -103,7 +103,7 @@
       {#if det.firstMsg}
         <figure class="chatline">
           <figcaption>Ton premier message chez {app.chName(ch)}, le {dateTime(det.firstMsg.ts)}</figcaption>
-          <p><ChatText body={det.firstMsg.body} {ch} /></p>
+          <p><ChatText body={det.firstMsg.body} {ch} msg={det.firstMsg} /></p>
         </figure>
       {/if}
     </section>

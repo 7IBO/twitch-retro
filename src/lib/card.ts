@@ -168,36 +168,45 @@ export async function drawCard(canvas: HTMLCanvasElement, d: CardData, format: '
   });
   y += 128 + (story ? 96 : 52);
 
-  // Two lists side by side
+  // Two lists side by side, on one shared row grid so both columns line up.
   const colW = (W - 2 * P - 48) / 2;
-  let img = 0;
   const footTop = H - P - (d.emote ? 200 : 72);
-  d.lists.slice(0, 2).forEach((list, li) => {
+  const boxOf = (shape: CardItem['shape']) =>
+    shape === 'cover' ? { w: story ? 96 : 66, h: story ? 128 : 88 } : shape === 'circle' ? { w: 56, h: 56 } : { w: 0, h: 0 };
+  const lists = d.lists.slice(0, 2);
+  const rowH = Math.max(56, ...lists.flatMap((l) => l.items.map((it) => boxOf(it.shape).h))) + (story ? 24 : 16);
+  ctx.fillStyle = C.text2;
+  ctx.font = `400 24px ${SANS}`;
+  lists.forEach((list, li) => ctx.fillText(list.title, P + li * (colW + 48), y));
+  const top = y + 28;
+  let img = 0;
+  lists.forEach((list, li) => {
     const x0 = P + li * (colW + 48);
-    let ly = y;
-    ctx.fillStyle = C.text2;
-    ctx.font = `400 24px ${SANS}`;
-    ctx.fillText(list.title, x0, ly);
-    ly += 28;
-    for (const it of list.items) {
+    list.items.forEach((it, r) => {
       const pic = listImgs[img++];
-      const box = it.shape === 'cover' ? { w: story ? 96 : 66, h: story ? 128 : 88 } : it.shape === 'circle' ? { w: 56, h: 56 } : { w: 0, h: 44 };
-      if (ly + box.h > footTop) break;
-      if (it.shape !== 'none') drawImage(ctx, pic, it.shape, x0, ly, box.w, box.h, it.name);
+      const rowTop = top + r * rowH;
+      if (rowTop + rowH - 8 > footTop) return;
+      const box = boxOf(it.shape);
+      const mid = rowTop + (rowH - (story ? 24 : 16)) / 2;
+      if (box.w) drawImage(ctx, pic, it.shape as 'circle' | 'cover', x0, mid - box.h / 2, box.w, box.h, it.name);
       const tx = x0 + (box.w ? box.w + 20 : 0);
       ctx.fillStyle = C.text;
       ctx.font = `500 30px ${SANS}`;
-      ctx.fillText(fit(ctx, it.name, colW - (tx - x0) - (box.w ? 8 : 140)), tx, box.w ? ly + Math.min(box.h, 56) / 2 : ly + 30);
-      ctx.fillStyle = C.muted;
-      ctx.font = `400 22px ${MONO}`;
-      if (box.w) ctx.fillText(sp(it.value), tx, ly + Math.min(box.h, 56) / 2 + 32);
-      else {
+      if (box.w) {
+        ctx.fillText(fit(ctx, it.name, colW - (tx - x0) - 8), tx, mid - 4);
+        ctx.fillStyle = C.muted;
+        ctx.font = `400 22px ${MONO}`;
+        ctx.fillText(sp(it.value), tx, mid + 28);
+      } else {
+        // Text-only rows: name left, value right, on the row's centre line.
+        ctx.fillText(fit(ctx, it.name, colW - 160), tx, mid + 10);
+        ctx.fillStyle = C.muted;
+        ctx.font = `400 22px ${MONO}`;
         ctx.textAlign = 'right';
-        ctx.fillText(sp(it.value), x0 + colW, ly + 30);
+        ctx.fillText(sp(it.value), x0 + colW, mid + 10);
         ctx.textAlign = 'left';
       }
-      ly += box.h + (it.shape === 'cover' ? 16 : 20);
-    }
+    });
   });
 
   // Emote and footer
@@ -229,7 +238,7 @@ export async function drawCard(canvas: HTMLCanvasElement, d: CardData, format: '
   ctx.stroke();
   ctx.fillStyle = C.muted;
   ctx.font = `400 22px ${SANS}`;
-  ctx.fillText('Calculé depuis mon export de données Twitch, sans rien stocker', P, footY);
+  ctx.fillText("Rétro Twitch · d'après mon export de données Twitch", P, footY);
 }
 
 export function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {

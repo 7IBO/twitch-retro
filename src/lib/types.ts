@@ -24,6 +24,11 @@ export interface ChatMsg {
   ts: number;
   ch: number;
   body: string;
+  /** From the chat tags Twitch kept for recent messages (2023+), when present. */
+  emotes?: { id: string; name: string }[]; // Twitch emotes with their ids, even retired ones
+  badges?: string[]; // "set/version", e.g. "zevent25/1"
+  subMonths?: number; // subscriber tenure shown in that chat
+  replyTo?: string; // login of the person replied to
 }
 
 export interface FollowEvent {

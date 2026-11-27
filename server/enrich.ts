@@ -15,6 +15,8 @@ export interface EnrichRequest {
   games?: string[]; // game names
   emoteChannels?: string[]; // user ids whose channel emotes are wanted
   vods?: string[]; // video ids
+  badges?: boolean; // global chat badges
+  badgeChannels?: string[]; // user ids whose subscriber badges are wanted
 }
 
 export interface Emote {
@@ -29,9 +31,11 @@ export interface EnrichResponse {
   games: Record<string, { id: string; name: string; boxArt: string } | null>; // keyed by lowercase name, null when Twitch has no such category
   emotes: { global: Emote[]; channels: Record<string, Emote[]> };
   vods: Record<string, { title: string; createdAt: string; duration: string; type: string; thumb: string }>;
+  badges: Record<string, { title: string; url: string }>; // "set/version"
+  channelBadges: Record<string, Record<string, { title: string; url: string }>>;
 }
 
-const LIMITS = { channels: 500, games: 400, emoteChannels: 40, vods: 300 };
+const LIMITS = { channels: 500, games: 400, emoteChannels: 40, vods: 300, badgeChannels: 40 };
 const TTL = 6 * 3600 * 1000;
 const cache = new Map<string, { exp: number; val: unknown }>();
 let token: { value: string; exp: number } | null = null;
@@ -88,7 +92,7 @@ export async function enrich(input: EnrichRequest, env: Env): Promise<EnrichResp
     });
   };
 
-  const res: EnrichResponse = { twitch: !!tok, users: {}, games: {}, emotes: { global: [], channels: {} }, vods: {} };
+  const res: EnrichResponse = { twitch: !!tok, users: {}, games: {}, emotes: { global: [], channels: {} }, vods: {}, badges: {}, channelBadges: {} };
 
   const usersTask = (async () => {
     if (!tok) return;
@@ -192,7 +196,23 @@ export async function enrich(input: EnrichRequest, env: Env): Promise<EnrichResp
     }
   })();
 
-  await Promise.all([usersTask, gamesTask, emotesTask, vodsTask]);
+  const badgeIds = clean(input.badgeChannels, LIMITS.badgeChannels, /^\d{1,12}$/);
+  const readBadges = (j: any) => {
+    const out: Record<string, { title: string; url: string }> = {};
+    for (const set of j?.data ?? []) for (const v of set.versions ?? []) out[set.set_id + '/' + v.id] = { title: v.title, url: v.image_url_2x };
+    return out;
+  };
+  const badgesTask = (async () => {
+    if (!tok) return;
+    if (input.badges) res.badges = await cached('b:global', async () => readBadges(await helix('chat/badges/global')));
+    await Promise.all(
+      badgeIds.map(async (id) => {
+        res.channelBadges[id] = await cached('b:' + id, async () => readBadges(await helix('chat/badges?broadcaster_id=' + id)));
+      }),
+    );
+  })();
+
+  await Promise.all([usersTask, gamesTask, emotesTask, vodsTask, badgesTask]);
   return res;
 }
 

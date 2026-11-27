@@ -84,7 +84,7 @@
 
   <section class="panel">
     <header class="panel-head"><h2>Records</h2></header>
-    <div class="stats four">
+    <div class="stats auto">
       {#if s.biggestDay}
         <Stat value={dur(s.biggestDay.min)} label="Ta plus grosse journée" sub="le {day(s.biggestDay.day)}, surtout chez {app.chName(s.biggestDay.topCh)}" />
       {/if}
@@ -94,9 +94,12 @@
       {#if s.loyal}
         <Stat value={duration(s.loyal.last - s.loyal.first)} label="Avec {app.chName(s.loyal.ch)}" sub="ta plus longue fidélité, depuis le {day(s.loyal.first)}" />
       {/if}
+      {#if s.busiestDay && s.busiestDay.channels > 1}
+        <Stat value={plural(s.busiestDay.channels, 'chaîne', 'chaînes')} label="Le plus de chaînes en un jour" sub="le {day(s.busiestDay.day)}" />
+      {/if}
       <Stat value="{pct(s.liveMin, s.totalMin)} %" label="En direct" sub="{dur(s.vodMin)} en rediffusion" />
     </div>
-    <p class="note">Twitch compte les minutes de chaque appareil et de chaque onglet ouvert, donc deux streams regardés en même temps comptent deux fois.</p>
+    <p class="note">Twitch compte les minutes de chaque appareil et de chaque onglet ouvert : deux streams regardés en même temps comptent deux fois.{s.overDays ? ` Tu dépasses 24 h de visionnage sur ${plural(s.overDays, 'journée', 'journées')}, signe de streams en parallèle.` : ''}</p>
   </section>
 
   <div class="split">
