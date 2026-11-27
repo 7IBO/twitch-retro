@@ -1,6 +1,6 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
-  import { yearly } from '../lib/stats';
+  import { yearly, timeline, DAY } from '../lib/stats';
   import { h, n, day, plural, pct, duration, WEEKDAYS, dur } from '../lib/format';
   import Stat from '../components/Stat.svelte';
   import Bars from '../components/Bars.svelte';
@@ -11,6 +11,7 @@
 
   const s = $derived(app.stats!);
   const years = $derived(app.year === null ? yearly(app.data!) : []);
+  const tl = $derived(timeline(s.dayMin, { endDay: Math.floor(app.data!.user.end / DAY), year: app.year, fmt: dur }));
   const favWd = $derived(s.weekdays.indexOf(Math.max(...s.weekdays)));
   const plays = $derived(s.hours.reduce((a, b) => a + b, 0));
   const favH = $derived(s.hours.indexOf(Math.max(...s.hours)));
@@ -45,14 +46,11 @@
 
   <section class="panel">
     <header class="panel-head">
-      <h2>{app.year === null ? 'Heures par année' : 'Heures par mois'}</h2>
-      {#if app.year === null}<span class="hint">Clique une année pour l'explorer</span>{/if}
+      <h2>Heures par {tl.unit}</h2>
+      {#if app.year === null && tl.unit === 'année'}<span class="hint">Clique une année pour l'explorer</span>{/if}
     </header>
-    <Bars
-      height={260}
-      items={s.periods.map((p) => ({ label: p.label, value: p.min, title: `${p.label} : ${dur(p.min)}` }))}
-      onpick={app.year === null ? (i) => (app.setYear(+s.periods[i].key)) : undefined}
-    />
+    <Bars height={260} items={tl.items} onpick={app.year === null && tl.unit === 'année' ? (i) => app.setYear(parseInt(tl.items[i].label)) : undefined} />
+    {#if tl.partial}<p class="chart-note">{tl.partial}</p>{/if}
   </section>
 
   <div class="split">

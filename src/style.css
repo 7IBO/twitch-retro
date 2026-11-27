@@ -236,6 +236,10 @@ p { margin: 0; }
 button.bar { cursor: pointer; }
 .bar-fill { display: block; width: 100%; min-height: 2px; background: var(--raised-2); border-radius: 4px 4px 2px 2px; transition: background 0.15s var(--ease); }
 .bar.hi .bar-fill { background: var(--accent); }
+.bar.ghost .bar-fill { height: 100% !important; background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(237, 237, 237, 0.05) 6px 7px); border: 1px dashed var(--line-2); }
+.bar.ghost .bar-label { opacity: 0.6; }
+.bar.ghost:hover .bar-fill { background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(237, 237, 237, 0.05) 6px 7px); }
+.chart-note { color: var(--muted); font-size: 12px; margin-top: 12px; }
 .bar:hover .bar-fill { background: #3a3a3e; }
 .bar.hi:hover .bar-fill { background: var(--accent-ink); }
 .bar-label { position: absolute; bottom: -22px; left: -8px; right: -8px; text-align: center; font: 400 11px/16px var(--mono); color: var(--muted); white-space: nowrap; }

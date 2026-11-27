@@ -385,3 +385,77 @@ export function gameDetail(d: RetroData, game: number, year: number | null): Gam
   if (years.length) for (let y = Math.min(...years); y <= Math.max(...years); y++) yearList.push({ year: y, min: byYear.get(y) ?? 0 });
   return { game, min, byYear: yearList, channels: sortMap(chs).map(([ch, min]) => ({ ch, min })) };
 }
+
+export interface TimelineItem {
+  label: string;
+  value: number;
+  title: string;
+  mark?: boolean;
+  ghost?: boolean; // after the end of the export: no data, not zero
+}
+
+const MONTHS_FULL = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+/**
+ * Bars over time from minutes per day. One year selected: its 12 months, with the
+ * months after the export greyed out. Otherwise years, or months when the data
+ * covers two years or less (a channel or category seen only for a while).
+ */
+export function timeline(
+  dayMin: Iterable<[number, number]>,
+  opts: { endDay: number; year: number | null; fmt: (min: number) => string },
+): { unit: 'mois' | 'année'; items: TimelineItem[]; partial: string | null } {
+  const byMonth = new Map<number, number>(); // y*12+m
+  let first = Infinity, last = -Infinity;
+  for (const [day, min] of dayMin) {
+    const dt = new Date(day * DAY);
+    const k = dt.getUTCFullYear() * 12 + dt.getUTCMonth();
+    byMonth.set(k, (byMonth.get(k) ?? 0) + min);
+    if (k < first) first = k;
+    if (k > last) last = k;
+  }
+  const end = new Date(opts.endDay * DAY);
+  const endK = end.getUTCFullYear() * 12 + end.getUTCMonth();
+  const endLabel = `${end.getUTCDate()} ${MONTHS_FULL[end.getUTCMonth()]} ${end.getUTCFullYear()}`;
+  const month = (k: number, withYear: boolean): TimelineItem => {
+    const y = Math.floor(k / 12), m = k % 12;
+    const v = byMonth.get(k) ?? 0;
+    const ghost = Number.isFinite(opts.endDay) && k > endK;
+    const short = MONTHS[m] + (withYear && (m === 0 || k === first) ? ` ${String(y).slice(2)}` : '');
+    return {
+      label: short,
+      value: ghost ? 0 : v,
+      ghost,
+      title: ghost ? `${MONTHS_FULL[m]} ${y} : après la fin de ton export` : `${MONTHS_FULL[m]} ${y} : ${opts.fmt(v)}`,
+    };
+  };
+
+  if (opts.year !== null) {
+    const items = Array.from({ length: 12 }, (_, m) => month(opts.year! * 12 + m, false));
+    const partial = Number.isFinite(opts.endDay) && end.getUTCFullYear() === opts.year && end.getUTCMonth() < 11 ? `Ton export s'arrête le ${endLabel}.` : null;
+    return { unit: 'mois', items, partial };
+  }
+  if (!Number.isFinite(first)) return { unit: 'année', items: [], partial: null };
+  if (last - first < 24) {
+    const items: TimelineItem[] = [];
+    for (let k = first; k <= last; k++) items.push(month(k, true));
+    return { unit: 'mois', items, partial: null };
+  }
+  const items: TimelineItem[] = [];
+  const fy = Math.floor(first / 12), ly = Math.floor(last / 12);
+  for (let y = fy; y <= ly; y++) {
+    let v = 0;
+    for (let m = 0; m < 12; m++) v += byMonth.get(y * 12 + m) ?? 0;
+    const cut = Number.isFinite(opts.endDay) && y === end.getUTCFullYear() && end.getUTCMonth() < 11;
+    items.push({ label: cut ? `${y}*` : String(y), value: v, title: `${y} : ${opts.fmt(v)}${cut ? ` (jusqu'au ${endLabel})` : ''}` });
+  }
+  const partial = items.some((i) => i.label.endsWith('*')) ? `* Année incomplète : ton export s'arrête le ${endLabel}.` : null;
+  return { unit: 'année', items, partial };
+}
+
+/** Minutes per day for one channel or one category. */
+export function dayMinOf(d: RetroData, keep: (w: RetroData['watch'][number]) => boolean): Map<number, number> {
+  const m = new Map<number, number>();
+  for (const w of d.watch) if (keep(w)) m.set(w.day, (m.get(w.day) ?? 0) + w.min);
+  return m;
+}

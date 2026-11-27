@@ -6,7 +6,7 @@
     unit = '',
     onpick,
   }: {
-    items: { label: string; value: number; title?: string; mark?: boolean }[];
+    items: { label: string; value: number; title?: string; mark?: boolean; ghost?: boolean }[];
     height?: number;
     unit?: string;
     onpick?: (i: number) => void;
@@ -22,9 +22,10 @@
       this={onpick ? 'button' : 'div'}
       role={onpick ? undefined : 'listitem'}
       class="bar"
-      class:hi={marked ? it.mark : i === peak}
+      class:hi={!it.ghost && (marked ? it.mark : i === peak)}
+      class:ghost={it.ghost}
       title={it.title ?? `${it.label} : ${it.value}${unit}`}
-      onclick={onpick ? () => onpick(i) : undefined}
+      onclick={onpick && !it.ghost ? () => onpick(i) : undefined}
     >
       <span class="bar-fill" style:height="{(it.value / max) * 100}%"></span>
       <span class="bar-label">{it.label}</span>

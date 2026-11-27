@@ -1,6 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { gameDetail } from '../lib/stats';
+  import { timeline, dayMinOf, DAY } from '../lib/stats';
   import { h, n, plural, dur } from '../lib/format';
   import BoxArt from '../components/BoxArt.svelte';
   import Bars from '../components/Bars.svelte';
@@ -9,6 +10,7 @@
   import Empty from '../components/Empty.svelte';
 
   let { game }: { game: number } = $props();
+  const tl = $derived(app.data ? timeline(dayMinOf(app.data, (w) => w.game === game), { endDay: Math.floor(app.data.user.end / DAY), year: null, fmt: dur }) : null);
   const det = $derived(app.data?.games[game] ? gameDetail(app.data, game, app.year) : null);
   let limit = $state(50);
 </script>
@@ -27,8 +29,9 @@
   </header>
 
   <section class="panel">
-    <header class="panel-head"><h2>Heures par année</h2></header>
-    <Bars height={180} items={det.byYear.map((y) => ({ label: String(y.year), value: y.min, mark: y.year === app.year, title: `${y.year} : ${dur(y.min)}` }))} />
+    <header class="panel-head"><h2>Heures par {tl?.unit ?? 'année'}</h2></header>
+    <Bars height={180} items={(tl?.items ?? []).map((it) => ({ ...it, mark: tl?.unit === 'année' && app.year !== null && parseInt(it.label) === app.year }))} />
+    {#if tl?.partial}<p class="chart-note">{tl.partial}</p>{/if}
   </section>
 
   <section class="panel flush">

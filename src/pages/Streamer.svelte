@@ -1,6 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { channelDetail, subMonths } from '../lib/stats';
+  import { timeline, dayMinOf, DAY } from '../lib/stats';
   import { h, n, day, date, dateTime, plural, share, duration, lang, dur } from '../lib/format';
   import Avatar from '../components/Avatar.svelte';
   import BoxArt from '../components/BoxArt.svelte';
@@ -24,6 +25,7 @@
     return mine ? r : 0;
   });
   const watchedCount = $derived(new Set(app.data!.watch.map((w) => w.ch)).size);
+  const tl = $derived(app.data ? timeline(dayMinOf(app.data, (w) => w.ch === ch), { endDay: Math.floor(app.data.user.end / DAY), year: null, fmt: dur }) : null);
   const det = $derived(exists ? channelDetail(app.data!, ch, rank) : null);
   const u = $derived(app.user(ch));
   const old = $derived(app.oldNames(ch));
@@ -66,8 +68,9 @@
   </div>
 
   <section class="panel">
-    <header class="panel-head"><h2>Heures par année</h2></header>
-    <Bars height={200} items={det.byYear.map((y) => ({ label: String(y.year), value: y.min, title: `${y.year} : ${dur(y.min)}`, mark: y.year === app.year }))} />
+    <header class="panel-head"><h2>Heures par {tl?.unit ?? 'année'}</h2></header>
+    <Bars height={200} items={(tl?.items ?? []).map((it) => ({ ...it, mark: tl?.unit === 'année' && app.year !== null && parseInt(it.label) === app.year }))} />
+    {#if tl?.partial}<p class="chart-note">{tl.partial}</p>{/if}
   </section>
 
   <div class="split">

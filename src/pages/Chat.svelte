@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { analyseChat } from '../lib/words';
-  import { yearOfTs } from '../lib/stats';
+  import { timeline, localDay, DAY } from '../lib/stats';
   import { h, n, day, dateTime, plural, pct } from '../lib/format';
   import Stat from '../components/Stat.svelte';
   import Bars from '../components/Bars.svelte';
@@ -16,19 +16,15 @@
   const a = $derived(analyseChat(msgs, app.data!.channels, app.emoteMap));
   const PROVIDERS = { twitch: 'Twitch', '7tv': '7TV', bttv: 'BTTV', ffz: 'FFZ' } as const;
 
-  const periods = $derived.by(() => {
+  const ctl = $derived.by(() => {
     const m = new Map<number, number>();
-    if (app.year === null) {
-      for (const x of msgs) m.set(yearOfTs(x.ts), (m.get(yearOfTs(x.ts)) ?? 0) + 1);
-      const ys = [...m.keys()];
-      if (!ys.length) return [];
-      const out = [];
-      for (let y = Math.min(...ys); y <= Math.max(...ys); y++) out.push({ label: String(y), value: m.get(y) ?? 0 });
-      return out;
+    for (const x of msgs) {
+      const d = localDay(x.ts);
+      m.set(d, (m.get(d) ?? 0) + 1);
     }
-    for (const x of msgs) m.set(new Date(x.ts).getMonth(), (m.get(new Date(x.ts).getMonth()) ?? 0) + 1);
-    return ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'].map((label, i) => ({ label, value: m.get(i) ?? 0 }));
+    return timeline(m, { endDay: Math.floor(app.data!.user.end / DAY), year: app.year, fmt: (v) => plural(v, 'message', 'messages') });
   });
+
 
   let q = $state('');
   let chFilter = $state(-1);
@@ -96,8 +92,9 @@
   </section>
 
   <section class="panel">
-    <header class="panel-head"><h2>Messages par {app.year === null ? 'année' : 'mois'}</h2></header>
-    <Bars height={200} items={periods} unit=" messages" />
+    <header class="panel-head"><h2>Messages par {ctl.unit}</h2></header>
+    <Bars height={200} items={ctl.items} />
+    {#if ctl.partial}<p class="chart-note">{ctl.partial}</p>{/if}
   </section>
 
   <div class="split">
