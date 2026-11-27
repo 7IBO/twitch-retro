@@ -247,6 +247,13 @@ button.bar { cursor: pointer; }
 .rank li > .rank-name, .rank li > .rank-main { flex: 1 1 0; }
 .rank li > .meter { flex: 0 1 160px; min-width: 48px; }
 .rank.table li { margin: 0; padding: 8px 24px; border-radius: 0; border-top: 1px solid var(--line); min-height: 56px; }
+.rank.table { gap: 0; }
+/* The whole row opens the item: the name's link stretches over the row. */
+.rank li:has(> a.rank-name, > .rank-main > a.rank-name) { position: relative; cursor: pointer; }
+.rank li a.rank-name::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+.rank li:has(a.rank-name:hover) a.rank-name { color: var(--accent-ink); }
+.rank li a.rank-name:focus-visible { outline: none; }
+.rank li:has(a.rank-name:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
 .rank.table li:first-child { border-top: 0; }
 .rank-n { flex: none; width: 3ch; text-align: right; color: var(--muted); font: 400 12px var(--mono); }
 .rank-main { display: grid; min-width: 0; }
