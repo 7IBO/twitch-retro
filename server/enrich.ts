@@ -35,7 +35,7 @@ export interface EnrichResponse {
   channelBadges: Record<string, Record<string, { title: string; url: string }>>;
 }
 
-const LIMITS = { channels: 500, games: 400, emoteChannels: 40, vods: 300, badgeChannels: 40 };
+const LIMITS = { channels: 500, games: 400, emoteChannels: 40, vods: 500, badgeChannels: 40 };
 const TTL = 6 * 3600 * 1000;
 const cache = new Map<string, { exp: number; val: unknown }>();
 let token: { value: string; exp: number } | null = null;

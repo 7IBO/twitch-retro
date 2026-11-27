@@ -231,7 +231,7 @@ class AppState {
       const r = await fetch('/api/enrich', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channels: [...ids], games, emoteChannels, vods: d.watchedVods.slice(0, 300).map((v) => v.id), badges: true, badgeChannels }),
+        body: JSON.stringify({ channels: [...ids], games, emoteChannels, vods: d.watchedVods.slice(0, 500).map((v) => v.id), badges: true, badgeChannels }),
       });
       if (!r.ok) throw new Error(String(r.status));
       if (this.data !== d) return;

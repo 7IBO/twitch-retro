@@ -11,6 +11,9 @@
   let sort = $state<'min' | 'days' | 'first' | 'last'>('min');
   let limit = $state(100);
   let vodLimit = $state(15);
+  let vodOnline = $state(false);
+  const onlineCount = $derived(s.watchedVods.filter((v) => app.enrich?.vods?.[v.id]).length);
+  const vodRows = $derived(vodOnline ? s.watchedVods.filter((v) => app.enrich?.vods?.[v.id]) : s.watchedVods);
 
   const rows = $derived.by(() => {
     const ranked = s.channels.map((c, i) => ({ ...c, rank: i + 1 }));
@@ -73,9 +76,16 @@
 
 {#if s.watchedVods.length && !q}
   <section class="panel flush">
-    <header class="panel-head pad"><h2>Rediffusions les plus regardées</h2><span class="hint">{n(s.watchedVods.length)} VOD</span></header>
+    <header class="panel-head pad">
+      <h2>Rediffusions les plus regardées</h2>
+      <div class="seg" role="group" aria-label="Filtrer les rediffusions" use:slide>
+        <button class:on={!vodOnline} onclick={() => ((vodOnline = false), (vodLimit = 15))}>Toutes ({n(s.watchedVods.length)})</button>
+        <button class:on={vodOnline} onclick={() => ((vodOnline = true), (vodLimit = 15))}>Encore en ligne ({n(onlineCount)})</button>
+      </div>
+    </header>
     <ol class="rank table">
-      {#each s.watchedVods.slice(0, vodLimit) as v, i (v.id)}
+      {#each vodRows.slice(0, vodLimit) as v (v.id)}
+        {@const i = s.watchedVods.indexOf(v)}
         {@const info = app.enrich?.vods?.[v.id]}
         <li>
           <span class="rank-n">{i + 1}</span>
@@ -94,7 +104,7 @@
       {/each}
     </ol>
   </section>
-  {#if s.watchedVods.length > vodLimit}
+  {#if vodRows.length > vodLimit}
     <button class="btn" onclick={() => (vodLimit += 50)}>Afficher plus de rediffusions</button>
   {/if}
 {/if}

@@ -345,9 +345,10 @@ function build(zipBytes: Uint8Array): RetroData {
       if (row) row.min += min;
       else agg.set(key, { day, ch, game, min, vod, platform });
       if (vod && r[7]) {
-        const v = vods.get(r[7]);
+        const vid = r[7].replace(/^v/, ''); // the export writes the same VOD as "v123" and "123"
+        const v = vods.get(vid);
         if (v) v.min += min;
-        else vods.set(r[7], { id: r[7].replace(/^v/, ''), ch, min, day });
+        else vods.set(vid, { id: vid, ch, min, day });
       }
     },
   );
