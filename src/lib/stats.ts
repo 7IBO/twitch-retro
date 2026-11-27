@@ -337,12 +337,43 @@ export interface ChannelDetail {
   follow: { since: number; following: boolean } | null;
 }
 
-export function channelDetail(d: RetroData, ch: number, rank: number): ChannelDetail {
+/** Everything of one channel, grouped once so a channel page never scans the whole export. */
+export interface ChannelIndex {
+  watch: Map<number, RetroData['watch']>;
+  chat: Map<number, RetroData['chat']>;
+  total: Map<number, number>;
+  rank: Map<number, number>;
+  allMin: number;
+}
+
+export function indexChannels(d: RetroData): ChannelIndex {
+  const watch = new Map<number, RetroData['watch']>();
+  const chat = new Map<number, RetroData['chat']>();
+  const total = new Map<number, number>();
+  let allMin = 0;
+  for (const w of d.watch) {
+    let a = watch.get(w.ch);
+    if (!a) watch.set(w.ch, (a = []));
+    a.push(w);
+    inc(total, w.ch, w.min);
+    allMin += w.min;
+  }
+  for (const m of d.chat) {
+    let a = chat.get(m.ch);
+    if (!a) chat.set(m.ch, (a = []));
+    a.push(m);
+  }
+  const rank = new Map<number, number>();
+  sortMap(total).forEach(([ch], i) => rank.set(ch, i + 1));
+  return { watch, chat, total, rank, allMin };
+}
+
+export function channelDetail(d: RetroData, ch: number, rank: number, idx?: ChannelIndex): ChannelDetail {
   let min = 0, vodMin = 0;
   const days = new Map<number, number>();
   const byYear = new Map<number, number>();
   const games = new Map<number, number>();
-  for (const w of d.watch) {
+  for (const w of idx ? (idx.watch.get(ch) ?? []) : d.watch) {
     if (w.ch !== ch) continue;
     min += w.min;
     if (w.vod) vodMin += w.min;
@@ -352,7 +383,7 @@ export function channelDetail(d: RetroData, ch: number, rank: number): ChannelDe
   }
   const dayKeys = [...days.keys()];
   const [bd, bm] = argmax(days);
-  const msgs = d.chat.filter((m) => m.ch === ch);
+  const msgs = idx ? (idx.chat.get(ch) ?? []) : d.chat.filter((m) => m.ch === ch);
   let ads = 0;
   for (let i = 0; i < d.adCh.length; i++) if (d.adCh[i] === ch) ads++;
   const years = [...byYear.keys()];

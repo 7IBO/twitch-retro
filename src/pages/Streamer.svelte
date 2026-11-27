@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { channelDetail, subMonths } from '../lib/stats';
-  import { timeline, dayMinOf, DAY } from '../lib/stats';
+  import { timeline, DAY } from '../lib/stats';
   import { h, n, day, date, dateTime, plural, share, duration, lang, dur } from '../lib/format';
   import Avatar from '../components/Avatar.svelte';
   import BoxArt from '../components/BoxArt.svelte';
@@ -16,23 +16,29 @@
   const all = $derived(app.data ? app.stats : null);
   const exists = $derived(!!app.data?.channels[ch]);
   // Rank is all-time, independent of the year filter.
-  const rank = $derived.by(() => {
-    const d = app.data!;
-    const totals = new Map<number, number>();
-    for (const w of d.watch) totals.set(w.ch, (totals.get(w.ch) ?? 0) + w.min);
-    const mine = totals.get(ch) ?? 0;
-    let r = 1;
-    for (const v of totals.values()) if (v > mine) r++;
-    return mine ? r : 0;
+  const idx = $derived(app.index!);
+  const rank = $derived(idx.rank.get(ch) ?? 0);
+  const watchedCount = $derived(idx.total.size);
+  const tl = $derived.by(() => {
+    const days = new Map<number, number>();
+    for (const w of idx.watch.get(ch) ?? []) days.set(w.day, (days.get(w.day) ?? 0) + w.min);
+    return timeline(days, { endDay: Math.floor(app.data!.user.end / DAY), year: null, fmt: dur });
   });
-  const watchedCount = $derived(new Set(app.data!.watch.map((w) => w.ch)).size);
-  const tl = $derived(app.data ? timeline(dayMinOf(app.data, (w) => w.ch === ch), { endDay: Math.floor(app.data.user.end / DAY), year: null, fmt: dur }) : null);
-  const det = $derived(exists ? channelDetail(app.data!, ch, rank) : null);
+  const det = $derived(exists ? channelDetail(app.data!, ch, rank, idx) : null);
   const u = $derived(app.user(ch));
   const old = $derived(app.oldNames(ch));
-  const total = $derived(app.data!.watch.reduce((a, w) => a + w.min, 0));
-  const myMsgs = $derived(app.data!.chat.filter((m) => m.ch === ch));
-  const emo = $derived(analyseChat(myMsgs, app.data!.channels, app.emoteMap, app.knownEmotes));
+  const total = $derived(idx.allMin);
+  const myMsgs = $derived(idx.chat.get(ch) ?? []);
+  // The emote count reads every message of the channel: done after the first paint,
+  // so opening the page shows the profile at once instead of waiting for it.
+  let ready = $state(false);
+  $effect(() => {
+    void ch;
+    ready = false;
+    const t = setTimeout(() => (ready = true), 60);
+    return () => clearTimeout(t);
+  });
+  const emo = $derived(ready ? analyseChat(myMsgs, app.data!.channels, app.emoteMap, app.knownEmotes) : null);
   const clips = $derived.by(() => {
     let c = 0;
     for (let i = 0; i < app.data!.clipCh.length; i++) if (app.data!.clipCh[i] === ch) c++;
@@ -136,7 +142,7 @@
     </section>
   </div>
 
-  {#if emo.emotes.length}
+  {#if emo?.emotes.length}
     <section class="panel">
       <header class="panel-head"><h2>Tes emotes chez {app.chName(ch)}</h2><span class="hint">{n(emo.emotesUsed)} envoyées dans {plural(myMsgs.length, 'message', 'messages')}</span></header>
       <ol class="emotes">

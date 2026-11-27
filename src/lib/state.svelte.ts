@@ -1,6 +1,6 @@
 import type { RetroData, WorkerMsg } from './types';
 import type { EnrichResponse, Emote } from '../../server/enrich';
-import { compute, type Stats } from './stats';
+import { compute, indexChannels, type Stats } from './stats';
 import { taggedEmoteIds } from './words';
 // Inlined so a page left open during a site update still has its worker.
 import ParseWorker from './worker.ts?worker&inline';
@@ -110,6 +110,8 @@ class AppState {
   enrichState = $state<'idle' | 'loading' | 'done' | 'failed'>('idle');
 
   stats: Stats | null = $derived(this.data ? compute(this.data, this.year) : null);
+  /** Per-channel rows, totals and all-time ranks, built once per export. */
+  index = $derived(this.data ? indexChannels(this.data) : null);
   /** Twitch emote ids seen in message tags, by name (works for retired emotes too). */
   knownEmotes = $derived(this.data ? taggedEmoteIds(this.data.chat) : new Map<string, string>());
 
