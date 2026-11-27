@@ -359,6 +359,7 @@ img.boxart.loaded, img.avatar.loaded { opacity: 1; }
 .facts { display: grid; grid-template-columns: auto 1fr; gap: 8px 24px; margin: 0; font-size: 14px; }
 .facts dt { color: var(--muted); }
 .facts dd { margin: 0; font-variant-numeric: tabular-nums; }
+.badge-dd { display: flex; align-items: center; gap: 8px; }
 
 /* signature: chat lines */
 .chatline { margin: 16px 0 0; padding: 12px 16px; border-radius: 10px; background: var(--raised); }

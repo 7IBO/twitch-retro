@@ -10,6 +10,7 @@
   import Meter from '../components/Meter.svelte';
   import Empty from '../components/Empty.svelte';
   import ChatText from '../components/ChatText.svelte';
+  import { analyseChat } from '../lib/words';
 
   let { ch }: { ch: number } = $props();
   const all = $derived(app.data ? app.stats : null);
@@ -30,6 +31,28 @@
   const u = $derived(app.user(ch));
   const old = $derived(app.oldNames(ch));
   const total = $derived(app.data!.watch.reduce((a, w) => a + w.min, 0));
+  const myMsgs = $derived(app.data!.chat.filter((m) => m.ch === ch));
+  const emo = $derived(analyseChat(myMsgs, app.data!.channels, app.emoteMap, app.knownEmotes));
+  const clips = $derived.by(() => {
+    let c = 0;
+    for (let i = 0; i < app.data!.clipCh.length; i++) if (app.data!.clipCh[i] === ch) c++;
+    return c;
+  });
+  const vodCount = $derived(app.data!.watchedVods.filter((v) => v.ch === ch).length);
+  // Your subscriber badge in this chat, from the last message that shows it.
+  const subBadge = $derived.by(() => {
+    let key = '';
+    let months = 0;
+    for (const m of myMsgs) {
+      const b = m.badges?.find((x) => x.startsWith('subscriber/'));
+      if (b) (key = b), (months = Math.max(months, m.subMonths ?? 0));
+    }
+    if (!key) return null;
+    const best = { key, months };
+    const id = app.data!.channels[ch]?.id;
+    return { ...best, img: (id ? app.enrich?.channelBadges?.[id]?.[best.key] : undefined) ?? app.enrich?.badges?.[best.key] };
+  });
+  const TYPES: Record<string, string> = { partner: 'Partenaire', affiliate: 'Affiliée', '': 'Sans programme' };
   const yearRow = $derived(app.year !== null && all ? all.channels.find((c) => c.ch === ch) : undefined);
 </script>
 
@@ -88,7 +111,7 @@
       </ol>
     </section>
     <section class="panel">
-      <header class="panel-head"><h2>Moments</h2></header>
+      <header class="panel-head"><h2>En détail</h2></header>
       <dl class="facts">
         {#if det.biggestDay}<dt>Plus grosse journée</dt><dd>{dur(det.biggestDay.min)} le {day(det.biggestDay.day)}</dd>{/if}
         {#if det.vodMin}<dt>En rediffusion</dt><dd>{dur(det.vodMin)}</dd>{/if}
@@ -98,7 +121,11 @@
         {/if}
         {#if det.bits}<dt>Bits</dt><dd>{n(det.bits)}</dd>{/if}
         {#if det.ads}<dt>Pubs vues</dt><dd>{n(det.ads)}</dd>{/if}
-        {#if u?.lang}<dt>Langue de la chaîne aujourd'hui</dt><dd>{lang(u.lang)}</dd>{/if}
+        {#if subBadge}<dt>Ton badge d'abonné</dt><dd class="badge-dd">{#if subBadge.img}<img src={subBadge.img.url} alt="" width="20" height="20" />{/if}{subBadge.months ? plural(subBadge.months, 'mois', 'mois') : 'affiché'}</dd>{/if}
+        {#if vodCount}<dt>Rediffusions ouvertes</dt><dd>{n(vodCount)}</dd>{/if}
+        {#if clips}<dt>Clips regardés</dt><dd>{n(clips)}</dd>{/if}
+        {#if u}<dt>Chaîne</dt><dd>{TYPES[u.type] ?? u.type}{u.createdAt ? `, créée le ${date(Date.parse(u.createdAt))}` : ''}</dd>{/if}
+        {#if u?.lang}<dt>Langue aujourd'hui</dt><dd>{lang(u.lang)}</dd>{/if}
       </dl>
       {#if det.firstMsg}
         <figure class="chatline">
@@ -108,4 +135,20 @@
       {/if}
     </section>
   </div>
+
+  {#if emo.emotes.length}
+    <section class="panel">
+      <header class="panel-head"><h2>Tes emotes chez {app.chName(ch)}</h2><span class="hint">{n(emo.emotesUsed)} envoyées dans {plural(myMsgs.length, 'message', 'messages')}</span></header>
+      <ol class="emotes">
+        {#each emo.emotes.slice(0, 15) as e, i (e.emote.name)}
+          <li title={e.emote.name}>
+            <span class="emote-n">{i + 1}</span>
+            <img src={e.emote.url} alt={e.emote.name} height="28" loading="lazy" referrerpolicy="no-referrer" />
+            <span class="emote-name">{e.emote.name}</span>
+            <span class="emote-count">{n(e.n)}</span>
+          </li>
+        {/each}
+      </ol>
+    </section>
+  {/if}
 {/if}
