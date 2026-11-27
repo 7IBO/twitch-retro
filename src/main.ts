@@ -43,6 +43,7 @@ function landing(error?: string) {
         <span class="drop-sub">ou clique pour le choisir</span>
       </label>
       ${error ? `<p class="error">${esc(error)}</p>` : ''}
+      <p class="muted howto">Pas encore de zip ? Demande-le dans <a href="https://www.twitch.tv/settings/security" target="_blank" rel="noopener noreferrer">Paramètres Twitch › Sécurité et confidentialité</a>, bouton « Télécharger vos données ». Twitch peut mettre plusieurs semaines à l'envoyer.</p>
       <ul class="promises">
         <li><strong>Rien ne quitte ton ordinateur.</strong> Pas de serveur, pas de stockage, pas de compte. Ferme l'onglet et tout disparaît.</li>
         <li><strong>Tes données privées restent fermées.</strong> Seuls les fichiers de visionnage, de chat, de follows et de subs sont ouverts. Les IP, villes, appareils et pages vues ne sont jamais lus.</li>

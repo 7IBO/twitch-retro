@@ -189,3 +189,4 @@ p { margin: 0 0 0.6em; }
   .games { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   .rank-meta { white-space: normal; }
 }
+.howto { font-size: 0.9rem; margin-bottom: 20px; } .howto a { color: var(--accent); }
