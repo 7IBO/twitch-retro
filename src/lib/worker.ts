@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { unzipSync, strFromU8 } from 'fflate';
 import { readCsv } from './csv';
-import type { Channel, ChatMsg, FollowEvent, RetroData, Sub, Bits, WatchRow, WorkerMsg } from './types';
+import type { Channel, ChatMsg, FollowEvent, RetroData, Sub, Bits, WatchRow, WorkerMsg, Platform, OwnVod, WatchedVod } from './types';
 
 /**
  * The only files ever decompressed. Everything else in the export (security
@@ -21,6 +21,7 @@ const FILES = [
   'commerce/subs/subscriptions.csv',
   'commerce/bits/bits_cheered.csv',
   'vod/vod_create.csv',
+  'ads/video_ad_impression.csv',
 ] as const;
 type FileKey = (typeof FILES)[number];
 
@@ -218,6 +219,22 @@ class Games {
   }
 }
 
+function platformOf(p: string): Platform {
+  switch (p) {
+    case 'web':
+    case 'desktop':
+      return 'web';
+    case 'android':
+    case 'ios':
+    case 'mobile_web':
+      return 'mobile';
+    case '':
+      return 'other';
+    default:
+      return 'tv'; // tv, chromecast, consoles, set-top boxes
+  }
+}
+
 function titleCase(s: string) {
   return s.replace(/(^|[\s:\-(/])(\p{L})/gu, (_, sep: string, ch: string) => sep + ch.toUpperCase());
 }
@@ -271,9 +288,10 @@ function build(zipBytes: Uint8Array): RetroData {
   // --- minutes watched
   post({ type: 'progress', step: 'Minutes regardées' });
   const agg = new Map<string, WatchRow>();
+  const vods = new Map<string, WatchedVod>();
   readCsv(
     text('site_history/minute_watched.csv'),
-    ['day', 'channel_id', 'channel_name', 'game_name', 'minutes_watched_unadjusted', 'content_mode'],
+    ['day', 'channel_id', 'channel_name', 'game_name', 'minutes_watched_unadjusted', 'content_mode', 'platform', 'vod_id'],
     (r) => {
       const min = +r[4];
       if (!min || !r[0]) return;
@@ -283,10 +301,16 @@ function build(zipBytes: Uint8Array): RetroData {
       if (ch < 0) return;
       const game = games.get(r[3]);
       const vod = r[5] ? !r[5].startsWith('live') : false;
-      const key = day + '|' + ch + '|' + game + '|' + (vod ? 1 : 0);
+      const platform = platformOf(r[6]);
+      const key = day + '|' + ch + '|' + game + '|' + (vod ? 1 : 0) + platform;
       const row = agg.get(key);
       if (row) row.min += min;
-      else agg.set(key, { day, ch, game, min, vod });
+      else agg.set(key, { day, ch, game, min, vod, platform });
+      if (vod && r[7]) {
+        const v = vods.get(r[7]);
+        if (v) v.min += min;
+        else vods.set(r[7], { id: r[7].replace(/^v/, ''), ch, min, day });
+      }
     },
   );
 
@@ -323,27 +347,33 @@ function build(zipBytes: Uint8Array): RetroData {
   );
 
   // --- own broadcasts + VODs
-  let bMin = 0;
-  const bDays = new Set<number>();
-  const bGames = new Map<number, number>();
-  let bFirst = Infinity, bLast = -Infinity;
+  const bAgg = new Map<string, { day: number; min: number; game: number }>();
   readCsv(text('site_history/minute_broadcast.csv'), ['time', 'time_utc', 'game', 'minutes_broadcast'], (r) => {
     const t = ts(r[1], r[0]);
+    if (Number.isNaN(t)) return;
     if (r[2]) games.teach(r[2]);
     const m = +r[3] || 1;
-    bMin += m;
-    if (!Number.isNaN(t)) {
-      bDays.add(Math.floor(t / DAY));
-      bFirst = Math.min(bFirst, t);
-      bLast = Math.max(bLast, t);
-    }
-    const g = games.get(r[2]);
-    if (g >= 0) bGames.set(g, (bGames.get(g) ?? 0) + m);
+    const day = Math.floor(t / DAY);
+    const game = games.get(r[2]);
+    const key = day + '|' + game;
+    const e = bAgg.get(key);
+    if (e) e.min += m;
+    else bAgg.set(key, { day, min: m, game });
   });
-  let vods = 0;
-  readCsv(text('vod/vod_create.csv'), ['vod_id', 'game'], (r) => {
+  const ownVodsRaw: { id: string; ts: number; title: string; game: string; seconds: number }[] = [];
+  readCsv(text('vod/vod_create.csv'), ['vod_id', 'game', 'time', 'time_utc', 'title', 'video_duration'], (r) => {
     if (r[1]) games.teach(r[1]);
-    if (r[0]) vods++;
+    if (r[0]) ownVodsRaw.push({ id: r[0], game: r[1], ts: ts(r[3], r[2]), title: r[4], seconds: +r[5] || 0 });
+  });
+
+  // --- ads seen (only time and channel are read)
+  const adTs: number[] = [];
+  const adCh: number[] = [];
+  readCsv(text('ads/video_ad_impression.csv'), ['time', 'time_utc', 'channel', 'channel_id'], (r) => {
+    const t = ts(r[1], r[0]);
+    if (Number.isNaN(t)) return;
+    adTs.push(t);
+    adCh.push(reg.observe(r[3], r[2], t));
   });
 
   // Logins-only files are resolved once every id has been seen.
@@ -379,9 +409,9 @@ function build(zipBytes: Uint8Array): RetroData {
     try {
       const j = JSON.parse(text('metadata.json') || '{}');
       // Only these three fields are kept.
-      return { login: String(j.Username ?? ''), start: Date.parse(j.StartTime), end: Date.parse(j.EndTime) };
+      return { login: String(j.Username ?? ''), userId: String(j.UserID ?? ''), start: Date.parse(j.StartTime), end: Date.parse(j.EndTime) };
     } catch {
-      return { login: '', start: NaN, end: NaN };
+      return { login: '', userId: '', start: NaN, end: NaN };
     }
   })();
   const renames: RetroData['user']['renames'] = [];
@@ -392,6 +422,7 @@ function build(zipBytes: Uint8Array): RetroData {
 
   reg.finish();
   const gameFollows = gameFollowsRaw.map((g) => ({ ts: g.ts, game: games.get(g.name) }));
+  const ownVods: OwnVod[] = ownVodsRaw.map((v) => ({ id: v.id, ts: v.ts, title: v.title, game: games.get(v.game), seconds: v.seconds }));
   games.finish();
 
   const watch = [...agg.values()].sort((a, b) => a.day - b.day);
@@ -412,14 +443,11 @@ function build(zipBytes: Uint8Array): RetroData {
     gameFollows,
     subs,
     bits,
-    broadcast: {
-      minutes: bMin,
-      days: bDays.size,
-      games: [...bGames].map(([game, min]) => ({ game, min })).sort((a, b) => b.min - a.min),
-      firstTs: bFirst,
-      lastTs: bLast,
-    },
-    vods,
+    adTs: Float64Array.from(adTs),
+    adCh: Int32Array.from(adCh),
+    broadcast: [...bAgg.values()].sort((a, b) => a.day - b.day),
+    ownVods: ownVods.sort((a, b) => b.ts - a.ts),
+    watchedVods: [...vods.values()].sort((a, b) => b.min - a.min),
     timings: { unzip: Math.round(t1 - t0), parse: Math.round(t2 - t1) },
   };
 }
