@@ -1,4 +1,4 @@
-# Reference design: Rétro Twitch
+# Reference design: Twitch Retro
 
 Method (boards, proposals, approval, recapture): `docs/regles.md` in this
 repository, part on the reference design. Here, only the links and this

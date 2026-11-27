@@ -2,6 +2,7 @@
   "name": "twitch-retro",
   "private": true,
   "version": "0.1.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,8 +12,8 @@
     "check:dashes": "bun scripts/check-dashes.ts",
     "check:copy": "bun scripts/check-copy.ts",
     "check:ids": "bun scripts/check-ids.ts",
-    "test:scripts": "bun test scripts/",
-    "check:all": "bun scripts/check-dashes.ts && bun scripts/check-copy.ts && bun scripts/check-ids.ts && bun test scripts/",
+    "test": "bun test",
+    "check:all": "bun scripts/check-dashes.ts && bun scripts/check-copy.ts && bun scripts/check-ids.ts && bun test",
     "prepare": "node scripts/install-hooks.ts || exit 0"
   },
   "dependencies": {

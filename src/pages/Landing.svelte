@@ -24,7 +24,7 @@
 
 <div class="landing">
   <header class="landing-top">
-    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Rétro Twitch</div>
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Twitch Retro</div>
     <LangSwitch />
   </header>
 
@@ -87,8 +87,8 @@
   </main>
 
   <footer class="landing-foot">
-    <a href="#/mentions-legales">{t('Legal notice')}</a>
-    <a href="#/confidentialite">{t('Privacy')}</a>
+    <a href="#/legal">{t('Legal notice')}</a>
+    <a href="#/privacy">{t('Privacy')}</a>
     <span>{t('Not affiliated with Twitch.')}</span>
   </footer>
 </div>

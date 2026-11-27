@@ -1,4 +1,4 @@
-# Rétro Twitch
+# Twitch Retro
 
 An all-time Twitch retrospective built from the data export a user requests
 from Twitch (Settings, Security and Privacy, "Download your data"). The zip is
@@ -106,7 +106,9 @@ without avatars, Twitch emotes or box art looked up by id.
 | `src/lib/card.ts` | Share card drawn on a canvas |
 | `src/lib/i18n/` | `t()`: the English text is the key, `fr.ts` holds French |
 | `src/pages/`, `src/components/` | One file per page, small shared components |
-| `server/`, `api/` | Enrichment and image relay |
+| `server/`, `api/` | Enrichment, image relay, and `server/guard.ts` (403 for pages of other sites) |
+| `src/lib/site.ts` | Site name, host and public contact |
+| `tests/` | Bun tests of the CSV reader and the API guards |
 | `scripts/` | Copied checks: attribution, dashes, copy, ids |
 
 ## Conventions
@@ -123,10 +125,17 @@ without avatars, Twitch emotes or box art looked up by id.
   JetBrains Mono (`docs/design.md`).
 - No Linear issue id in code, comments or docs (`npm run check:ids`).
 
+## Routes
+
+Hash routes in English (`#/calendar`, `#/support`, `#/channel`, `#/share`,
+`#/legal`, `#/privacy`); the French paths of the first version still open
+the same pages. SEO lives in `index.html` and `public/` (Open Graph image
+`og.png`, `robots.txt`, `sitemap.xml`, `site.webmanifest`, `404.html`).
+
 ## Git and pull requests
 
 - Commit identity: `Thibault <71017357+7IBO@users.noreply.github.com>`.
-- One branch per Linear issue (project "Rétro Twitch", team THI), named by
+- One branch per Linear issue (project "Twitch Retro", team THI), named by
   its `gitBranchName`. Conventional Commits in English.
 - PR in draft from the first push, template in
   `.github/pull_request_template.md`, reviewers in `.claude/agents/`, marked
@@ -141,9 +150,9 @@ without avatars, Twitch emotes or box art looked up by id.
   Spaceship, CNAME to Vercel).
 - `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` live in the Vercel project,
   set by Thibault.
-- Legal notice (`#/mentions-legales`) and privacy policy
-  (`#/confidentialite`) in `src/pages/Legal.svelte`: the publisher is a
+- Legal notice (`#/legal`) and privacy policy
+  (`#/privacy`) in `src/pages/Legal.svelte`: the publisher is a
   private individual, non-professional, as long as the app earns nothing;
-  public contact `hello@7ibo.dev`. A change in what is read or sent updates
+  public contact `hello@7ibo.dev` (`src/lib/site.ts`). A change in what is read or sent updates
   the privacy policy in the same PR.
 - After each deploy, the site is checked at 390 and 1280 px.

@@ -320,7 +320,7 @@ export const FR: Record<string, string> = {
   "minutes": "minutes",
   "Favourite emote: {name}": "Emote préférée : {name}",
   "{n} times": "{n} fois",
-  "Rétro Twitch · from my Twitch data export": "Rétro Twitch · d'après mon export de données Twitch",
+  "Twitch Retro · from my Twitch data export": "Twitch Retro · d'après mon export de données Twitch",
   "day": "jour",
   "days": "jours",
   "full day": "jour entier",

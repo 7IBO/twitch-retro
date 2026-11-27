@@ -1,6 +1,6 @@
 # Marketing
 
-What Rétro Twitch says about itself. **This file is the reference** (shared
+What Twitch Retro says about itself. **This file is the reference** (shared
 rule of 21/11): 7IBO/marketing proposes its changes to this file in a PR. A
 promise written here is checked in the code before it goes into any text.
 Nothing beyond what follows is decided yet: positioning, audience and

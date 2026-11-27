@@ -1,3 +1,4 @@
+import { SITE } from './site';
 import { t } from './i18n/index.svelte';
 /** Draws the shareable card on a canvas. Everything happens in the browser. */
 
@@ -239,7 +240,11 @@ export async function drawCard(canvas: HTMLCanvasElement, d: CardData, format: '
   ctx.stroke();
   ctx.fillStyle = C.muted;
   ctx.font = `400 22px ${SANS}`;
-  ctx.fillText(t('Rétro Twitch · from my Twitch data export'), P, footY);
+  ctx.fillText(t('Twitch Retro · from my Twitch data export'), P, footY);
+  ctx.fillStyle = C.text;
+  ctx.textAlign = 'right';
+  ctx.fillText(SITE.host, W - P, footY);
+  ctx.textAlign = 'left';
 }
 
 export function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {

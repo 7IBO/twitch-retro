@@ -57,20 +57,26 @@ function parseRoute(hash: string): Route {
       return b ? { page: 'streamer', key: b } : { page: 'streamers' };
     case 'categories':
       return b ? { page: 'category', key: b } : { page: 'categories' };
-    case 'calendrier':
+    case 'calendar':
+    case 'calendrier': // French paths of the first version still open
       return { page: 'calendar' };
     case 'chat':
       return { page: 'chat' };
     case 'follows':
       return { page: 'follows' };
+    case 'support':
     case 'soutien':
       return { page: 'support' };
+    case 'channel':
     case 'chaine':
       return { page: 'channel' };
+    case 'legal':
     case 'mentions-legales':
       return { page: 'legal' };
+    case 'privacy':
     case 'confidentialite':
       return { page: 'privacy' };
+    case 'share':
     case 'partager':
       return b === 'streamers' && c ? { page: 'share', target: { kind: 'streamer', key: c } }
         : b === 'categories' && c ? { page: 'share', target: { kind: 'category', key: c } }
