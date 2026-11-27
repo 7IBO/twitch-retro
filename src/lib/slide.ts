@@ -5,30 +5,36 @@
  * it position and size through CSS variables.
  */
 export function slide(node: HTMLElement) {
-  let first = true;
+  let current: HTMLElement | null = null;
 
   function place() {
     const on = node.querySelector<HTMLElement>(':scope > .on');
     if (!on) {
       node.style.setProperty('--io', '0');
+      current = null;
       return;
     }
+    // Glide only when the selection moves to another item. Anything else (first
+    // paint, fonts arriving, the list growing, a resize) repositions in place.
+    const glide = current !== null && current !== on && current.isConnected;
+    current = on;
+    if (!glide) node.classList.remove('slide-ready');
     node.style.setProperty('--ix', on.offsetLeft + 'px');
     node.style.setProperty('--iy', on.offsetTop + 'px');
     node.style.setProperty('--iw', on.offsetWidth + 'px');
     node.style.setProperty('--ih', on.offsetHeight + 'px');
     node.style.setProperty('--io', '1');
-    if (first) {
-      first = false;
-      // Appear in place the first time, glide afterwards.
-      requestAnimationFrame(() => node.classList.add('slide-ready'));
+    if (!glide) {
+      void node.offsetWidth; // apply the new position without a transition
+      node.classList.add('slide-ready');
     }
   }
 
   node.classList.add('slide');
   place();
   void document.fonts?.ready.then(place);
-  const mo = new MutationObserver(place);
+  // Ignore our own class changes on the container, react to the items only.
+  const mo = new MutationObserver((list) => list.some((m) => m.target !== node) && place());
   mo.observe(node, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
   const ro = new ResizeObserver(place);
   ro.observe(node);
