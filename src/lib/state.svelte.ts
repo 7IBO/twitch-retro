@@ -401,6 +401,8 @@ class AppState {
     const g = this.enrich?.games[name.toLowerCase()];
     if (g) return g.boxArt.replace('{w}x{h}', `${w}x${hgt}`);
     if (g === null) return ''; // Twitch has no box art for it: show our own placeholder
+    // Being looked up right now: wait for the real art instead of flashing a guess.
+    if (this.enrich?.twitch && !this.offline) return '';
     return `https://static-cdn.jtvnw.net/ttv-boxart/${encodeURIComponent(name)}-${w}x${hgt}.jpg`;
   }
 

@@ -309,6 +309,9 @@ button.bar { cursor: pointer; }
 .boxart.empty { display: grid; place-items: center; padding: 8px; overflow: hidden; background: linear-gradient(160deg, var(--raised-2), var(--raised)); }
 .boxart.empty span { font-size: 13px; line-height: 1.2; text-align: center; color: var(--text-2); font-weight: 500; overflow-wrap: anywhere; }
 .boxart.thumb.empty span, .year-art.empty span { display: none; }
+/* Pictures fade in once loaded instead of popping */
+img.boxart, img.avatar { opacity: 0; transition: opacity 0.25s var(--ease); }
+img.boxart.loaded, img.avatar.loaded { opacity: 1; }
 .boxart.thumb { width: 30px; height: 40px; border-radius: 4px; flex: none; }
 
 /* ---------- covers ---------- */

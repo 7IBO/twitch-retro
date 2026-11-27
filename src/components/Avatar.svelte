@@ -4,6 +4,7 @@
   const url = $derived(app.user(ch)?.avatar);
   const name = $derived(app.chName(ch));
   let failed = $state(false);
+  let loaded = $state(false);
   $effect(() => {
     const id = app.data?.channels[ch]?.id;
     if (!url && app.enrich && id && /^\d+$/.test(id)) app.want('user', id);
@@ -16,7 +17,7 @@
 </script>
 
 {#if url && !failed}
-  <img class="avatar" src={url} alt="" width={size} height={size} style:--s="{size}px" loading="lazy" referrerpolicy="no-referrer" crossorigin="anonymous" onerror={() => (failed = true)} />
+  <img class="avatar" class:loaded src={url} onload={() => (loaded = true)} alt="" width={size} height={size} style:--s="{size}px" loading="lazy" referrerpolicy="no-referrer" crossorigin="anonymous" onerror={() => (failed = true)} />
 {:else}
   <span class="avatar initials" style:--s="{size}px" style:--h={hue(app.data?.channels[ch]?.id ?? name)} aria-hidden="true">{name.slice(0, 1).toUpperCase()}</span>
 {/if}
