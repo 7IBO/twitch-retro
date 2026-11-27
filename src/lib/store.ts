@@ -1,8 +1,9 @@
 /**
- * Optional copy of the export zip in this browser's IndexedDB, only when the
- * person ticks "keep on this device". It never leaves the device, and
- * "Oublier cet export" deletes it. Every call fails quietly (private mode,
- * blocked storage): the site then simply asks for the zip again.
+ * Copy of the export zip in this browser's IndexedDB, kept for 30 days at
+ * most when "keep the export in this browser" is ticked (the default). It
+ * never leaves the device, and "Change export" deletes it. Every call fails
+ * quietly (private mode, blocked storage): the site then asks for the zip
+ * again.
  */
 
 const DB = 'retro-twitch';

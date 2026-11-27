@@ -1,44 +1,45 @@
 # Marketing
 
-Ce que Rétro Twitch dit d'elle-même. **Ce fichier fait foi** (règle commune
-du 21/11) : 7IBO/marketing propose ses changements à ce fichier par une PR.
-Une promesse écrite ici se vérifie dans le code avant de partir dans un
-texte. Rien n'est encore décidé au-delà de ce qui suit : le positionnement,
-le public et le lancement se tranchent avec Thibault avant la mise en ligne
-publique.
+What Rétro Twitch says about itself. **This file is the reference** (shared
+rule of 21/11): 7IBO/marketing proposes its changes to this file in a PR. A
+promise written here is checked in the code before it goes into any text.
+Nothing beyond what follows is decided yet: positioning, audience and
+launch are settled with Thibault before the public release.
 
-## Ce que l'app est
+## What the app is
 
-- Une rétrospective Twitch de tous les temps, depuis le premier stream
-  regardé, construite à partir de l'export de données que chacun peut
-  demander à Twitch.
-- Plus complète que le récapitulatif annuel de Twitch : toutes les années,
-  filtres par année et par mois, fiche par streamer et par catégorie,
-  calendrier, chat et emotes (Twitch, 7TV, BTTV, FFZ), follows, subs et
-  pubs, la chaîne de l'utilisateur, cartes PNG à partager.
-- Français et anglais.
-- Gratuit, sans compte.
+- An all-time Twitch retrospective, since the first stream watched, built
+  from the data export anyone can request from Twitch.
+- More complete than Twitch's yearly recap: every year, filters by year and
+  month, a page per streamer and per category, a calendar, chat and emotes
+  (Twitch, 7TV, BTTV, FFZ), follows, subs and ads, the user's own channel,
+  PNG cards to share.
+- French and English.
+- Free, no account.
 
-## Promesses à tenir (vérifiées dans le code)
+## Promises to keep (checked in the code)
 
-- Le zip est lu dans le navigateur et n'est envoyé à aucun serveur
+- The zip is read in the browser and sent to no server
   (`src/lib/worker.ts`, `src/lib/state.svelte.ts`).
-- Les IP, villes, appareils, navigateurs, pages vues, l'email et le
-  téléphone de l'export ne sont jamais lus ni affichés (`src/lib/csv.ts`,
-  liste des fichiers dans `src/lib/worker.ts`).
-- Seuls des identifiants de chaînes, des noms de jeux et des identifiants
-  de VOD partent vers le serveur, pour les images et les emotes ; une case
-  le coupe (`server/enrich.ts`).
-- L'export n'est gardé que dans le navigateur, 30 jours au plus, et
-  « Changer d'export » l'efface (`src/lib/store.ts`).
+- The IPs, cities, devices, browsers, page views, email and phone number of
+  the export are never read or shown (`src/lib/csv.ts`, file list in
+  `src/lib/worker.ts`).
+- For images and emotes, the server receives part of the viewing history:
+  the ids of the channels watched, followed or chatted in, game names and
+  watched VOD ids, without times, counts or messages. A box on the landing
+  page turns this off (`src/pages/Landing.svelte`, the `offline` flag of
+  `src/lib/state.svelte.ts`); the server keeps none of it
+  (`server/enrich.ts`).
+- The export is only kept in the browser, for 30 days at most, and "Change
+  export" deletes it (`src/lib/store.ts`).
 
-## Ce qu'on ne dit pas
+## What we do not say
 
-- Pas « officiel » ni « par Twitch » : le site n'est pas affilié à Twitch,
-  et le dit en bas de chaque page.
-- Pas de chiffre de visionnage présenté comme exact : Twitch compte chaque
-  appareil et chaque onglet, la page l'explique.
+- Not "official" or "by Twitch": the site is not affiliated with Twitch,
+  and says so at the bottom of every page.
+- No watch time presented as exact: Twitch counts every device and every
+  tab, and the page explains it.
 
-## À décider
+## To decide
 
-- Nom et domaine, public visé, canaux et date de lancement.
+- Name and domain, target audience, channels and launch date.

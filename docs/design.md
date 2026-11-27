@@ -1,58 +1,60 @@
-# Design de référence : Rétro Twitch
+# Reference design: Rétro Twitch
 
-Méthode (toiles, propositions, validation, recapture) : `docs/regles.md`
-de ce dépôt, partie sur le design de référence. Ici, seulement les liens et
-l'état de cette app.
+Method (boards, proposals, approval, recapture): `docs/regles.md` in this
+repository, part on the reference design. Here, only the links and this
+app's state.
 
 ## Direction
 
-Tirée de la méthode unslop (Damir Sokolovsky, CC BY 4.0), écrite en tête de
-`src/style.css` :
+From the unslop method (Damir Sokolovsky, CC BY 4.0), written at the top of
+`src/style.css`:
 
-- Produit : une rétrospective de tout ce qu'une personne a regardé sur
-  Twitch, calculée dans son navigateur.
-- Caractère : nocturne, archiviste, un peu joueur.
-- Monde : les soirées devant un stream, le chat qui défile.
-- Moments : le graphique des heures et le mur de jaquettes.
-- Signature : les lignes de chat (horodatage en mono au-dessus du texte),
-  pour les citations et les dates.
+- Product: a retrospective of everything someone watched on Twitch,
+  computed in their browser.
+- Character: nocturnal, archival, a little playful.
+- World: late evenings in front of a stream, the chat scrolling by.
+- Moments: the hours chart and the wall of box art.
+- Signature: chat lines (a mono timestamp above the text), for quotes and
+  dates.
 
-Surfaces graphite (`--bg #141415`, `--card #19191b`), un seul accent violet
-`#a970ff`, Inter et JetBrains Mono auto-hébergées, aucune animation qui
-boucle, un fondu de 0,2 s au changement de page.
+Graphite surfaces (`--bg #141415`, `--card #19191b`), a single violet
+accent `#a970ff`, self-hosted Inter and JetBrains Mono. The only looping
+animation is the loading bar while the export is read; pages fade in over
+0.2 s when the page changes, filters update in place.
 
-## Liens
+## Links
 
-| Quoi | Lien |
+| What | Link |
 |---|---|
-| Système de design | pas encore de toile : les jetons vivent dans `src/style.css` |
-| Toiles par zone | à créer avant le premier gros changement visible |
+| Design system | no board yet: the tokens live in `src/style.css` |
+| Boards by area | to create before the first large visible change |
 
-## Dernière recapture
+## Last recapture
 
-Aucune toile encore. Dossiers d'interface à comparer : `src/pages/`,
+No board yet. Interface folders to compare: `src/pages/`,
 `src/components/`, `src/style.css`.
 
-## Règle propre à cette app
+## Rule for this app
 
-« Gros changements seulement » (la règle commune, écrite dans
-`docs/regles.md`).
+"Large changes only" (the shared rule, written in `docs/regles.md`).
 
-## Grille pages × états
+## Pages and states
 
-États de `docs/regles.md` (partie sur l'interface) ; « s.o. » quand un état
-n'existe pas pour la page.
+States from `docs/regles.md` (part on the interface); "n/a" when a state
+does not exist for the page. Observed by hand on the sample export, in
+French and English, at 390 and 1280 px, on 27/11/2026: no board, capture
+or automated test backs this table yet.
 
-| Page | Toile | Vide | Peu | Beaucoup | Incomplet | Chargement | Erreur | Succès | 390 | 1280 | Sombre |
+| Page | Board | Empty | Little | A lot | Partial | Loading | Error | Success | 390 | 1280 | Dark |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Accueil (dépôt du zip) | non | s.o. | s.o. | s.o. | s.o. | oui | oui | s.o. | oui | oui | oui |
-| Aperçu | non | oui | non | oui | oui | s.o. | s.o. | s.o. | oui | oui | oui |
-| Streamers, fiche streamer | non | oui | non | oui | oui | s.o. | s.o. | s.o. | oui | oui | oui |
-| Catégories, fiche catégorie | non | oui | non | oui | oui | s.o. | s.o. | s.o. | oui | oui | oui |
-| Calendrier | non | non | non | oui | oui | s.o. | s.o. | s.o. | oui | oui | oui |
-| Chat | non | oui | non | oui | oui | oui | oui | s.o. | oui | oui | oui |
-| Follows, Soutien, Ma chaîne | non | oui | non | oui | s.o. | s.o. | s.o. | s.o. | oui | oui | oui |
-| Partager (carte PNG) | non | non | non | oui | s.o. | oui | oui | s.o. | oui | oui | oui |
+| Landing (drop the zip) | no | n/a | n/a | n/a | n/a | yes | yes | n/a | yes | yes | yes |
+| Overview | no | yes | no | yes | yes | n/a | n/a | n/a | yes | yes | yes |
+| Streamers, streamer page | no | yes | no | yes | yes | n/a | n/a | n/a | yes | yes | yes |
+| Categories, category page | no | yes | no | yes | yes | n/a | n/a | n/a | yes | yes | yes |
+| Calendar | no | no | no | yes | yes | n/a | n/a | n/a | yes | yes | yes |
+| Chat | no | yes | no | yes | yes | yes | yes | n/a | yes | yes | yes |
+| Follows, Support, My channel | no | yes | no | yes | n/a | n/a | n/a | n/a | yes | yes | yes |
+| Share (PNG card) | no | no | no | yes | n/a | yes | yes | n/a | yes | yes | yes |
 
-« Peu » n'a été vu sur aucune page : il manque un petit export de test
-(quelques heures, sans chat ni follow).
+"Little" was seen on no page: a small test export is missing (a few hours,
+no chat, no follow).

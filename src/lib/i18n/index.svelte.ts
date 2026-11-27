@@ -1,9 +1,9 @@
 /**
- * Two languages. French text is the key: t('Streamers') returns the English
- * entry when the site is in English, the French text otherwise. Placeholders
- * look like {name}.
+ * Two languages. The English text is the key: t('Streamers') returns the
+ * French entry when the site is in French, the English text otherwise.
+ * Placeholders look like {name}.
  */
-import { EN } from './en';
+import { FR } from './fr';
 
 export type Lang = 'fr' | 'en';
 const KEY = 'retro-lang';
@@ -39,8 +39,8 @@ class I18n {
 
 export const i18n = new I18n();
 
-export function t(fr: string, params?: Record<string, string | number>): string {
-  let s = i18n.lang === 'en' ? (EN[fr] ?? fr) : fr;
+export function t(key: string, params?: Record<string, string | number>): string {
+  let s = i18n.lang === 'fr' ? (FR[key] ?? key) : key;
   if (params) s = s.replace(/\{(\w+)\}/g, (_, k: string) => String(params[k] ?? ''));
   return s;
 }

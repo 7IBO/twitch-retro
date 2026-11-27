@@ -111,7 +111,7 @@ class AppState {
   }
   /** " en juin 2023", " en 2023" or "" — ready to append to a sentence */
   get periodEn(): string {
-    return this.periodName ? ' ' + t('en {period}', { period: this.periodName }) : '';
+    return this.periodName ? ' ' + t('in {period}', { period: this.periodName }) : '';
   }
   get period() {
     return periodTest(this.year, this.month);
@@ -215,7 +215,7 @@ class AppState {
     } catch {
       this.loading = null;
       this.booting = false;
-      this.error = t("Le fichier n'a pas pu être lu. S'il est encore en cours de téléchargement, attends la fin et réessaie.");
+      this.error = t('The file could not be read. If it is still downloading, wait for it to finish and try again.');
       return;
     }
     const worker = new ParseWorker();
@@ -243,7 +243,7 @@ class AppState {
       this.booting = false;
       // An empty message usually means the worker script itself failed to load,
       // for example after the site was updated while the page stayed open.
-      this.error = e.message || t('Le site a été mis à jour pendant que la page était ouverte. Recharge la page et réessaie.');
+      this.error = e.message || t('The site was updated while the page was open. Reload the page and try again.');
     };
     worker.postMessage(buf, [buf]);
   }
@@ -446,7 +446,7 @@ class AppState {
   }
 
   gameName(game: number) {
-    if (game < 0) return 'Catégorie inconnue';
+    if (game < 0) return t('Unknown category');
     const name = this.data?.games[game]?.name ?? '?';
     return this.enrich?.games[name.toLowerCase()]?.name ?? name;
   }

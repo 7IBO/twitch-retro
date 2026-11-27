@@ -1,6 +1,5 @@
 import { DAY } from './stats';
 import { i18n, t, dateFmt, weekdayName } from './i18n/index.svelte';
-import { EN } from './i18n/en';
 
 const nfCache = new Map<string, Intl.NumberFormat>();
 function nf(digits = 0) {
@@ -22,8 +21,8 @@ export const dateTime = (ts: number) => dateFmt({ day: 'numeric', month: 'short'
 export const pct = (a: number, b: number) => (b ? Math.round((a / b) * 100) : 0);
 /** "42 %" in French, "42%" in English. */
 export const pc = (x: number | string) => (i18n.lang === 'en' ? `${x}%` : `${x} %`);
-/** Share as text, "moins d'1" instead of a misleading 0. */
-export const share = (a: number, b: number) => (b && a > 0 && (a / b) * 100 < 1 ? t("moins d'1") : String(pct(a, b)));
+/** Share as text, 'under 1' instead of a misleading 0. */
+export const share = (a: number, b: number) => (b && a > 0 && (a / b) * 100 < 1 ? t('under 1') : String(pct(a, b)));
 export const lang = (code: string) => {
   try {
     return new Intl.DisplayNames([i18n.locale], { type: 'language' }).of(code) ?? code;
@@ -31,18 +30,13 @@ export const lang = (code: string) => {
     return code;
   }
 };
-/** "3 jours" / "3 days": both words go through the dictionary. */
-export const plural = (x: number, one: string, many: string) => {
-  const many_ = Math.round(x) > 1;
-  // Words that are the same in both forms in French (mois) have "#1"/"#n" English entries.
-  const word = i18n.lang === 'en' ? (EN[(many_ ? many : one) + (many_ ? '#n' : '#1')] ?? t(many_ ? many : one)) : many_ ? many : one;
-  return `${n(x)} ${word}`;
-};
+/** "3 days" / "3 jours": both words go through the dictionary. */
+export const plural = (x: number, one: string, many: string) => `${n(x)} ${t(Math.round(x) > 1 ? many : one)}`;
 
 export function duration(days: number) {
-  if (days >= 365) return plural(Math.floor(days / 365.25), 'an', 'ans');
-  if (days >= 60) return plural(Math.round(days / 30.4), 'mois', 'mois');
-  return plural(Math.max(1, days), 'jour', 'jours');
+  if (days >= 365) return plural(Math.floor(days / 365.25), 'year', 'years');
+  if (days >= 60) return plural(Math.round(days / 30.4), 'month', 'months');
+  return plural(Math.max(1, days), 'day', 'days');
 }
 
 export { weekdayName };

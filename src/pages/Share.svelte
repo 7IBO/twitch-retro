@@ -16,7 +16,7 @@
 
   const s = $derived(app.stats!);
   const d = $derived(app.data!);
-  const big = (min: number) => (min < 60 ? { big: String(Math.max(1, Math.round(min))), unit: t('minutes') } : { big: h(min), unit: t('heures') });
+  const big = (min: number) => (min < 60 ? { big: String(Math.max(1, Math.round(min))), unit: t('minutes') } : { big: h(min), unit: t('hours') });
   const big3x = (url: string) => url.replace(/\/1(x|\.0)(\.webp)?$/, (_m, a1, w) => (a1 === 'x' ? '/3x' + (w ?? '') : '/3.0'));
   const yearSpan = (ys: number[]) => (ys.length ? (ys[0] === ys[ys.length - 1] ? String(ys[0]) : `${ys[0]} – ${ys[ys.length - 1]}`) : '');
   const topEmote = (msgs: typeof d.chat) => {
@@ -36,19 +36,19 @@
       const det = channelDetail(d, ch, rank);
       const ys = det.byYear.filter((y) => y.min > 0).map((y) => y.year);
       return {
-        title: t('Ma rétro Twitch'),
+        title: t('My Twitch retro'),
         period: yearSpan(ys),
-        hero: { name: app.chName(ch), img: app.user(ch)?.avatar, shape: 'circle', caption: rank ? t('N° {rank} de mes {n} streamers', { rank, n: n(all.channels.length) }) : t('Streamer') },
+        hero: { name: app.chName(ch), img: app.user(ch)?.avatar, shape: 'circle', caption: rank ? t('#{rank} of my {n} streamers', { rank, n: n(all.channels.length) }) : t('Streamer') },
         ...big(det.min),
-        subline: t('ensemble, depuis le {date}', { date: day(det.first) }),
+        subline: t('together, since {date}', { date: day(det.first) }),
         facts: [
-          { value: n(det.days), label: t('jours ensemble') },
-          { value: n(det.chat), label: t('messages envoyés') },
-          { value: pc(sharePct(det.min, all.totalMin)), label: t('de mon temps') },
+          { value: n(det.days), label: t('days together') },
+          { value: n(det.chat), label: t('messages sent') },
+          { value: pc(sharePct(det.min, all.totalMin)), label: t('of my time') },
         ],
         lists: [
-          { title: t('Ce que je regardais'), items: det.games.slice(0, 3).map((g) => ({ name: app.gameName(g.game), value: dur(g.min), img: app.boxArt(g.game, 285, 380), shape: 'cover' as const })) },
-          { title: t('Par année'), items: [...det.byYear].filter((y) => y.min > 0).reverse().slice(0, stories).map((y) => ({ name: String(y.year), value: dur(y.min), shape: 'none' as const })) },
+          { title: t('What I watched'), items: det.games.slice(0, 3).map((g) => ({ name: app.gameName(g.game), value: dur(g.min), img: app.boxArt(g.game, 285, 380), shape: 'cover' as const })) },
+          { title: t('Per year'), items: [...det.byYear].filter((y) => y.min > 0).reverse().slice(0, stories).map((y) => ({ name: String(y.year), value: dur(y.min), shape: 'none' as const })) },
         ],
         emote: topEmote(d.chat.filter((m) => m.ch === ch)),
       };
@@ -60,36 +60,36 @@
       const det = gameDetail(d, game, null);
       const ys = det.byYear.filter((y) => y.min > 0).map((y) => y.year);
       return {
-        title: t('Ma rétro Twitch'),
+        title: t('My Twitch retro'),
         period: yearSpan(ys),
-        hero: { name: app.gameName(game), img: app.boxArt(game, 285, 380), shape: 'cover', caption: rank ? t('N° {rank} de mes {n} catégories', { rank, n: n(all.games.length) }) : t('Catégorie') },
+        hero: { name: app.gameName(game), img: app.boxArt(game, 285, 380), shape: 'cover', caption: rank ? t('#{rank} of my {n} categories', { rank, n: n(all.games.length) }) : t('Category') },
         ...big(det.min),
-        subline: t('chez {n}', { n: plural(det.channels.length, 'streamer', 'streamers') }),
+        subline: t('with {n}', { n: plural(det.channels.length, 'streamer', 'streamers') }),
         facts: [
           { value: n(det.channels.length), label: t('streamers') },
-          { value: String(ys[0] ?? '—'), label: t('première année') },
-          { value: pc(sharePct(det.min, all.totalMin)), label: t('de mon temps') },
+          { value: String(ys[0] ?? '—'), label: t('first year') },
+          { value: pc(sharePct(det.min, all.totalMin)), label: t('of my time') },
         ],
         lists: [
-          { title: t('Chez qui'), items: det.channels.slice(0, stories).map((c) => ({ name: app.chName(c.ch), value: dur(c.min), img: app.user(c.ch)?.avatar, shape: 'circle' as const })) },
-          { title: t('Par année'), items: [...det.byYear].filter((y) => y.min > 0).reverse().slice(0, stories).map((y) => ({ name: String(y.year), value: dur(y.min), shape: 'none' as const })) },
+          { title: t('With whom'), items: det.channels.slice(0, stories).map((c) => ({ name: app.chName(c.ch), value: dur(c.min), img: app.user(c.ch)?.avatar, shape: 'circle' as const })) },
+          { title: t('Per year'), items: [...det.byYear].filter((y) => y.min > 0).reverse().slice(0, stories).map((y) => ({ name: String(y.year), value: dur(y.min), shape: 'none' as const })) },
         ],
       };
     }
     const ys = availableYears(d);
     return {
-      title: t('Ma rétro Twitch'),
+      title: t('My Twitch retro'),
       period: app.periodName ?? yearSpan(ys),
       ...big(s.totalMin),
-      subline: d.user.login ? t('regardées par {name}', { name: d.user.displayNames?.[d.user.login.toLowerCase()] ?? d.user.login }) : t('regardées sur Twitch'),
+      subline: d.user.login ? t('watched by {name}', { name: d.user.displayNames?.[d.user.login.toLowerCase()] ?? d.user.login }) : t('watched on Twitch'),
       facts: [
-        { value: n(s.channels.length), label: t('chaînes') },
-        { value: n(s.activeDays), label: t('jours actifs') },
+        { value: n(s.channels.length), label: t('channels') },
+        { value: n(s.activeDays), label: t('active days') },
         { value: n(s.chat.msgs.length), label: t('messages') },
       ],
       lists: [
         { title: t('Streamers'), items: s.channels.slice(0, stories).map((c) => ({ name: app.chName(c.ch), value: dur(c.min), img: app.user(c.ch)?.avatar, shape: 'circle' as const })) },
-        { title: t('Catégories'), items: s.games.slice(0, format === 'story' ? 5 : 3).map((g) => ({ name: app.gameName(g.game), value: dur(g.min), img: app.boxArt(g.game, 285, 380), shape: 'cover' as const })) },
+        { title: t('Categories'), items: s.games.slice(0, format === 'story' ? 5 : 3).map((g) => ({ name: app.gameName(g.game), value: dur(g.min), img: app.boxArt(g.game, 285, 380), shape: 'cover' as const })) },
       ],
       emote: topEmote(s.chat.msgs),
     };
@@ -117,7 +117,7 @@
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 2000);
     } catch {
-      error = t("L'image n'a pas pu être exportée.");
+      error = t('The image could not be exported.');
     }
   }
 
@@ -128,31 +128,31 @@
       const file = new File([blob], 'retro-twitch.png', { type: 'image/png' });
       await navigator.share({ files: [file] });
     } catch (e) {
-      if ((e as Error).name !== 'AbortError') error = t("Le partage n'est pas disponible ici, télécharge l'image.");
+      if ((e as Error).name !== 'AbortError') error = t("Sharing isn't available here, download the image instead.");
     }
   }
   const canShare = typeof navigator !== 'undefined' && 'canShare' in navigator;
 </script>
 
 <header class="page-head">
-  <h1>{t('Carte à partager')}</h1>
+  <h1>{t('Card to share')}</h1>
   {#if target?.kind === 'streamer'}
-    <p class="lead">{t('Ta carte avec {name}, sur tout ton historique.', { name: ch >= 0 ? app.chName(ch) : t('ce streamer') })} <a class="more" href="#/partager">{t('Revenir à ta carte globale')}</a></p>
+    <p class="lead">{t('Your card with {name}, over your whole history.', { name: ch >= 0 ? app.chName(ch) : t('this streamer') })} <a class="more" href="#/partager">{t('Back to your overall card')}</a></p>
   {:else if target?.kind === 'category'}
-    <p class="lead">{t('Ta carte {name}, sur tout ton historique.', { name: game >= 0 ? app.gameName(game) : '' })} <a class="more" href="#/partager">{t('Revenir à ta carte globale')}</a></p>
+    <p class="lead">{t('Your {name} card, over your whole history.', { name: game >= 0 ? app.gameName(game) : '' })} <a class="more" href="#/partager">{t('Back to your overall card')}</a></p>
   {:else}
-    <p class="lead">{t("Une image générée dans ton navigateur, pour {period}. Change de période en haut, ou ouvre la fiche d'un streamer ou d'une catégorie pour sa carte.", { period: app.periodName ?? t('tout ton historique') })}</p>
+    <p class="lead">{t("An image made in your browser, for {period}. Change the period at the top, or open a streamer's or a category's page for its card.", { period: app.periodName ?? t('your whole history') })}</p>
   {/if}
 </header>
-{#if target && !card}<p class="error">{t('Rien à afficher pour cette carte.')}</p>{/if}
+{#if target && !card}<p class="error">{t('Nothing to show for this card.')}</p>{/if}
 
 <div class="toolbar">
   <div class="seg" role="group" aria-label="Format" use:slide>
     <button class:on={format === 'post'} onclick={() => (format = 'post')}>Post 4:5</button>
     <button class:on={format === 'story'} onclick={() => (format = 'story')}>Story 9:16</button>
   </div>
-  <button class="btn primary" onclick={download} disabled={busy}>{t('Télécharger le PNG')}</button>
-  {#if canShare}<button class="btn" onclick={share} disabled={busy}>{t('Partager')}</button>{/if}
+  <button class="btn primary" onclick={download} disabled={busy}>{t('Download PNG')}</button>
+  {#if canShare}<button class="btn" onclick={share} disabled={busy}>{t('Share')}</button>{/if}
 </div>
 {#if error}<p class="error">{error}</p>{/if}
 

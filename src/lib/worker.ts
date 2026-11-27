@@ -282,7 +282,7 @@ function titleCase(s: string) {
 
 function build(zipBytes: Uint8Array): RetroData {
   const t0 = performance.now();
-  post({ type: 'progress', step: 'Décompression' });
+  post({ type: 'progress', step: 'Unzipping' });
 
   // Find the folder prefix (usually "request/") and only extract our files.
   const wanted = new Map<string, FileKey>();
@@ -303,7 +303,7 @@ function build(zipBytes: Uint8Array): RetroData {
     return '';
   };
   if (!wanted.size || ![...wanted.values()].includes('site_history/minute_watched.csv')) {
-    throw new Error("Ce zip ne ressemble pas à un export de données Twitch (minute_watched.csv introuvable).");
+    throw new Error("This zip doesn't look like a Twitch data export (minute_watched.csv not found).");
   }
   const t1 = performance.now();
 
@@ -311,10 +311,10 @@ function build(zipBytes: Uint8Array): RetroData {
   const games = new Games();
 
   // --- video plays (proper-cased game names + channel ids + exact times)
-  post({ type: 'progress', step: 'Lectures vidéo' });
+  post({ type: 'progress', step: 'Video plays' });
   const playTs: number[] = [];
   const playCh: number[] = [];
-  // How your own login was written (capitals) over the years, for "Tes pseudos".
+  // How your own login was written (capitals) over the years, for 'Your names'.
   const myCase = new Map<string, Map<string, number>>();
   const seeCase = (login: string) => {
     if (!login || login === login.toLowerCase()) return;
@@ -347,7 +347,7 @@ function build(zipBytes: Uint8Array): RetroData {
   });
 
   // --- minutes watched
-  post({ type: 'progress', step: 'Minutes regardées' });
+  post({ type: 'progress', step: 'Minutes watched' });
   const agg = new Map<string, WatchRow>();
   const vods = new Map<string, WatchedVod>();
   readCsv(
@@ -443,7 +443,7 @@ function build(zipBytes: Uint8Array): RetroData {
   reg.buildNameIndex();
 
   // --- chat
-  post({ type: 'progress', step: 'Messages du chat' });
+  post({ type: 'progress', step: 'Chat messages' });
   const chat: ChatMsg[] = [];
   readCsv(text('site_history/chat_messages.csv'), ['time', 'time_utc', 'channel', 'body', 'filtered_tags'], (r) => {
     const t = ts(r[1], r[0]);

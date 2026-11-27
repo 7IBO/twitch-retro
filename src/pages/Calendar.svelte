@@ -65,15 +65,15 @@
 </script>
 
 <header class="page-head">
-  <h1>{t('Calendrier')}</h1>
-  <p class="lead">{t('Une case par jour, plus elle est claire plus tu as regardé. Clique un jour pour le détail.')}</p>
+  <h1>{t('Calendar')}</h1>
+  <p class="lead">{t('One square per day, the brighter the more you watched. Click a day for details.')}</p>
 </header>
 
 <div class="legend-row">
-  <span>{t('Moins')}</span>
+  <span>{t('Less')}</span>
   {#each [0, 1, 2, 3, 4] as l (l)}<span class="hm-key l{l}"></span>{/each}
-  <span>{t('Plus')}</span>
-  <span class="muted">{t("(rien · moins de {a} · jusqu'à {b} · jusqu'à {c} · plus, d'après tes propres journées)", { a: dur(steps[0]), b: dur(steps[1]), c: dur(steps[2]) })}</span>
+  <span>{t('More')}</span>
+  <span class="muted">{t('(nothing · under {a} · up to {b} · up to {c} · more, based on your own days)', { a: dur(steps[0]), b: dur(steps[1]), c: dur(steps[2]) })}</span>
 </div>
 
 <div class="calendar-layout">
@@ -115,9 +115,9 @@
     <aside class="panel day-detail">
       <header class="panel-head">
         <h2>{fmtDay(detail.day)}</h2>
-        <button class="icon-btn" onclick={() => (picked = null)} aria-label={t('Fermer')}>×</button>
+        <button class="icon-btn" onclick={() => (picked = null)} aria-label={t('Close')}>×</button>
       </header>
-      <p class="muted">{t('{d} regardées', { d: dur(s.dayMin.get(detail.day) ?? 0) })}{detail.msgs ? `, ${plural(detail.msgs, 'message envoyé', 'messages envoyés')}` : ''}</p>
+      <p class="muted">{t('{d} watched', { d: dur(s.dayMin.get(detail.day) ?? 0) })}{detail.msgs ? `, ${plural(detail.msgs, 'message sent', 'messages sent')}` : ''}</p>
       <ol class="rank">
         {#each detail.chs as [ch, e] (ch)}
           <li>
@@ -133,7 +133,7 @@
     </aside>
   {:else if topDays.length}
     <aside class="panel day-detail">
-      <header class="panel-head"><h2>{t('Tes plus grosses journées')}</h2></header>
+      <header class="panel-head"><h2>{t('Your biggest days')}</h2></header>
       <ol class="rank">
         {#each topDays as x, i (x.d)}
           <li>
@@ -141,7 +141,7 @@
             {#if x.ch >= 0}<Avatar ch={x.ch} size={28} />{/if}
             <span class="rank-main">
               <button class="rank-name linklike" onclick={() => (picked = x.d)}>{fmtDay(x.d)}</button>
-              <span class="rank-meta">{x.ch >= 0 ? t('surtout {name}', { name: app.chName(x.ch) }) : ''} · {plural(x.channels, 'chaîne', 'chaînes')}</span>
+              <span class="rank-meta">{x.ch >= 0 ? t('mostly {name}', { name: app.chName(x.ch) }) : ''} · {plural(x.channels, 'channel', 'channels')}</span>
             </span>
             <span class="rank-val">{dur(x.min)}</span>
           </li>

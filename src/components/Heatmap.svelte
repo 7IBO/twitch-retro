@@ -57,7 +57,7 @@
         tabindex={onpick && c.m ? 0 : undefined}
         onclick={onpick && c.m ? () => onpick(c.d) : undefined}
         onkeydown={onpick && c.m ? (e) => e.key === 'Enter' && onpick(c.d) : undefined}
-      ><title>{fmtDay(c.d)} : {c.m ? h(c.m) + ' h' : t('rien')}</title></rect>
+      ><title>{fmtDay(c.d)} : {c.m ? h(c.m) + ' h' : t('nothing')}</title></rect>
     {/each}
   </svg>
 </div>

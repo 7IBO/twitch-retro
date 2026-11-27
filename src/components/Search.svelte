@@ -72,20 +72,20 @@
     }
   }
   const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
-  const titles = { page: 'Pages', streamer: 'Streamers', game: 'Catégories' } as const;
+  const titles = { page: 'Pages', streamer: 'Streamers', game: 'Categories' } as const;
 </script>
 
 <svelte:window onkeydown={globalKey} />
 
-<button class="search-trigger" onclick={show} aria-label={t('Rechercher')}>
+<button class="search-trigger" onclick={show} aria-label={t('Search')}>
   <SearchIcon size={16} strokeWidth={1.5} />
-  <span class="search-trigger-label">{t('Rechercher')}</span>
+  <span class="search-trigger-label">{t('Search')}</span>
   <kbd>{mac ? '⌘' : 'Ctrl'} K</kbd>
 </button>
 
 {#if open}
   <div class="palette-backdrop" onpointerdown={() => (open = false)} role="presentation"></div>
-  <div class="palette" role="dialog" aria-modal="true" aria-label={t('Rechercher')}>
+  <div class="palette" role="dialog" aria-modal="true" aria-label={t('Search')}>
     <div class="palette-field">
       <SearchIcon size={18} strokeWidth={1.5} />
       <input
@@ -93,13 +93,13 @@
         bind:value={q}
         oninput={() => (active = 0)}
         onkeydown={key}
-        placeholder={t('Un streamer, une catégorie, une page')}
+        placeholder={t('A streamer, a category, a page')}
         role="combobox"
         aria-expanded="true"
         aria-controls="palette-list"
         aria-autocomplete="list"
       />
-      <kbd>{t('Échap')}</kbd>
+      <kbd>{t('Esc')}</kbd>
     </div>
     <ul class="palette-list" id="palette-list" role="listbox">
       {#each hits as h, i (h.kind + h.href)}
@@ -116,7 +116,7 @@
           <span class="palette-meta">{h.meta}</span>
         </li>
       {:else}
-        <li class="palette-empty">{t('Aucun résultat')}</li>
+        <li class="palette-empty">{t('No results')}</li>
       {/each}
     </ul>
   </div>

@@ -8,7 +8,9 @@ and English.
 
 This file and `docs/` hold everything needed to work on the app. The shared
 rules come from 7IBO/socle, copied into `docs/regles.md`; reading the socle is
-never required.
+never required. That file stays a word-for-word copy, in the socle's French,
+so that it can be compared with the socle when it changes; everything else in
+the repository is in English.
 
 ## Rules that are not discussed
 
@@ -65,12 +67,15 @@ without avatars, Twitch emotes or box art looked up by id.
   city, region, ASN, device, browser never become strings. In
   `chat_messages.csv`, `filtered_tags` is read for emotes, badges, subscriber
   tenure and the login replied to only.
-- What leaves the browser: channel ids, game names, VOD ids and chat channel
-  ids, to `/api/enrich`, and image URLs to public CDNs. Never the export,
-  never the user's own data. The toggle "Charger les avatars, jaquettes et
-  emotes" turns it off.
+- What leaves the browser: to `/api/enrich`, the ids of the channels watched,
+  followed or chatted in, game names and watched VOD ids (no times, counts
+  or messages); image URLs to the public CDNs and, for the share card only,
+  to `/api/img`. These ids are part of the user's history, so the landing
+  page says so, and its toggle "Load avatars, box art and emotes" (the
+  `offline` flag in `src/lib/state.svelte.ts`) turns all of it off. The zip
+  itself never leaves the browser.
 - Storage: the zip can be kept in IndexedDB for 30 days (checked by default,
-  deleted by "Changer d'export"); preferences in `localStorage`. Nothing on a
+  deleted by "Change export"); preferences in `localStorage`. Nothing on a
   server. `/api/enrich` keeps an in-process cache of Twitch's public answers.
 - The built site carries a strict CSP (`vite.config.ts`): scripts from the
   site only, images from the four CDNs, `connect-src 'self'`.
@@ -99,16 +104,17 @@ without avatars, Twitch emotes or box art looked up by id.
 | `src/lib/state.svelte.ts` | App state, routes, year and month filters, enrichment, storage |
 | `src/lib/words.ts` | Emote matching (tags, channel sets, globals) and word cloud |
 | `src/lib/card.ts` | Share card drawn on a canvas |
-| `src/lib/i18n/` | `t()`: the French text is the key, `en.ts` holds English |
+| `src/lib/i18n/` | `t()`: the English text is the key, `fr.ts` holds French |
 | `src/pages/`, `src/components/` | One file per page, small shared components |
 | `server/`, `api/` | Enrichment and image relay |
 | `scripts/` | Copied checks: attribution, dashes, copy, ids |
 
 ## Conventions
 
-- Every visible text goes through `t()` in both languages in the same PR;
-  `plural(n, one, many)` translates both words. Words identical in French
-  singular and plural (`mois`, `fois`) have `#1` / `#n` English entries.
+- Code, comments, docs and commits are in English. Every visible text is
+  written in English in the code, through `t('…')`, and translated in
+  `src/lib/i18n/fr.ts` in the same PR; `plural(n, one, many)` translates both
+  words. `npm run check:copy` reads every file of `src/`.
 - Durations through `dur()`, numbers through `n()`, percentages through
   `pc()`: they follow the language.
 - Filters (year, month) update the page in place; only a page change fades
