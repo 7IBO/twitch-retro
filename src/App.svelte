@@ -25,12 +25,12 @@
     { path: '', page: 'overview', label: 'Overview', icon: LayoutGrid },
     { path: 'streamers', page: 'streamers', label: 'Streamers', icon: Users },
     { path: 'categories', page: 'categories', label: 'Categories', icon: Gamepad2 },
-    { path: 'calendrier', page: 'calendar', label: 'Calendar', icon: CalendarDays },
+    { path: 'calendar', page: 'calendar', label: 'Calendar', icon: CalendarDays },
     { path: 'chat', page: 'chat', label: 'Chat', icon: MessageSquare },
     { path: 'follows', page: 'follows', label: 'Follows', icon: Heart },
-    { path: 'soutien', page: 'support', label: 'Support', icon: Gift },
-    { path: 'chaine', page: 'channel', label: 'My channel', icon: Radio },
-    { path: 'partager', page: 'share', label: 'Share', icon: Share2 },
+    { path: 'support', page: 'support', label: 'Support', icon: Gift },
+    { path: 'channel', page: 'channel', label: 'My channel', icon: Radio },
+    { path: 'share', page: 'share', label: 'Share', icon: Share2 },
   ] as const;
 
   const years = $derived(app.data ? availableYears(app.data) : []);
@@ -121,7 +121,7 @@
           {t('Everything is computed in your browser, your export is never sent to a server.')}
           {app.stored ? t('A copy stays in this browser for 30 days at most, “Change export” deletes it.') : t('Nothing is kept: reloading the page clears everything.')}
           {t('Avatars, box art and emotes: Twitch, 7TV, BTTV and FFZ. Not affiliated with Twitch.')}
-          <a href="#/mentions-legales">{t('Legal notice')}</a> · <a href="#/confidentialite">{t('Privacy')}</a>
+          <a href="#/legal">{t('Legal notice')}</a> · <a href="#/privacy">{t('Privacy')}</a>
           <span class="foot-lang"><LangSwitch /></span>
         </footer>
       </main>

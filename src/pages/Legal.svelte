@@ -4,8 +4,9 @@
 
   let { kind }: { kind: 'legal' | 'privacy' } = $props();
 
-  // Public contact of the app (shared rule: one address at the app's domain).
-  const MAIL = 'hello@7ibo.dev';
+  import { SITE } from '../lib/site';
+
+  const MAIL = SITE.mail;
   const fr = $derived(i18n.lang === 'fr');
 </script>
 
@@ -40,7 +41,7 @@
           appartiennent à leurs auteurs et sont chargés depuis les services publics de ces plateformes.
         </p>
         <h2>Données personnelles</h2>
-        <p>Ce que le site fait de vos données est décrit dans la <a href="#/confidentialite">politique de confidentialité</a>.</p>
+        <p>Ce que le site fait de vos données est décrit dans la <a href="#/privacy">politique de confidentialité</a>.</p>
       {:else}
         <p>This text exists in French and English. If they differ, the French version prevails.</p>
         <h2>Publisher</h2>
@@ -63,13 +64,13 @@
           creators and are loaded from these platforms' public services.
         </p>
         <h2>Personal data</h2>
-        <p>What the site does with your data is described in the <a href="#/confidentialite">privacy policy</a>.</p>
+        <p>What the site does with your data is described in the <a href="#/privacy">privacy policy</a>.</p>
       {/if}
     {:else}
       <h1>{t('Privacy')}</h1>
       {#if fr}
         <p>
-          Responsable : Thibault Fayard (voir les <a href="#/mentions-legales">mentions légales</a>). Contact :
+          Responsable : Thibault Fayard (voir les <a href="#/legal">mentions légales</a>). Contact :
           <a href="mailto:{MAIL}">{MAIL}</a>. Le site n'a pas de compte, pas de cookie, pas de mesure d'audience
           et pas de publicité.
         </p>
@@ -119,7 +120,7 @@
       {:else}
         <p>This text exists in French and English. If they differ, the French version prevails.</p>
         <p>
-          Controller: Thibault Fayard (see the <a href="#/mentions-legales">legal notice</a>). Contact:
+          Controller: Thibault Fayard (see the <a href="#/legal">legal notice</a>). Contact:
           <a href="mailto:{MAIL}">{MAIL}</a>. The site has no account, no cookie, no audience measurement and no
           advertising.
         </p>

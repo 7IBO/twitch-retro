@@ -87,8 +87,8 @@
   </main>
 
   <footer class="landing-foot">
-    <a href="#/mentions-legales">{t('Legal notice')}</a>
-    <a href="#/confidentialite">{t('Privacy')}</a>
+    <a href="#/legal">{t('Legal notice')}</a>
+    <a href="#/privacy">{t('Privacy')}</a>
     <span>{t('Not affiliated with Twitch.')}</span>
   </footer>
 </div>

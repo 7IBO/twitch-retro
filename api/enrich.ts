@@ -1,7 +1,9 @@
 // Vercel serverless function. Same handler as the dev server (vite.config.ts).
 import { enrich } from '../server/enrich.js';
+import { fromOtherSite } from '../server/guard.js';
 
 export async function POST(request: Request): Promise<Response> {
+  if (fromOtherSite(request)) return new Response('Forbidden', { status: 403 });
   let body: unknown;
   try {
     const text = await request.text();

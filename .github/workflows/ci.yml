@@ -47,7 +47,7 @@ jobs:
           bun scripts/check-dashes.ts
           bun scripts/check-copy.ts
           bun scripts/check-ids.ts
-          bun test scripts/
+          bun test
 
       - name: Which files changed
         id: changes

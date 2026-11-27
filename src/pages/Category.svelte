@@ -25,7 +25,7 @@
     <div>
       <h1>{app.gameName(game)}</h1>
       <p class="lead">{dur(det.min)}{app.periodEn}, {t('with {n}', { n: plural(det.channels.length, 'streamer', 'streamers') })}</p>
-      <a class="btn small profile-share" href="#/partager/categories/{app.slug(app.data!.games[game].name)}">{t('Make a card to share')}</a>
+      <a class="btn small profile-share" href="#/share/categories/{app.slug(app.data!.games[game].name)}">{t('Make a card to share')}</a>
     </div>
   </header>
 

@@ -5,6 +5,8 @@
  */
 const HOSTS = new Set(['static-cdn.jtvnw.net', 'cdn.7tv.app', 'cdn.betterttv.net', 'cdn.frankerfacez.com']);
 
+const allowed = (url: URL) => url.protocol === 'https:' && HOSTS.has(url.hostname);
+
 export async function relayImage(raw: string | null): Promise<Response> {
   let url: URL;
   try {
@@ -12,8 +14,17 @@ export async function relayImage(raw: string | null): Promise<Response> {
   } catch {
     return new Response('Bad request', { status: 400 });
   }
-  if (url.protocol !== 'https:' || !HOSTS.has(url.hostname)) return new Response('Forbidden', { status: 403 });
-  const r = await fetch(url, { signal: AbortSignal.timeout(8000) }).catch(() => null);
+  if (!allowed(url)) return new Response('Forbidden', { status: 403 });
+  // Redirects are followed by hand, so that each hop stays on the hosts above.
+  let r: Response | null = null;
+  for (let hop = 0; hop < 3; hop++) {
+    r = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(8000) }).catch(() => null);
+    const next = r && r.status >= 300 && r.status < 400 ? r.headers.get('location') : null;
+    if (!next) break;
+    url = new URL(next, url);
+    if (!allowed(url)) return new Response('Forbidden', { status: 403 });
+    r = null;
+  }
   const type = r?.headers.get('content-type') ?? '';
   if (!r?.ok || !type.startsWith('image/')) return new Response('Not found', { status: 404 });
   const body = await r.arrayBuffer();

@@ -137,9 +137,9 @@
 <header class="page-head">
   <h1>{t('Card to share')}</h1>
   {#if target?.kind === 'streamer'}
-    <p class="lead">{t('Your card with {name}, over your whole history.', { name: ch >= 0 ? app.chName(ch) : t('this streamer') })} <a class="more" href="#/partager">{t('Back to your overall card')}</a></p>
+    <p class="lead">{t('Your card with {name}, over your whole history.', { name: ch >= 0 ? app.chName(ch) : t('this streamer') })} <a class="more" href="#/share">{t('Back to your overall card')}</a></p>
   {:else if target?.kind === 'category'}
-    <p class="lead">{t('Your {name} card, over your whole history.', { name: game >= 0 ? app.gameName(game) : '' })} <a class="more" href="#/partager">{t('Back to your overall card')}</a></p>
+    <p class="lead">{t('Your {name} card, over your whole history.', { name: game >= 0 ? app.gameName(game) : '' })} <a class="more" href="#/share">{t('Back to your overall card')}</a></p>
   {:else}
     <p class="lead">{t("An image made in your browser, for {period}. Change the period at the top, or open a streamer's or a category's page for its card.", { period: app.periodName ?? t('your whole history') })}</p>
   {/if}

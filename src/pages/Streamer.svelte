@@ -78,7 +78,7 @@
         {#if old.length}{t('Former names:')} {old.join(', ')} · {/if}
         {#if app.gone(ch)}<span>{t('This channel no longer exists on Twitch (deleted or banned), hence no picture')}</span>{:else}<a href="https://www.twitch.tv/{app.login(ch)}" target="_blank" rel="noopener noreferrer">twitch.tv/{app.login(ch)} ↗</a>{/if}
       </p>
-      <a class="btn small profile-share" href="#/partager/streamers/{encodeURIComponent(app.login(ch))}">{t('Make a card to share')}</a>
+      <a class="btn small profile-share" href="#/share/streamers/{encodeURIComponent(app.login(ch))}">{t('Make a card to share')}</a>
     </div>
   </header>
 
