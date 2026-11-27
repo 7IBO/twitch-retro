@@ -95,8 +95,8 @@
               <a class="rank-name" href="https://www.twitch.tv/videos/{v.id}" target="_blank" rel="noopener noreferrer">{info.title || 'Sans titre'} ↗</a>
               <span class="rank-meta">{app.chName(v.ch)} · vue le {day(v.day)} · encore en ligne</span>
             {:else}
-              <span class="rank-name">VOD de {app.chName(v.ch)}</span>
-              <span class="rank-meta">vue le {day(v.day)} · {app.enrich ? 'expirée ou supprimée' : 'titre inconnu'}</span>
+              <a class="rank-name" href={app.chHref(v.ch)}>VOD de {app.chName(v.ch)}</a>
+              <span class="rank-meta">vue le {day(v.day)} · {app.enrich ? 'expirée ou supprimée sur Twitch, le lien mène à la fiche de la chaîne' : 'titre inconnu'}</span>
             {/if}
           </span>
           <span class="rank-val">{dur(v.min)}</span>
