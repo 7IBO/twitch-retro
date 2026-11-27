@@ -136,10 +136,12 @@ class AppState {
     all.chat.channels.slice(0, 80).forEach((c) => add(c.ch));
     all.subChannels.forEach((c) => add(c.ch));
     [...d.follows].reverse().forEach((f) => ids.size < 500 && add(f.ch));
-    const emoteChannels = all.chat.channels
-      .slice(0, 30)
+    // Emotes of every chat you wrote in, most used first, fetched in batches.
+    const emoteIds = all.chat.channels
       .map((c) => d.channels[c.ch]?.id)
-      .filter((id): id is string => !!id && /^\d+$/.test(id));
+      .filter((id): id is string => !!id && /^\d+$/.test(id))
+      .slice(0, 300);
+    const emoteChannels = emoteIds.slice(0, 30);
     const games = all.games.slice(0, 400).map((g) => d.games[g.game].name);
     this.enrichState = 'loading';
     try {
@@ -149,12 +151,21 @@ class AppState {
         body: JSON.stringify({ channels: [...ids], games, emoteChannels }),
       });
       if (!r.ok) throw new Error(String(r.status));
-      if (this.data === d) {
-        this.enrich = await r.json();
-        this.enrichState = 'done';
+      if (this.data !== d) return;
+      this.enrich = await r.json();
+      this.enrichState = 'done';
+      for (let i = 30; i < emoteIds.length; i += 30) {
+        const rr = await fetch('/api/enrich', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emoteChannels: emoteIds.slice(i, i + 30) }),
+        });
+        if (!rr.ok || this.data !== d || !this.enrich) return;
+        const more = (await rr.json()) as EnrichResponse;
+        this.enrich = { ...this.enrich, emotes: { ...this.enrich.emotes, channels: { ...this.enrich.emotes.channels, ...more.emotes.channels } } };
       }
     } catch {
-      this.enrichState = 'failed';
+      if (!this.enrich) this.enrichState = 'failed';
     }
   }
 

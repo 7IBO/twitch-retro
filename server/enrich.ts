@@ -177,9 +177,17 @@ async function channelEmotes(id: string, helix: (p: string) => Promise<any>): Pr
     getJson('https://api.betterttv.net/3/cached/users/twitch/' + id).catch(() => null),
     getJson('https://api.frankerfacez.com/v1/room/id/' + id).catch(() => null),
   ]);
+  // 7TV: the active set, plus the channel's other sets (often older emotes it swapped out).
+  const activeId = sv?.emote_set?.id;
+  const otherSets = ((sv?.user?.emote_sets ?? []) as any[]).map((s) => s.id).filter((sid) => sid && sid !== activeId).slice(0, 5);
+  const others = await Promise.all(otherSets.map((sid) => cached('7s:' + sid, () => getJson('https://7tv.io/v3/emote-sets/' + sid).catch(() => null))));
+  const active = sevenTv(sv?.emote_set?.emotes);
+  const seen = new Set(active.map((e) => e.name));
+  const older = others.flatMap((s: any) => sevenTv(s?.emotes)).filter((e) => !seen.has(e.name) && (seen.add(e.name), true));
   return [
     ...(tw?.data ?? []).map((e: any) => ({ name: e.name, url: twitchUrl(e.id), provider: 'twitch' as const })),
-    ...sevenTv(sv?.emote_set?.emotes),
+    ...active,
+    ...older,
     ...[...(bt?.channelEmotes ?? []), ...(bt?.sharedEmotes ?? [])].map((e: any) => ({
       name: e.code,
       url: `https://cdn.betterttv.net/emote/${e.id}/1x`,

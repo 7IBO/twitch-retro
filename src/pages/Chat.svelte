@@ -74,7 +74,7 @@
       {:else}
         <Empty text="Aucune emote reconnue." />
       {/if}
-      <p class="note">Emotes reconnues : celles de Twitch, 7TV, BTTV et FFZ actuellement actives sur tes 30 chats principaux, plus les globales. Une emote retirée depuis n'est plus reconnue.</p>
+      <p class="note">Emotes reconnues : les globales de Twitch, 7TV, BTTV et FFZ, et celles de chaque chat où tu as écrit ({n(app.enrich ? Object.keys(app.enrich.emotes.channels).length : 0)} chats chargés). Pour 7TV, les anciens sets d'emotes des chaînes comptent aussi. Une emote retirée et introuvable aujourd'hui n'est plus reconnue.</p>
     {:else if app.enrichState === 'loading'}
       <p class="muted">Chargement des emotes…</p>
     {:else}
