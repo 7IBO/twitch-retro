@@ -84,7 +84,7 @@
   <div class="stats four">
     <Stat value={n(det.days)} label="Jours ensemble" sub="du {day(det.first)} au {day(det.last)}" />
     {#if app.year !== null}
-      <Stat value="{yearRow ? h(yearRow.min) : '0'} h" label="En {app.year}" sub={yearRow ? plural(yearRow.days, 'jour', 'jours') : 'pas vu cette année'} />
+      <Stat value="{yearRow ? h(yearRow.min) : '0'} h" label="En {app.periodName}" sub={yearRow ? plural(yearRow.days, 'jour', 'jours') : 'pas vu sur cette période'} />
     {:else}
       <Stat value={duration(det.last - det.first)} label="Depuis ta première fois" />
     {/if}

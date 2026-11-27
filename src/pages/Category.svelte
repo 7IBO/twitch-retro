@@ -11,7 +11,7 @@
 
   let { game }: { game: number } = $props();
   const tl = $derived(app.data ? timeline(dayMinOf(app.data, (w) => w.game === game), { endDay: Math.floor(app.data.user.end / DAY), year: null, fmt: dur }) : null);
-  const det = $derived(app.data?.games[game] ? gameDetail(app.data, game, app.year) : null);
+  const det = $derived(app.data?.games[game] ? gameDetail(app.data, game, app.year, app.month) : null);
   let limit = $state(50);
 </script>
 
@@ -23,7 +23,7 @@
     <BoxArt {game} w={144} h={192} cls="profile-art" />
     <div>
       <h1>{app.gameName(game)}</h1>
-      <p class="lead">{dur(det.min)}{app.year !== null ? ` en ${app.year}` : ''}, chez {plural(det.channels.length, 'streamer', 'streamers')}</p>
+      <p class="lead">{dur(det.min)}{app.periodEn}, chez {plural(det.channels.length, 'streamer', 'streamers')}</p>
       <a class="btn small profile-share" href="#/partager/categories/{app.slug(app.data!.games[game].name)}">Créer sa carte à partager</a>
     </div>
   </header>

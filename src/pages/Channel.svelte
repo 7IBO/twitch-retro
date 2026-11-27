@@ -9,7 +9,7 @@
   import Empty from '../components/Empty.svelte';
 
   const d = $derived(app.data!);
-  const b = $derived(app.year === null ? d.broadcast : d.broadcast.filter((x) => yearOfDay(x.day) === app.year));
+  const b = $derived(app.year === null ? d.broadcast : d.broadcast.filter((x) => app.period.inDay(x.day)));
   const total = $derived(b.reduce((a, x) => a + x.min, 0));
   const days = $derived(new Set(b.map((x) => x.day)));
   const games = $derived.by(() => {
@@ -25,7 +25,7 @@
     if (ys.length) for (let y = Math.min(...ys); y <= Math.max(...ys); y++) out.push({ label: String(y), value: m.get(y) ?? 0, mark: y === app.year, title: `${y} : ${dur(m.get(y) ?? 0)}` });
     return out;
   });
-  const vods = $derived(app.year === null ? d.ownVods : d.ownVods.filter((v) => yearOfTs(v.ts) === app.year));
+  const vods = $derived(app.year === null ? d.ownVods : d.ownVods.filter((v) => app.period.inTs(v.ts)));
   const names = $derived(d.user.renames.length ? [d.user.renames[0].from, ...d.user.renames.map((r) => r.to)] : [d.user.login].filter(Boolean));
   const mins = (sec: number) => `${Math.floor(sec / 3600)} h ${String(Math.round((sec % 3600) / 60)).padStart(2, '0')}`;
 </script>
@@ -61,7 +61,7 @@
       </div>
       {#if perYear.length > 1}<Bars height={120} items={perYear} />{/if}
     {:else}
-      <Empty text={app.year === null ? "Tu n'as jamais streamé d'après l'export." : `Aucun live en ${app.year}.`} />
+      <Empty text={app.year === null ? "Tu n'as jamais streamé d'après l'export." : `Aucun live${app.periodEn}.`} />
     {/if}
   </section>
 </div>

@@ -22,7 +22,7 @@
       const d = localDay(x.ts);
       m.set(d, (m.get(d) ?? 0) + 1);
     }
-    return timeline(m, { endDay: Math.floor(app.data!.user.end / DAY), year: app.year, fmt: (v) => plural(v, 'message', 'messages') });
+    return timeline(m, { endDay: Math.floor(app.data!.user.end / DAY), year: app.year, month: app.month, fmt: (v) => plural(v, 'message', 'messages') });
   });
 
 
@@ -72,11 +72,11 @@
 
 <header class="page-head">
   <h1>Chat</h1>
-  <p class="lead">Tout ce que tu as écrit{app.year !== null ? ` en ${app.year}` : ''}, et les emotes que tu utilises.</p>
+  <p class="lead">Tout ce que tu as écrit{app.periodEn}, et les emotes que tu utilises.</p>
 </header>
 
 {#if !msgs.length}
-  <Empty text={app.year === null ? "Ton export ne contient aucun message." : `Aucun message en ${app.year}.`} />
+  <Empty text={app.year === null ? "Ton export ne contient aucun message." : `Aucun message${app.periodEn}.`} />
 {:else}
   <div class="stats four">
     <Stat value={n(msgs.length)} label="Messages" sub="{Math.round(s.chat.avgLen)} caractères en moyenne" />
@@ -188,7 +188,7 @@
 
   <div class="split">
     <section class="panel">
-      <header class="panel-head"><h2>{app.year === null ? 'Ton tout premier message' : `Ton premier message de ${app.year}`}</h2></header>
+      <header class="panel-head"><h2>{app.year === null ? 'Ton tout premier message' : `Ton premier message${app.periodEn}`}</h2></header>
       <figure class="chatline">
         <figcaption>{dateTime(msgs[0].ts)} · chez {app.chName(msgs[0].ch)}</figcaption>
         <p><ChatText body={msgs[0].body} ch={msgs[0].ch} msg={msgs[0]} /></p>

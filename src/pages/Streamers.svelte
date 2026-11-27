@@ -34,7 +34,7 @@
 
 <header class="page-head">
   <h1>Streamers</h1>
-  <p class="lead">{n(s.channels.length)} chaînes regardées{app.year !== null ? ` en ${app.year}` : ''}. Les changements de pseudo sont regroupés.</p>
+  <p class="lead">{n(s.channels.length)} chaînes regardées{app.periodEn}. Les changements de pseudo sont regroupés.</p>
 </header>
 
 <div class="toolbar">

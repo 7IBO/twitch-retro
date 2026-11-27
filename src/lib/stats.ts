@@ -163,9 +163,23 @@ export function yearly(d: RetroData): YearStat[] {
 
 const MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 
-export function compute(d: RetroData, year: number | null): Stats {
-  const inDay = (day: number) => year === null || yearOfDay(day) === year;
-  const inTs = (t: number) => year === null || yearOfTs(t) === year;
+/** Is a day / a timestamp inside the selected period (a year, optionally one month of it)? */
+export function periodTest(year: number | null, month: number | null = null) {
+  const inDay = (day: number) => {
+    if (year === null) return true;
+    const dt = new Date(day * DAY);
+    return dt.getUTCFullYear() === year && (month === null || dt.getUTCMonth() === month);
+  };
+  const inTs = (t: number) => {
+    if (year === null) return true;
+    const dt = new Date(t);
+    return dt.getFullYear() === year && (month === null || dt.getMonth() === month);
+  };
+  return { inDay, inTs };
+}
+
+export function compute(d: RetroData, year: number | null, month: number | null = null): Stats {
+  const { inDay, inTs } = periodTest(year, month);
 
   const watch = year === null ? d.watch : d.watch.filter((w) => inDay(w.day));
 
@@ -456,7 +470,8 @@ export interface GameDetail {
   channels: { ch: number; min: number }[];
 }
 
-export function gameDetail(d: RetroData, game: number, year: number | null): GameDetail {
+export function gameDetail(d: RetroData, game: number, year: number | null, month: number | null = null): GameDetail {
+  const { inDay } = periodTest(year, month);
   let min = 0;
   const byYear = new Map<number, number>();
   const chs = new Map<number, number>();
@@ -464,7 +479,7 @@ export function gameDetail(d: RetroData, game: number, year: number | null): Gam
     if (w.game !== game) continue;
     const y = yearOfDay(w.day);
     inc(byYear, y, w.min);
-    if (year !== null && y !== year) continue;
+    if (!inDay(w.day)) continue;
     min += w.min;
     inc(chs, w.ch, w.min);
   }
@@ -491,8 +506,8 @@ const MONTHS_FULL = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'jui
  */
 export function timeline(
   dayMin: Iterable<[number, number]>,
-  opts: { endDay: number; year: number | null; fmt: (min: number) => string },
-): { unit: 'mois' | 'année'; items: TimelineItem[]; partial: string | null } {
+  opts: { endDay: number; year: number | null; month?: number | null; fmt: (min: number) => string },
+): { unit: 'jour' | 'mois' | 'année'; items: TimelineItem[]; partial: string | null } {
   const byMonth = new Map<number, number>(); // y*12+m
   let first = Infinity, last = -Infinity;
   for (const [day, min] of dayMin) {
@@ -518,6 +533,26 @@ export function timeline(
     };
   };
 
+  if (opts.year !== null && opts.month !== null && opts.month !== undefined) {
+    const per = new Map<number, number>();
+    for (const [day, min] of dayMin) per.set(day, (per.get(day) ?? 0) + min);
+    const start = Math.floor(Date.UTC(opts.year, opts.month, 1) / DAY);
+    const len = new Date(Date.UTC(opts.year, opts.month + 1, 0)).getUTCDate();
+    const items: TimelineItem[] = [];
+    for (let i = 0; i < len; i++) {
+      const day = start + i;
+      const ghost = Number.isFinite(opts.endDay) && day > opts.endDay;
+      const v = per.get(day) ?? 0;
+      items.push({
+        label: i === 0 || (i + 1) % 5 === 0 ? String(i + 1) : '',
+        value: ghost ? 0 : v,
+        ghost,
+        title: `${i + 1} ${MONTHS_FULL[opts.month]} ${opts.year} : ${ghost ? 'après la fin de ton export' : opts.fmt(v)}`,
+      });
+    }
+    const partial = items.some((x) => x.ghost) ? `Ton export s'arrête le ${endLabel}.` : null;
+    return { unit: 'jour', items, partial };
+  }
   if (opts.year !== null) {
     const items = Array.from({ length: 12 }, (_, m) => month(opts.year! * 12 + m, false));
     const partial = Number.isFinite(opts.endDay) && end.getUTCFullYear() === opts.year && end.getUTCMonth() < 11 ? `Ton export s'arrête le ${endLabel}.` : null;

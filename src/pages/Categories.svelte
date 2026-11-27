@@ -18,7 +18,7 @@
 
 <header class="page-head">
   <h1>Catégories</h1>
-  <p class="lead">{n(s.games.length)} catégories{app.year !== null ? ` en ${app.year}` : ''}.</p>
+  <p class="lead">{n(s.games.length)} catégories{app.periodEn}.</p>
 </header>
 
 {#if !s.games.length}

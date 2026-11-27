@@ -1,7 +1,9 @@
 import { tick } from 'svelte';
 import type { RetroData, WorkerMsg } from './types';
 import type { EnrichResponse, Emote } from '../../server/enrich';
-import { compute, indexChannels, type Stats } from './stats';
+import { compute, indexChannels, periodTest, type Stats } from './stats';
+
+const MONTH_NAMES = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 import { taggedEmoteIds } from './words';
 // Inlined so a page left open during a site update still has its worker.
 import ParseWorker from './worker.ts?worker&inline';
@@ -30,6 +32,11 @@ function toTop() {
 }
 
 /** Year filter carried in the URL: #/streamers?y=2023 */
+function monthFromHash(hash: string): number | null {
+  const m = /[?&]m=(\d{1,2})/.exec(hash);
+  return m && +m[1] >= 1 && +m[1] <= 12 ? +m[1] - 1 : null;
+}
+
 function yearFromHash(hash: string): number | null {
   const m = /[?&]y=(\d{4})/.exec(hash);
   return m ? +m[1] : null;
@@ -95,6 +102,20 @@ function readOffline() {
 class AppState {
   data = $state.raw<RetroData | null>(null);
   year = $state<number | null>(yearFromHash(location.hash));
+  /** 0-11, only meaningful with a year */
+  month = $state<number | null>(yearFromHash(location.hash) !== null ? monthFromHash(location.hash) : null);
+  /** "juin 2023", "2023" or null for all time */
+  get periodName(): string | null {
+    if (this.year === null) return null;
+    return this.month !== null ? `${MONTH_NAMES[this.month]} ${this.year}` : String(this.year);
+  }
+  /** " en juin 2023", " en 2023" or "" — ready to append to a sentence */
+  get periodEn(): string {
+    return this.periodName ? ` en ${this.periodName}` : '';
+  }
+  get period() {
+    return periodTest(this.year, this.month);
+  }
   route = $state<Route>(parseRoute(location.hash));
   remember = $state(readPref('retro-remember', true));
   /** Date the browser copy of the export expires, or null when there is none. */
@@ -110,7 +131,7 @@ class AppState {
   enrich = $state.raw<EnrichResponse | null>(null);
   enrichState = $state<'idle' | 'loading' | 'done' | 'failed'>('idle');
 
-  stats: Stats | null = $derived(this.data ? compute(this.data, this.year) : null);
+  stats: Stats | null = $derived(this.data ? compute(this.data, this.year, this.month) : null);
   /** Per-channel rows, totals and all-time ranks, built once per export. */
   index = $derived(this.data ? indexChannels(this.data) : null);
   /** Twitch emote ids seen in message tags, by name (works for retired emotes too). */
@@ -122,8 +143,10 @@ class AppState {
       this.route = parseRoute(location.hash);
       const y = yearFromHash(location.hash);
       // Links inside the site have no ?y=: keep the current year and write it back in the URL.
-      if (y !== null) this.year = y;
-      else if (this.year !== null) this.writeYear();
+      if (y !== null) {
+        this.year = y;
+        this.month = monthFromHash(location.hash);
+      } else if (this.year !== null) this.writeYear();
       if (JSON.stringify(prev) !== JSON.stringify(this.route)) toTop();
     });
     // Any click on a link of the site goes back to the top, even to the page already shown.
@@ -143,15 +166,23 @@ class AppState {
     });
   }
 
+  setMonth(m: number | null) {
+    this.month = this.year === null ? null : m;
+    this.writeYear();
+    toTop();
+  }
+
   setYear(y: number | null) {
     this.year = y;
+    this.month = null;
     this.writeYear();
     toTop(); // the page is rebuilt for the new year: start from its top
   }
 
   private writeYear() {
     const path = location.hash.replace(/^#/, '').split('?')[0] || '/';
-    history.replaceState(null, '', '#' + path + (this.year !== null ? '?y=' + this.year : ''));
+    const q = this.year !== null ? '?y=' + this.year + (this.month !== null ? '&m=' + (this.month + 1) : '') : '';
+    history.replaceState(null, '', '#' + path + q);
   }
 
   async forget() {
@@ -199,7 +230,7 @@ class AppState {
           this.enrich = null;
           this.data = m.data;
           // Keep the page and year from the URL (reload, shared link); drop an unknown year.
-          if (this.year !== null && !m.data.watch.some((w) => new Date(w.day * 86400000).getUTCFullYear() === this.year)) this.year = null;
+          if (this.year !== null && !m.data.watch.some((w) => new Date(w.day * 86400000).getUTCFullYear() === this.year)) (this.year = null), (this.month = null);
           this.writeYear();
           if (!this.offline) void this.fetchEnrich();
         }
@@ -220,6 +251,7 @@ class AppState {
     void clearExport();
     this.storedUntil = null;
     this.year = null;
+    this.month = null;
     this.data = null;
     this.enrich = null;
     this.enrichState = 'idle';

@@ -78,7 +78,7 @@
     const ys = availableYears(d);
     return {
       title: 'Ma rétro Twitch',
-      period: app.year !== null ? String(app.year) : yearSpan(ys),
+      period: app.periodName ?? yearSpan(ys),
       ...big(s.totalMin),
       subline: d.user.login ? `regardées par ${d.user.displayNames?.[d.user.login.toLowerCase()] ?? d.user.login}` : 'regardées sur Twitch',
       facts: [
@@ -95,7 +95,7 @@
   });
 
   const fileName = $derived(
-    `retro-twitch-${target ? app.slug(target.key) : (app.year ?? 'all-time')}-${format}.png`,
+    `retro-twitch-${target ? app.slug(target.key) : (app.periodName ? app.slug(app.periodName) : 'all-time')}-${format}.png`,
   );
 
   $effect(() => {
@@ -140,7 +140,7 @@
   {:else if target?.kind === 'category'}
     <p class="lead">Ta carte {game >= 0 ? app.gameName(game) : ''}, sur tout ton historique. <a class="more" href="#/partager">Revenir à ta carte globale</a></p>
   {:else}
-    <p class="lead">Une image générée dans ton navigateur, pour {app.year !== null ? app.year : 'tout ton historique'}. Change d'année en haut, ou ouvre la fiche d'un streamer ou d'une catégorie pour sa carte.</p>
+    <p class="lead">Une image générée dans ton navigateur, pour {app.periodName ?? 'tout ton historique'}. Change de période en haut, ou ouvre la fiche d'un streamer ou d'une catégorie pour sa carte.</p>
   {/if}
 </header>
 {#if target && !card}<p class="error">Rien à afficher pour cette carte.</p>{/if}

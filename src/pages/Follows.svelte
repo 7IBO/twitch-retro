@@ -46,14 +46,14 @@
 
 <header class="page-head">
   <h1>Follows</h1>
-  <p class="lead">Les chaînes que tu as suivies{app.year !== null ? ` en ${app.year}` : ''}, et celles que tu suivais encore à la date de l'export.</p>
+  <p class="lead">Les chaînes que tu as suivies{app.periodEn}, et celles que tu suivais encore à la date de l'export.</p>
 </header>
 
 {#if !d.follows.length}
   <Empty text="Ton export ne contient aucun follow." />
 {:else}
   <div class="stats four">
-    <Stat value={n(s.follows.length)} label="Follows" sub={app.year !== null ? `en ${app.year}` : ''} />
+    <Stat value={n(s.follows.length)} label="Follows" sub={app.periodName ? `en ${app.periodName}` : ''} />
     <Stat value={n(s.unfollows)} label="Unfollows" />
     <Stat value={n(stillFollowing)} label="Suivies à la fin de l'export" />
     <Stat value={n(neverWatched)} label="Suivies sans jamais les regarder" sub="d'après l'historique de visionnage" />

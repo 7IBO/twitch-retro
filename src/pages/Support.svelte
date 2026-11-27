@@ -15,7 +15,7 @@
 
 <header class="page-head">
   <h1>Soutien</h1>
-  <p class="lead">Tes subs, tes bits, et les pubs que tu as regardées{app.year !== null ? ` en ${app.year}` : ''}.</p>
+  <p class="lead">Tes subs, tes bits, et les pubs que tu as regardées{app.periodEn}.</p>
 </header>
 
 {#if !s.subs.length && !s.bits.total && !s.ads.count}

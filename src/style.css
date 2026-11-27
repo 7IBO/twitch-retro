@@ -222,6 +222,18 @@ kbd { font: 11px var(--mono); color: var(--muted); padding: 2px 6px; border-radi
   font: 400 13px var(--mono); cursor: pointer; transition: background 0.15s var(--ease), color 0.15s var(--ease);
 }
 .yearbar button:first-child { font-family: var(--sans); }
+.monthbar {
+  position: sticky; top: 55px; z-index: 4; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
+  padding: 8px 32px; background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.monthbar::-webkit-scrollbar { display: none; }
+.monthbar button {
+  flex: none; height: 28px; padding: 0 10px; border-radius: 8px; border: 0; background: none; color: var(--text-2);
+  font-size: 13px; cursor: pointer; transition: color 0.15s var(--ease);
+}
+.monthbar button:hover:not(:disabled) { color: var(--text); }
+.monthbar button.on { color: var(--text); }
+.monthbar button:disabled { color: var(--muted); opacity: 0.4; cursor: default; }
 .yearbar button:hover { color: var(--text); background: var(--card); }
 .yearbar button.on { background: var(--raised-2); color: var(--text); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08); }
 
@@ -483,6 +495,7 @@ button.combo-icon:hover { background: var(--raised); color: var(--text); }
   .search-trigger { width: 36px; padding: 0; justify-content: center; flex: none; }
   .search-trigger-label, .search-trigger kbd { display: none; }
   .yearbar { top: 49px; padding: 8px 16px; }
+  .monthbar { top: 96px; padding: 6px 16px; }
   .content { padding: 24px 16px 48px; }
   .split { grid-template-columns: minmax(0, 1fr); }
   .hero { grid-template-columns: minmax(0, 1fr); gap: 48px; padding: 32px 0 64px; }

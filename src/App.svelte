@@ -31,6 +31,21 @@
   ] as const;
 
   const years = $derived(app.data ? availableYears(app.data) : []);
+  const MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+  // Months of the selected year that have something to show.
+  const activeMonths = $derived.by(() => {
+    const s = new Set<number>();
+    if (!app.data || app.year === null) return s;
+    for (const w of app.data.watch) {
+      const dt = new Date(w.day * 86400000);
+      if (dt.getUTCFullYear() === app.year) s.add(dt.getUTCMonth());
+    }
+    for (const m of app.data.chat) {
+      const dt = new Date(m.ts);
+      if (dt.getFullYear() === app.year) s.add(dt.getMonth());
+    }
+    return s;
+  });
   const active = $derived(
     app.route.page === 'streamer' ? 'streamers' : app.route.page === 'category' ? 'categories' : app.route.page,
   );
@@ -71,9 +86,17 @@
           <button class:on={app.year === y} onclick={() => (app.setYear(y))}>{y}</button>
         {/each}
       </div>
+      {#if app.year !== null}
+        <div class="monthbar" role="group" aria-label="Mois" use:slide>
+          <button class:on={app.month === null} onclick={() => app.setMonth(null)}>Toute l'année</button>
+          {#each MONTHS as label, m (m)}
+            <button class:on={app.month === m} disabled={!activeMonths.has(m)} onclick={() => app.setMonth(m)}>{label}</button>
+          {/each}
+        </div>
+      {/if}
 
       <main class="content" use:rankDigits>
-        {#key JSON.stringify(r) + ':' + app.year}
+        {#key JSON.stringify(r) + ':' + app.year + ':' + app.month}
         <div class="page">
         {#if r.page === 'overview'}<Overview />
         {:else if r.page === 'streamers'}<Streamers />

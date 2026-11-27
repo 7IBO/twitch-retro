@@ -11,9 +11,9 @@
 
   const s = $derived(app.stats!);
   const years = $derived(app.year === null ? yearly(app.data!) : []);
-  const months = $derived(app.year !== null ? monthly(app.data!, app.year) : []);
+  const months = $derived(app.year !== null && app.month === null ? monthly(app.data!, app.year) : []);
   const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-  const tl = $derived(timeline(s.dayMin, { endDay: Math.floor(app.data!.user.end / DAY), year: app.year, fmt: dur }));
+  const tl = $derived(timeline(s.dayMin, { endDay: Math.floor(app.data!.user.end / DAY), year: app.year, month: app.month, fmt: dur }));
   const favWd = $derived(s.weekdays.indexOf(Math.max(...s.weekdays)));
   const plays = $derived(s.hours.reduce((a, b) => a + b, 0));
   const favH = $derived(s.hours.indexOf(Math.max(...s.hours)));
@@ -28,10 +28,10 @@
 </script>
 
 {#if !s.totalMin}
-  <Empty text={app.year === null ? "Ton export ne contient aucune minute de visionnage." : `Aucun visionnage enregistré en ${app.year}.`} />
+  <Empty text={app.year === null ? "Ton export ne contient aucune minute de visionnage." : `Aucun visionnage enregistré${app.periodEn}.`} />
 {:else}
   <section class="lede">
-    <p class="period">{app.year === null ? `Du ${day(s.firstDay)} au ${day(s.lastDay)}` : `Année ${app.year}`}</p>
+    <p class="period">{app.year === null ? `Du ${day(s.firstDay)} au ${day(s.lastDay)}` : (app.month !== null ? app.periodName!.replace(/^./, (c) => c.toUpperCase()) : `Année ${app.year}`)}</p>
     <h1><span class="figure">{h(s.totalMin)}</span> heures regardées</h1>
     <p class="lead">
       Soit {plural(Math.floor(s.totalMin / 1440), 'jour entier', 'jours entiers')} de streams, sur {plural(s.activeDays, 'journée', 'journées')}
@@ -40,7 +40,7 @@
   </section>
 
   <div class="stats four">
-    <Stat value={n(s.channels.length)} label="Chaînes regardées" sub={app.year !== null ? `dont ${n(s.newChannels)} découvertes cette année` : ''} />
+    <Stat value={n(s.channels.length)} label="Chaînes regardées" sub={app.year !== null ? `dont ${n(s.newChannels)} découvertes${app.month !== null ? ' ce mois-ci' : ' cette année'}` : ''} />
     <Stat value={n(s.games.length)} label="Catégories" />
     <Stat value={n(s.activeDays)} label="Jours actifs" sub={s.spanDays ? `${pct(s.activeDays, s.spanDays)} % des jours de la période` : ''} />
     <Stat value={n(s.chat.msgs.length)} label="Messages dans le chat" sub={s.chat.channels.length ? `dans ${plural(s.chat.channels.length, 'chat', 'chats')}` : ''} />
