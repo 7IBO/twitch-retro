@@ -13,7 +13,7 @@
 
   const s = $derived(app.stats!);
   const msgs = $derived(s.chat.msgs);
-  const a = $derived(analyseChat(msgs, app.data!.channels, app.emoteMap));
+  const a = $derived(analyseChat(msgs, app.data!.channels, app.emoteMap, app.knownEmotes));
   const PROVIDERS = { twitch: 'Twitch', '7tv': '7TV', bttv: 'BTTV', ffz: 'FFZ' } as const;
 
   const ctl = $derived.by(() => {

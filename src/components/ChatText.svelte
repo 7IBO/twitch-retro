@@ -8,7 +8,7 @@
     const m = app.emoteMap;
     const local = m?.perChannel.get(app.data?.channels[ch]?.id ?? '');
     return body.split(/(\s+)/).map((t) => {
-      const e = t.trim() ? (msg ? emoteFor(msg, t, local, m) : m ? (local?.get(t) ?? m.global.get(t)) : undefined) : undefined;
+      const e = t.trim() ? (msg ? emoteFor(msg, t, local, m, app.knownEmotes) : m ? (local?.get(t) ?? m.global.get(t)) : undefined) : undefined;
       if (e) return { kind: 'emote' as const, t, e };
       if (/^@\w{2,}/.test(t)) return { kind: 'mention' as const, t };
       return { kind: 'text' as const, t };

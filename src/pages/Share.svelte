@@ -19,7 +19,7 @@
   const big3x = (url: string) => url.replace(/\/1(x|\.0)(\.webp)?$/, (_m, a1, w) => (a1 === 'x' ? '/3x' + (w ?? '') : '/3.0'));
   const yearSpan = (ys: number[]) => (ys.length ? (ys[0] === ys[ys.length - 1] ? String(ys[0]) : `${ys[0]} – ${ys[ys.length - 1]}`) : '');
   const topEmote = (msgs: typeof d.chat) => {
-    const e = app.emoteMap ? analyseChat(msgs, d.channels, app.emoteMap).emotes[0] : undefined;
+    const e = app.emoteMap ? analyseChat(msgs, d.channels, app.emoteMap, app.knownEmotes).emotes[0] : undefined;
     return e ? { name: e.emote.name, url: big3x(e.emote.url), count: n(e.n) } : undefined;
   };
   const stories = $derived(format === 'story' ? 7 : 5);

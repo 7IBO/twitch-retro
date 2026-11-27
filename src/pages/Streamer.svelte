@@ -46,7 +46,7 @@
       </p>
       <p class="muted">
         {#if old.length}Anciens pseudos : {old.join(', ')} · {/if}
-        <a href="https://www.twitch.tv/{app.login(ch)}" target="_blank" rel="noopener noreferrer">twitch.tv/{app.login(ch)} ↗</a>
+        {#if app.gone(ch)}<span>Chaîne introuvable aujourd'hui sur Twitch (supprimée ou bannie), d'où l'absence d'image</span>{:else}<a href="https://www.twitch.tv/{app.login(ch)}" target="_blank" rel="noopener noreferrer">twitch.tv/{app.login(ch)} ↗</a>{/if}
       </p>
       <a class="btn small profile-share" href="#/partager/streamers/{encodeURIComponent(app.login(ch))}">Créer sa carte à partager</a>
     </div>

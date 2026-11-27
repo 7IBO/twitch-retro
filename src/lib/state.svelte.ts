@@ -1,6 +1,7 @@
 import type { RetroData, WorkerMsg } from './types';
 import type { EnrichResponse, Emote } from '../../server/enrich';
 import { compute, type Stats } from './stats';
+import { taggedEmoteIds } from './words';
 // Inlined so a page left open during a site update still has its worker.
 import ParseWorker from './worker.ts?worker&inline';
 import { saveExport, readExport, clearExport, KEEP_DAYS } from './store';
@@ -100,6 +101,8 @@ class AppState {
   enrichState = $state<'idle' | 'loading' | 'done' | 'failed'>('idle');
 
   stats: Stats | null = $derived(this.data ? compute(this.data, this.year) : null);
+  /** Twitch emote ids seen in message tags, by name (works for retired emotes too). */
+  knownEmotes = $derived(this.data ? taggedEmoteIds(this.data.chat) : new Map<string, string>());
 
   constructor() {
     addEventListener('hashchange', () => {
@@ -282,7 +285,7 @@ class AppState {
       });
       if (!r.ok || !this.enrich) return;
       const more = (await r.json()) as EnrichResponse;
-      this.enrich = { ...this.enrich, users: { ...this.enrich.users, ...more.users }, games: { ...this.enrich.games, ...more.games } };
+      this.enrich = { ...this.enrich, missing: [...(this.enrich.missing ?? []), ...(more.missing ?? [])], users: { ...this.enrich.users, ...more.users }, games: { ...this.enrich.games, ...more.games } };
     } catch {
       /* images stay as initials */
     }
@@ -346,6 +349,12 @@ class AppState {
   }
 
   // ---- lookups used across pages ----
+
+  /** The channel no longer exists on Twitch (deleted or banned). */
+  gone(ch: number) {
+    const id = this.data?.channels[ch]?.id;
+    return !!id && !!this.enrich?.missing?.includes(id);
+  }
 
   user(ch: number) {
     const id = this.data?.channels[ch]?.id;

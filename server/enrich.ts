@@ -27,6 +27,8 @@ export interface Emote {
 
 export interface EnrichResponse {
   twitch: boolean; // false when the server has no Twitch credentials
+  /** Channel ids Twitch no longer knows (deleted or banned accounts). */
+  missing: string[];
   users: Record<string, { login: string; displayName: string; avatar: string; type: string; createdAt: string; lang: string }>;
   games: Record<string, { id: string; name: string; boxArt: string } | null>; // keyed by lowercase name, null when Twitch has no such category
   emotes: { global: Emote[]; channels: Record<string, Emote[]> };
@@ -92,7 +94,7 @@ export async function enrich(input: EnrichRequest, env: Env): Promise<EnrichResp
     });
   };
 
-  const res: EnrichResponse = { twitch: !!tok, users: {}, games: {}, emotes: { global: [], channels: {} }, vods: {}, badges: {}, channelBadges: {} };
+  const res: EnrichResponse = { twitch: !!tok, missing: [], users: {}, games: {}, emotes: { global: [], channels: {} }, vods: {}, badges: {}, channelBadges: {} };
 
   const usersTask = (async () => {
     if (!tok) return;
@@ -120,8 +122,9 @@ export async function enrich(input: EnrichRequest, env: Env): Promise<EnrichResp
       }),
     );
     for (const id of ids) {
-      const v = cache.get('u:' + id)?.val as EnrichResponse['users'][string] | null;
-      if (v) res.users[id] = v;
+      const c = cache.get('u:' + id);
+      if (c?.val) res.users[id] = c.val as EnrichResponse['users'][string];
+      else if (c) res.missing.push(id);
     }
   })();
 

@@ -36,15 +36,45 @@ const SUB_EMOTE = /^[a-z][a-z0-9]{2,11}[A-Z0-9][A-Za-z0-9]{0,20}$/;
 export const twitchEmoteUrl = (id: string, size = '1.0') => `https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/${size}`;
 
 /** Emote for a word of a message: the message's own tags first, then the channel's, then globals. */
-export function emoteFor(m: ChatMsg, word: string, local: Map<string, Emote> | undefined, emotes: EmoteMap): Emote | undefined {
+export function emoteFor(
+  m: ChatMsg,
+  word: string,
+  local: Map<string, Emote> | undefined,
+  emotes: EmoteMap,
+  known?: Map<string, string>,
+): Emote | undefined {
   const tagged = m.emotes?.find((x) => x.name === word);
   if (tagged) return emotes?.global.get(word)?.provider === 'twitch' ? emotes.global.get(word) : { name: word, url: twitchEmoteUrl(tagged.id), provider: 'twitch' };
-  return emotes ? (local?.get(word) ?? emotes.global.get(word)) : undefined;
+  const current = emotes ? (local?.get(word) ?? emotes.global.get(word)) : undefined;
+  if (current) return current;
+  // A retired Twitch emote whose id we saw in another, recent message.
+  const id = known?.get(word);
+  return id ? { name: word, url: twitchEmoteUrl(id), provider: 'twitch' } : undefined;
+}
+
+/** name -> Twitch emote id, from every message whose tags kept its emotes. */
+export function taggedEmoteIds(msgs: ChatMsg[]): Map<string, string> {
+  const m = new Map<string, string>();
+  for (const x of msgs) for (const e of x.emotes ?? []) m.set(e.name, e.id);
+  return m;
+}
+
+/** Channel prefixes of today's Twitch emotes: "kaydop" from kaydopMdr. */
+function emotePrefixes(emotes: EmoteMap): Set<string> {
+  const s = new Set<string>();
+  if (!emotes) return s;
+  for (const e of emotes.global.values()) {
+    if (e.provider !== 'twitch') continue;
+    const p = /^([a-z][a-z0-9]{1,14})[A-Z0-9]/.exec(e.name);
+    if (p) s.add(p[1]);
+  }
+  return s;
 }
 
 export type EmoteMap = { global: Map<string, Emote>; perChannel: Map<string, Map<string, Emote>> } | null;
 
-export function analyseChat(msgs: ChatMsg[], channels: Channel[], emotes: EmoteMap): ChatAnalysis {
+export function analyseChat(msgs: ChatMsg[], channels: Channel[], emotes: EmoteMap, known?: Map<string, string>): ChatAnalysis {
+  const prefixes = emotePrefixes(emotes);
   const eCount = new Map<string, EmoteCount>();
   const providers: ChatAnalysis['providers'] = { twitch: 0, '7tv': 0, bttv: 0, ffz: 0 };
   const words = new Map<string, number>();
@@ -58,7 +88,7 @@ export function analyseChat(msgs: ChatMsg[], channels: Channel[], emotes: EmoteM
     let had = false;
     for (const raw of m.body.split(/\s+/)) {
       if (!raw) continue;
-      const e = emoteFor(m, raw, local, emotes);
+      const e = emoteFor(m, raw, local, emotes, known);
       if (e) {
         used++;
         had = true;
@@ -71,7 +101,9 @@ export function analyseChat(msgs: ChatMsg[], channels: Channel[], emotes: EmoteM
       }
       // Links (clips, YouTube...) are not words.
       if (/^(https?:|www\.)|\.(com|tv|fr|gg|be|ly)(\/|$)/i.test(raw)) continue;
-      if (emotes && SUB_EMOTE.test(raw)) {
+      // Only names that start like a real channel's emotes (kaydop + V): probably retired.
+      const prefix = /^([a-z][a-z0-9]{1,14})[A-Z0-9]/.exec(raw)?.[1];
+      if (emotes && SUB_EMOTE.test(raw) && prefix && prefixes.has(prefix)) {
         retired.set(raw, (retired.get(raw) ?? 0) + 1);
         continue;
       }
