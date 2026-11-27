@@ -135,6 +135,15 @@ without avatars, Twitch emotes or box art looked up by id.
 
 ## Deployment
 
-Not deployed yet. Planned on Vercel (issue "Publier Rétro Twitch sur
-Vercel"): previews off, legal notice page before any public launch, keys in
-the Vercel project, the site checked at 390 and 1280 px after each deploy.
+- Vercel project `twitch-retro` (team 7ibo), linked to this repository:
+  every push to `main` deploys production, previews are off (project
+  setting), functions in `cdg1`. Domain `twitchretro.7ibo.dev` (DNS at
+  Spaceship, CNAME to Vercel).
+- `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` live in the Vercel project,
+  set by Thibault.
+- Legal notice (`#/mentions-legales`) and privacy policy
+  (`#/confidentialite`) in `src/pages/Legal.svelte`: the publisher is a
+  private individual, non-professional, as long as the app earns nothing;
+  public contact `hello@7ibo.dev`. A change in what is read or sent updates
+  the privacy policy in the same PR.
+- After each deploy, the site is checked at 390 and 1280 px.

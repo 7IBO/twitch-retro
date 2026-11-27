@@ -20,6 +20,8 @@ export type Route =
   | { page: 'follows' }
   | { page: 'support' }
   | { page: 'channel' }
+  | { page: 'legal' }
+  | { page: 'privacy' }
   | { page: 'share'; target?: { kind: 'streamer' | 'category'; key: string } };
 
 /** Top of the page now, and again once the new page has rendered (it can be taller). */
@@ -65,6 +67,10 @@ function parseRoute(hash: string): Route {
       return { page: 'support' };
     case 'chaine':
       return { page: 'channel' };
+    case 'mentions-legales':
+      return { page: 'legal' };
+    case 'confidentialite':
+      return { page: 'privacy' };
     case 'partager':
       return b === 'streamers' && c ? { page: 'share', target: { kind: 'streamer', key: c } }
         : b === 'categories' && c ? { page: 'share', target: { kind: 'category', key: c } }

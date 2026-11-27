@@ -248,6 +248,13 @@ kbd { font: 11px var(--mono); color: var(--muted); padding: 2px 6px; border-radi
 @media (prefers-reduced-motion: reduce) { .page { animation: none; } }
 .page > * { min-width: 0; }
 .foot { color: var(--muted); font-size: 12px; line-height: 18px; margin-top: 24px; }
+.foot a, .landing-foot a, .legal a { text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+.landing-foot { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 24px 0; margin-top: auto; color: var(--muted); font-size: 12px; line-height: 18px; border-top: 1px solid var(--line); }
+.legal { max-width: 680px; padding: 24px 0 64px; }
+.legal h1 { font-size: 28px; line-height: 36px; margin: 16px 0 24px; }
+.legal h2 { font-size: 16px; line-height: 24px; margin: 32px 0 8px; }
+.legal p { color: var(--text-2, var(--text)); line-height: 24px; margin: 0 0 12px; }
+.legal code { font-family: var(--mono, monospace); font-size: 13px; }
 
 .page-head { display: grid; gap: 8px; margin-bottom: 4px; }
 .page-head .lead, .lede .lead { max-width: none; }
