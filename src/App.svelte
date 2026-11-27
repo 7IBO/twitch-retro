@@ -18,6 +18,7 @@
   import Support from './pages/Support.svelte';
   import Channel from './pages/Channel.svelte';
   import Share from './pages/Share.svelte';
+  import Legal from './pages/Legal.svelte';
   import { LayoutGrid, Users, Gamepad2, CalendarDays, MessageSquare, Heart, Gift, Radio, Share2 } from '@lucide/svelte';
 
   const NAV = [
@@ -53,7 +54,9 @@
   const r = $derived(app.route);
 </script>
 
-{#if !app.data && app.booting}
+{#if r.page === 'legal' || r.page === 'privacy'}
+  <Legal kind={r.page} />
+{:else if !app.data && app.booting}
   <div class="boot" aria-live="polite"><span class="brand"><span class="brand-mark" aria-hidden="true"></span>Rétro Twitch</span><span class="progress" aria-hidden="true"><span></span></span><span class="sr-only">{t('Opening your export')}</span></div>
 {:else if !app.data}
   <Landing />
@@ -118,6 +121,7 @@
           {t('Everything is computed in your browser, your export is never sent to a server.')}
           {app.stored ? t('A copy stays in this browser for 30 days at most, “Change export” deletes it.') : t('Nothing is kept: reloading the page clears everything.')}
           {t('Avatars, box art and emotes: Twitch, 7TV, BTTV and FFZ. Not affiliated with Twitch.')}
+          <a href="#/mentions-legales">{t('Legal notice')}</a> · <a href="#/confidentialite">{t('Privacy')}</a>
           <span class="foot-lang"><LangSwitch /></span>
         </footer>
       </main>

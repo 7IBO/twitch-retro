@@ -62,7 +62,7 @@
 
       <ul class="facts-list">
         <li><Lock size={16} strokeWidth={1.5} /><span>{t('The zip is read in your browser and sent nowhere. The IPs, cities, devices and page views it contains are never opened.')}</span></li>
-        <li><ImageIcon size={16} strokeWidth={1.5} /><span>{t("For images, only your channels' ids and your games' names go to our server, which asks Twitch, 7TV, BTTV and FFZ and keeps nothing. Untick the box to keep everything on your side.")}</span></li>
+        <li><ImageIcon size={16} strokeWidth={1.5} /><span>{t("For images, only the ids of your channels and VODs and the names of your games go to our server, which asks Twitch, 7TV, BTTV and FFZ and keeps nothing. Untick the box to keep everything on your side.")}</span></li>
         <li><Clock size={16} strokeWidth={1.5} /><span>{t('No export yet? Request it in')} <a href="https://www.twitch.tv/settings/security" target="_blank" rel="noopener noreferrer">{t('Settings › Security and Privacy')}</a>{t(', “Download your data”. Twitch can take several weeks, and the export stops on the day you asked.')}</span></li>
       </ul>
     </div>
@@ -85,4 +85,10 @@
       <figcaption>{t('Sample with made-up data')}</figcaption>
     </figure>
   </main>
+
+  <footer class="landing-foot">
+    <a href="#/mentions-legales">{t('Legal notice')}</a>
+    <a href="#/confidentialite">{t('Privacy')}</a>
+    <span>{t('Not affiliated with Twitch.')}</span>
+  </footer>
 </div>
