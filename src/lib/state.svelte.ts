@@ -166,17 +166,18 @@ class AppState {
     });
   }
 
-  setMonth(m: number | null) {
+  /** Filters update the page in place (no fade, same scroll); pass top to start from the top. */
+  setMonth(m: number | null, top = false) {
     this.month = this.year === null ? null : m;
     this.writeYear();
-    toTop();
+    if (top) toTop();
   }
 
-  setYear(y: number | null) {
+  setYear(y: number | null, top = false) {
     this.year = y;
     this.month = null;
     this.writeYear();
-    toTop(); // the page is rebuilt for the new year: start from its top
+    if (top) toTop();
   }
 
   private writeYear() {

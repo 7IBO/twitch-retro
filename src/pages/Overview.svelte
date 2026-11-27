@@ -51,7 +51,7 @@
       <h2>Heures par {tl.unit}</h2>
       {#if app.year === null && tl.unit === 'année'}<span class="hint">Clique une année pour l'explorer</span>{/if}
     </header>
-    <Bars height={260} items={tl.items} onpick={app.year === null && tl.unit === 'année' ? (i) => app.setYear(parseInt(tl.items[i].label)) : undefined} />
+    <Bars height={260} items={tl.items} onpick={app.year === null && tl.unit === 'année' ? (i) => app.setYear(parseInt(tl.items[i].label), true) : undefined} />
     {#if tl.partial}<p class="chart-note">{tl.partial}</p>{/if}
   </section>
 
@@ -168,7 +168,7 @@
       <header class="panel-head"><h2>Année par année</h2></header>
       <div class="years">
         {#each years as y (y.year)}
-          <button class="year-card" onclick={() => (app.setYear(y.year))}>
+          <button class="year-card" onclick={() => app.setYear(y.year, true)}>
             <span class="year-n">{y.year}</span>
             <span class="year-h">{dur(y.min)}</span>
             {#if y.topGame >= 0}<BoxArt game={y.topGame} w={144} h={192} cls="year-art" />{/if}

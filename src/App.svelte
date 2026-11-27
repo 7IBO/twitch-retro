@@ -96,7 +96,7 @@
       {/if}
 
       <main class="content" use:rankDigits>
-        {#key JSON.stringify(r) + ':' + app.year + ':' + app.month}
+        {#key JSON.stringify(r)}
         <div class="page">
         {#if r.page === 'overview'}<Overview />
         {:else if r.page === 'streamers'}<Streamers />
