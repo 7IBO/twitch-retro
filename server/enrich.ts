@@ -14,6 +14,7 @@ export interface EnrichRequest {
   channels?: string[]; // Twitch user ids
   games?: string[]; // game names
   emoteChannels?: string[]; // user ids whose channel emotes are wanted
+  vods?: string[]; // video ids
 }
 
 export interface Emote {
@@ -27,9 +28,10 @@ export interface EnrichResponse {
   users: Record<string, { login: string; displayName: string; avatar: string; type: string; createdAt: string; lang: string }>;
   games: Record<string, { id: string; name: string; boxArt: string }>; // keyed by lowercase name
   emotes: { global: Emote[]; channels: Record<string, Emote[]> };
+  vods: Record<string, { title: string; createdAt: string; duration: string; type: string; thumb: string }>;
 }
 
-const LIMITS = { channels: 500, games: 400, emoteChannels: 40 };
+const LIMITS = { channels: 500, games: 400, emoteChannels: 40, vods: 300 };
 const TTL = 6 * 3600 * 1000;
 const cache = new Map<string, { exp: number; val: unknown }>();
 let token: { value: string; exp: number } | null = null;
@@ -76,6 +78,7 @@ export async function enrich(input: EnrichRequest, env: Env): Promise<EnrichResp
   const ids = clean(input.channels, LIMITS.channels, /^\d{1,12}$/);
   const gameNames = clean(input.games, LIMITS.games, /^.{1,120}$/s);
   const emoteIds = clean(input.emoteChannels, LIMITS.emoteChannels, /^\d{1,12}$/);
+  const vodIds = clean(input.vods, LIMITS.vods, /^\d{1,14}$/);
 
   const tok = await appToken(env);
   const helix = async (path: string) => {
@@ -85,7 +88,7 @@ export async function enrich(input: EnrichRequest, env: Env): Promise<EnrichResp
     });
   };
 
-  const res: EnrichResponse = { twitch: !!tok, users: {}, games: {}, emotes: { global: [], channels: {} } };
+  const res: EnrichResponse = { twitch: !!tok, users: {}, games: {}, emotes: { global: [], channels: {} }, vods: {} };
 
   const usersTask = (async () => {
     if (!tok) return;
@@ -149,7 +152,28 @@ export async function enrich(input: EnrichRequest, env: Env): Promise<EnrichResp
     emoteIds.forEach((id, i) => (res.emotes.channels[id] = per[i]));
   })();
 
-  await Promise.all([usersTask, gamesTask, emotesTask]);
+  // Titles of watched VODs that still exist (most expire after a few weeks).
+  const vodsTask = (async () => {
+    if (!tok || !vodIds.length) return;
+    const missing = vodIds.filter((id) => !cache.has('v:' + id));
+    await Promise.all(
+      chunks(missing, 100).map(async (batch) => {
+        const j = await helix('videos?' + batch.map((id) => 'id=' + id).join('&'));
+        for (const v of j?.data ?? [])
+          cache.set('v:' + v.id, {
+            exp: Date.now() + TTL,
+            val: { title: v.title, createdAt: v.created_at, duration: v.duration, type: v.type, thumb: String(v.thumbnail_url ?? '') },
+          });
+        for (const id of batch) if (!cache.has('v:' + id)) cache.set('v:' + id, { exp: Date.now() + TTL, val: null });
+      }),
+    );
+    for (const id of vodIds) {
+      const v = cache.get('v:' + id)?.val as EnrichResponse['vods'][string] | null;
+      if (v) res.vods[id] = v;
+    }
+  })();
+
+  await Promise.all([usersTask, gamesTask, emotesTask, vodsTask]);
   return res;
 }
 

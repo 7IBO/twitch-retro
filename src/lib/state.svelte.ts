@@ -1,6 +1,8 @@
 import type { RetroData, WorkerMsg } from './types';
 import type { EnrichResponse, Emote } from '../../server/enrich';
 import { compute, type Stats } from './stats';
+// Inlined so a page left open during a site update still has its worker.
+import ParseWorker from './worker.ts?worker&inline';
 
 export type Route =
   | { page: 'overview' }
@@ -88,7 +90,7 @@ class AppState {
       this.error = "Le fichier n'a pas pu être lu. S'il est encore en cours de téléchargement, attends la fin et réessaie.";
       return;
     }
-    const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+    const worker = new ParseWorker();
     worker.onmessage = (e: MessageEvent<WorkerMsg>) => {
       const m = e.data;
       if (m.type === 'progress') this.loading = m.step;
@@ -148,7 +150,7 @@ class AppState {
       const r = await fetch('/api/enrich', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channels: [...ids], games, emoteChannels }),
+        body: JSON.stringify({ channels: [...ids], games, emoteChannels, vods: d.watchedVods.slice(0, 300).map((v) => v.id) }),
       });
       if (!r.ok) throw new Error(String(r.status));
       if (this.data !== d) return;

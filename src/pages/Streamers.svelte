@@ -9,6 +9,7 @@
   let q = $state('');
   let sort = $state<'min' | 'days' | 'first' | 'last'>('min');
   let limit = $state(100);
+  let vodLimit = $state(15);
 
   const rows = $derived.by(() => {
     const ranked = s.channels.map((c, i) => ({ ...c, rank: i + 1 }));
@@ -73,17 +74,26 @@
   <section class="panel flush">
     <header class="panel-head pad"><h2>Rediffusions les plus regardées</h2><span class="hint">{n(s.watchedVods.length)} VOD</span></header>
     <ol class="rank table">
-      {#each s.watchedVods.slice(0, 15) as v, i (v.id)}
+      {#each s.watchedVods.slice(0, vodLimit) as v, i (v.id)}
+        {@const info = app.enrich?.vods?.[v.id]}
         <li>
           <span class="rank-n">{i + 1}</span>
           <Avatar ch={v.ch} size={28} />
           <span class="rank-main">
-            <a class="rank-name" href="https://www.twitch.tv/videos/{v.id}" target="_blank" rel="noopener noreferrer">VOD de {app.chName(v.ch)} ↗</a>
-            <span class="rank-meta">vue le {day(v.day)} · le lien peut ne plus marcher si la VOD a expiré</span>
+            {#if info}
+              <a class="rank-name" href="https://www.twitch.tv/videos/{v.id}" target="_blank" rel="noopener noreferrer">{info.title || 'Sans titre'} ↗</a>
+              <span class="rank-meta">{app.chName(v.ch)} · vue le {day(v.day)} · encore en ligne</span>
+            {:else}
+              <span class="rank-name">VOD de {app.chName(v.ch)}</span>
+              <span class="rank-meta">vue le {day(v.day)} · {app.enrich ? 'expirée ou supprimée' : 'titre inconnu'}</span>
+            {/if}
           </span>
           <span class="rank-val">{h(v.min)} h</span>
         </li>
       {/each}
     </ol>
   </section>
+  {#if s.watchedVods.length > vodLimit}
+    <button class="btn" onclick={() => (vodLimit += 50)}>Afficher plus de rediffusions</button>
+  {/if}
 {/if}
