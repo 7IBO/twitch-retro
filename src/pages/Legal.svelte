@@ -23,10 +23,9 @@
       {#if fr}
         <h2>Éditeur</h2>
         <p>
-          Ce site est édité par Thibault Fayard, particulier, à titre non professionnel. Comme la loi pour la
-          confiance dans l'économie numérique (LCEN) le permet à un éditeur non professionnel, son adresse et son
-          numéro de téléphone ne sont pas publiés : ses éléments d'identification ont été communiqués à Vercel Inc.,
-          qui héberge le site (voir « Hébergement »).
+          Ce site est édité par Thibault Fayard, entrepreneur individuel (EI), régime de la micro-entreprise,
+          24 avenue Monnot, 71100 Chalon-sur-Saône, France. SIREN 949 130 231, TVA intracommunautaire
+          FR34949130231. Le site est gratuit et ne vend rien.
         </p>
         <p>Directeur de la publication : Thibault Fayard. Contact : <a href="mailto:{MAIL}">{MAIL}</a></p>
         <h2>Hébergement</h2>
@@ -46,10 +45,9 @@
         <p>This text exists in French and English. If they differ, the French version prevails.</p>
         <h2>Publisher</h2>
         <p>
-          This site is published by Thibault Fayard, a private individual acting in a non-professional capacity.
-          The French law on confidence in the digital economy (LCEN) allows a non-professional publisher not to
-          publish their address and phone number: the publisher's identification details have been given to
-          Vercel Inc., which hosts the site (see "Hosting").
+          This site is published by Thibault Fayard, sole trader (entrepreneur individuel, micro-entreprise
+          scheme), 24 avenue Monnot, 71100 Chalon-sur-Saône, France. SIREN 949 130 231, EU VAT number
+          FR34949130231. The site is free and sells nothing.
         </p>
         <p>Publication director: Thibault Fayard. Contact: <a href="mailto:{MAIL}">{MAIL}</a></p>
         <h2>Hosting</h2>
