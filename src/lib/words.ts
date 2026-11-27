@@ -69,6 +69,8 @@ export function analyseChat(msgs: ChatMsg[], channels: Channel[], emotes: EmoteM
         else eCount.set(k, { emote: e, n: 1 });
         continue;
       }
+      // Links (clips, YouTube...) are not words.
+      if (/^(https?:|www\.)|\.(com|tv|fr|gg|be|ly)(\/|$)/i.test(raw)) continue;
       if (emotes && SUB_EMOTE.test(raw)) {
         retired.set(raw, (retired.get(raw) ?? 0) + 1);
         continue;

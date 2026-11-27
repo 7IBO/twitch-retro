@@ -80,7 +80,7 @@
       title: 'Ma rétro Twitch',
       period: app.year !== null ? String(app.year) : yearSpan(ys),
       ...big(s.totalMin),
-      subline: d.user.login ? `regardées par ${d.user.login}` : 'regardées sur Twitch',
+      subline: d.user.login ? `regardées par ${d.user.displayNames?.[d.user.login.toLowerCase()] ?? d.user.login}` : 'regardées sur Twitch',
       facts: [
         { value: n(s.channels.length), label: 'chaînes' },
         { value: n(s.activeDays), label: 'jours actifs' },

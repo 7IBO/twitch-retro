@@ -3,6 +3,7 @@
   import { availableYears } from './lib/stats';
   import { date } from './lib/format';
   import { slide } from './lib/slide';
+  import Search from './components/Search.svelte';
   import { fly } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
   const still = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -47,6 +48,7 @@
   <div class="shell">
     <aside class="sidebar">
       <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Rétro Twitch</div>
+      <Search pages={NAV.map((x) => ({ path: x.path, label: x.label }))} />
       <nav class="nav" aria-label="Sections" use:slide>
         {#each NAV as item (item.path)}
           <a href="#/{item.path}" class:on={active === item.page} aria-current={active === item.page ? 'page' : undefined}>

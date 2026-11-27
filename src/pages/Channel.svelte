@@ -42,7 +42,7 @@
       <ol class="timeline">
         {#each names as name, i (i)}
           <li>
-            <span class="tl-name">{name}</span>
+            <span class="tl-name">{d.user.displayNames?.[name.toLowerCase()] ?? name}</span>
             <span class="tl-date">{i === 0 ? (Number.isFinite(d.user.start) ? `compte créé le ${date(d.user.start)}` : 'au début') : `depuis le ${date(d.user.renames[i - 1].ts)}`}</span>
           </li>
         {/each}

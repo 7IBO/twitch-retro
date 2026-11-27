@@ -21,6 +21,7 @@ const FILES = [
   'commerce/subs/subscriptions.csv',
   'commerce/bits/bits_cheered.csv',
   'vod/vod_create.csv',
+  'users/user/',
   'ads/video_ad_impression.csv',
 ] as const;
 type FileKey = (typeof FILES)[number];
@@ -289,7 +290,7 @@ function build(zipBytes: Uint8Array): RetroData {
     filter: (f) => {
       const path = f.name.replace(/\\/g, '/');
       for (const k of FILES) {
-        if (path === k || path.endsWith('/' + k)) {
+        if (path === k || path.endsWith('/' + k) || (k.endsWith('/') && path.includes('/' + k) && path.endsWith('.json'))) {
           wanted.set(f.name, k);
           return true;
         }
@@ -313,7 +314,17 @@ function build(zipBytes: Uint8Array): RetroData {
   post({ type: 'progress', step: 'Lectures vidéo' });
   const playTs: number[] = [];
   const playCh: number[] = [];
-  readCsv(text('site_history/video_play.csv'), ['time', 'time_utc', 'channel', 'channel_id', 'game'], (r) => {
+  // How your own login was written (capitals) over the years, for "Tes pseudos".
+  const myCase = new Map<string, Map<string, number>>();
+  const seeCase = (login: string) => {
+    if (!login || login === login.toLowerCase()) return;
+    const k = login.toLowerCase();
+    const m = myCase.get(k) ?? new Map<string, number>();
+    m.set(login, (m.get(login) ?? 0) + 1);
+    myCase.set(k, m);
+  };
+  readCsv(text('site_history/video_play.csv'), ['time', 'time_utc', 'channel', 'channel_id', 'game', 'login'], (r) => {
+    seeCase(r[5]);
     const t = ts(r[1], r[0]);
     if (r[4]) games.teach(r[4]);
     const ch = reg.observe(r[3], r[2], t);
@@ -329,8 +340,9 @@ function build(zipBytes: Uint8Array): RetroData {
   const vods = new Map<string, WatchedVod>();
   readCsv(
     text('site_history/minute_watched.csv'),
-    ['day', 'channel_id', 'channel_name', 'game_name', 'minutes_watched_unadjusted', 'content_mode', 'platform', 'vod_id'],
+    ['day', 'channel_id', 'channel_name', 'game_name', 'minutes_watched_unadjusted', 'content_mode', 'platform', 'vod_id', 'user_login'],
     (r) => {
+      seeCase(r[8]);
       const min = +r[4];
       if (!min || !r[0]) return;
       const day = dayOf(r[0]);
@@ -462,6 +474,14 @@ function build(zipBytes: Uint8Array): RetroData {
     if (r[2] && r[3] && r[2] !== r[3]) renames.push({ ts: ts(r[1], r[0]), from: r[2], to: r[3] });
   });
   renames.sort((a, b) => a.ts - b.ts);
+  // Current display name: only the "displayname" field of users/user/<id>.json is
+  // read, with a pattern, so the rest of that file (email, phone...) is never parsed.
+  const userJson = text('users/user/' as FileKey);
+  const dn = /"displayname"\s*:\s*"([^"\\]{1,40})"/i.exec(userJson);
+  if (dn) seeCase(dn[1]), seeCase(dn[1]), seeCase(dn[1]);
+  const displayNames: Record<string, string> = {};
+  for (const [k, m] of myCase) displayNames[k] = [...m.entries()].sort((a, b) => b[1] - a[1])[0][0];
+  if (dn) displayNames[dn[1].toLowerCase()] = dn[1];
 
   reg.finish();
   const gameFollows = gameFollowsRaw.map((g) => ({ ts: g.ts, game: games.get(g.name) }));
@@ -488,7 +508,7 @@ function build(zipBytes: Uint8Array): RetroData {
 
   const t2 = performance.now();
   return {
-    user: { ...meta, renames },
+    user: { ...meta, renames, displayNames },
     channels: reg.channels,
     games: games.names,
     watch,

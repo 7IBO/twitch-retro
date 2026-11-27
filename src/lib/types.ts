@@ -72,6 +72,8 @@ export interface RetroData {
     start: number;
     end: number; // end of the export period: the data is not newer than this
     renames: { ts: number; from: string; to: string }[];
+    /** login -> how it was displayed (capitals), when known */
+    displayNames: Record<string, string>;
   };
   channels: Channel[];
   games: Game[];
