@@ -1,0 +1,70 @@
+# One job, on pull requests that are ready for review only (7IBO/socle,
+# code/ci-cd.md): a draft costs no minutes. Long checks (browser runs,
+# Lighthouse) run in the session before the push.
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: No credit to an AI assistant (title, branch, commits)
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          BRANCH: ${{ github.head_ref }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          bun scripts/commit-message.ts --title "$TITLE"
+          bun scripts/commit-message.ts --branch "$BRANCH"
+          for sha in $(git rev-list "$BASE..$HEAD"); do
+            git log -1 --format=%B "$sha" > /tmp/msg
+            bun scripts/commit-message.ts /tmp/msg || { echo "in commit $sha"; exit 1; }
+          done
+
+      - name: Texts and ids
+        run: |
+          bun scripts/check-dashes.ts
+          bun scripts/check-copy.ts
+          bun scripts/check-ids.ts
+          bun test scripts/
+
+      - name: Which files changed
+        id: changes
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git diff --name-only "$BASE" "$HEAD" | grep -qvE '\.md$'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install
+        if: steps.changes.outputs.code == 'true'
+        run: npm ci
+
+      - name: Types and build
+        if: steps.changes.outputs.code == 'true'
+        run: npm run build

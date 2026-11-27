@@ -1,0 +1,9 @@
+#!/bin/sh
+# Checks the message against docs/regles.md (scripts/commit-message.ts).
+# Installed by `bun install` (scripts/install-hooks.ts).
+if ! command -v bun >/dev/null 2>&1; then
+  echo "commit-msg: bun is not on PATH, so the message was not checked." >&2
+  echo "Install Bun (https://bun.sh) or commit from a terminal where it is." >&2
+  exit 1
+fi
+exec bun scripts/commit-message.ts "$1"
